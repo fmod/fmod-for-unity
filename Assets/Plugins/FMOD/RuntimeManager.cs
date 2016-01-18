@@ -52,7 +52,7 @@ namespace FMODUnity
                     var gameObject = new GameObject("FMOD.UnityItegration.RuntimeManager");
                     instance = gameObject.AddComponent<RuntimeManager>();
                     DontDestroyOnLoad(gameObject);
-                    gameObject.hideFlags = HideFlags.HideAndDontSave;
+                    gameObject.hideFlags = HideFlags.HideInHierarchy;
 
                     try
                     {
@@ -351,7 +351,7 @@ namespace FMODUnity
             GUI.Label(new Rect(10, 20, 290, 100), lastDebugText);
             GUI.DragWindow();
         }        
-
+        
         void OnDisable()
         {
             // If we're being torn down for a script reload - cache the native pointers in something unity can serialize
