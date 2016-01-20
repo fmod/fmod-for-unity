@@ -45,7 +45,7 @@ namespace FMODUnity
 
             position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
 
-            GUIStyle buttonStyle = GUI.skin.button;
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
             buttonStyle.padding.top = 1;
             buttonStyle.padding.bottom = 1;
             

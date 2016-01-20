@@ -13,7 +13,7 @@ namespace FMODUnity
         static void ShowEventBrowser()
         {
             EventBrowser eventBrowser = EditorWindow.GetWindow<EventBrowser>("FMOD Events");
-            eventBrowser.minSize = new Vector2(500, 700);
+            eventBrowser.minSize = new Vector2(280, 600);
             eventBrowser.Show();
         }
         void OnLostFocus()
@@ -326,7 +326,7 @@ namespace FMODUnity
 
             // Split the window int search box, tree view, preview pane (only if full browser)
             Rect searchRect = new Rect(0, 0, position.width, 16);
-            float previewBoxHeight = fromInspector ? 0 : 400;
+            float previewBoxHeight = fromInspector ? 0 : 300;
             Rect listRect = new Rect(0, searchRect.height + 2, position.width, position.height - previewBoxHeight - searchRect.height - 15);
             Rect previewRect = new Rect(0, position.height - previewBoxHeight, position.width, previewBoxHeight);     
 
@@ -436,216 +436,266 @@ namespace FMODUnity
             // If the standalone event browser show a preview of the selected item
             if (!fromInspector)
             {
-                Rect previewAutoRect = new Rect(previewRect);
-                previewAutoRect.height -= 140;
-                Rect previewCustomBox = new Rect(previewRect);
-                previewCustomBox.y = previewAutoRect.y + previewAutoRect.height + 10;
-                previewCustomBox.height = 128;
 
-                
                 GUI.Box(previewRect, GUIContent.none);
-
 
                 if (selectedItem != null && selectedItem.EventRef != null && selectedItem.EventRef.Path.StartsWith("event:"))
                 {
-                    GUILayout.BeginArea(previewAutoRect);
-
-                    var style = new GUIStyle(GUI.skin.FindStyle("label"));
-                    style.richText = true;
-
-                    var selectedEvent = selectedItem.EventRef;
-
-                    // path
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.PrefixLabel("<b>Full Path</b>", style, style);
-                    EditorGUILayout.LabelField(selectedEvent.Path);
-                    EditorGUILayout.EndHorizontal();
-
-                    // guid
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.PrefixLabel("<b>GUID</b>", style, style);
-                    EditorGUILayout.LabelField(selectedEvent.Guid.ToString("b"));
-                    EditorGUILayout.EndHorizontal();
-
-                    // Bank
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.PrefixLabel("<b>Bank</b>", style, style);
-                    StringBuilder builder = new StringBuilder();
-                    selectedEvent.Banks.ForEach((x) => { builder.Append(Path.GetFileNameWithoutExtension(x.Path)); builder.Append(", "); });
-                    EditorGUILayout.LabelField(builder.ToString(0, Math.Max(0, builder.Length - 2)));
-                    EditorGUILayout.EndHorizontal();
-
-                    // Panning
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.PrefixLabel("<b>Panning</b>", style, style);
-                    EditorGUILayout.LabelField(selectedEvent.Is3D ? "3D" : "2D");
-                    EditorGUILayout.EndHorizontal();
-                    
-                    // One shot
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.PrefixLabel("<b>Oneshot</b>", style, style);
-                    EditorGUILayout.LabelField(selectedEvent.IsOneShot.ToString());
-                    EditorGUILayout.EndHorizontal();
-
-                    // Streaming
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.PrefixLabel("<b>Streaming</b>", style, style);
-                    EditorGUILayout.LabelField(selectedEvent.IsStream.ToString());
-                    EditorGUILayout.EndHorizontal();
-
-                    EditorGUILayout.BeginHorizontal();
-                    if (GUILayout.Button("Play"))
-                    {
-                        EditorUtils.PreviewEvent(selectedEvent);
-                        forceRepaint = true;
-                    }
-                    if (GUILayout.Button("Pause"))
-                    {
-                        EditorUtils.PreviewPause();
-                    }
-                    if (GUILayout.Button("Stop"))
-                    {
-                        forceRepaint = false;
-                        EditorUtils.PreviewStop();
-                    }
-                    if (GUILayout.Button("Show In Studio"))
-                    {
-                        string cmd = string.Format("studio.window.navigateTo(studio.project.lookup(\"{0}\"))", selectedEvent.Guid.ToString("b"));
-                        EditorUtils.SendScriptCommand(cmd);
-                    }
-                    EditorGUILayout.EndHorizontal();
-
-                    paramScroll = GUILayout.BeginScrollView(paramScroll, false, true);
-                    foreach (var paramRef in selectedEvent.Parameters)
-                    {
-                        if (!previewParamValues.ContainsKey(paramRef.Name))
-                        {
-                            previewParamValues[paramRef.Name] = 0;
-                        }
-                        previewParamValues[paramRef.Name] = EditorGUILayout.Slider(paramRef.Name, previewParamValues[paramRef.Name], paramRef.Min, paramRef.Max);
-                        EditorUtils.PreviewUpdateParameter(paramRef.Name, previewParamValues[paramRef.Name]);
-                    }
-                    GUILayout.EndScrollView();
-
-                    GUILayout.EndArea();
-
-                    GUILayout.BeginArea(previewCustomBox);
-
-                    
-
-                    if (selectedEvent.Is3D)
-                    {
-
-                        Texture circle = EditorGUIUtility.Load("FMOD/preview.png") as Texture;
-                        Texture circle2 = EditorGUIUtility.Load("FMOD/previewemitter.png") as Texture;
-                        Rect rect = new Rect(position.width / 2.0f - 150f, 0, 128, 128);
-                        GUI.DrawTexture(rect, circle);
-
-                        Vector2 centre = rect.center;
-
-                        Rect rect2 = new Rect(rect.center.x + eventPosition.x - 6, rect.center.y + eventPosition.y - 6, 12, 12);
-                        GUI.DrawTexture(rect2, circle2);
-
-
-                        if ((Event.current.type == EventType.mouseDown || Event.current.type == EventType.mouseDrag) && rect.Contains(Event.current.mousePosition))
-                        {
-                            var newPosition = Event.current.mousePosition;
-                            Vector2 delta = (newPosition - centre);
-                            float distance = delta.magnitude;
-                            if (distance < 60)
-                            {
-                                eventPosition = newPosition - rect.center;
-                                previewDistance = distance / 60.0f * selectedEvent.MaxDistance;
-                                delta.Normalize();
-                                float angle = Mathf.Atan2(delta.y, delta.x);
-                                previewOrientation = angle + Mathf.PI * 0.5f;
-                            }
-                            Event.current.Use();
-                        }
-
-                        EditorUtils.PreviewUpdatePosition(previewDistance, previewOrientation);
-                    }
-
-
-                    float offset = position.width / 2.0f;
-                    Texture meterOn = EditorGUIUtility.Load("FMOD/LevelMeter.png") as Texture; 
-                    Texture meterOff = EditorGUIUtility.Load("FMOD/LevelMeterOff.png") as Texture;
-                    float[] metering = EditorUtils.GetMetering();
-                    int meterHeight = 128;
-                    int meterWidth = (int)((128 / (float)meterOff.height) * meterOff.width);
-                    foreach (float rms in metering)
-                    {
-                        GUI.DrawTexture(new Rect(offset, 0, meterWidth, meterHeight), meterOff);
-
-                        float db = rms > 0 ? 20.0f * Mathf.Log10(rms * Mathf.Sqrt(2.0f)) : -80.0f;
-                        if (db > 10.0f) db = 10.0f;
-                        float visible = 0;
-                        int[] segmentPixels = new int[]{ 0, 18, 38, 60, 89, 130, 187, 244, 300 };
-                        float[] segmentDB = new float[]{ -80.0f, -60.0f, -50.0f, -40.0f, -30.0f, -20.0f, -10.0f, 0, 10.0f };
-                        int segment = 1;
-                        while (segmentDB[segment] < db)
-                        {
-                            segment++;
-                        }
-                        visible = segmentPixels[segment - 1] + ((db - segmentDB[segment - 1])  / (segmentDB[segment] - segmentDB[segment - 1])) * (segmentPixels[segment] - segmentPixels[segment - 1]);
-                        visible *= 128 / (float)meterOff.height;
-                        Rect levelPosRect = new Rect(offset, 128 - visible, meterWidth, visible);
-                        Rect levelUVRect = new Rect(0, 0, 1.0f, visible / meterHeight);
-                        GUI.DrawTextureWithTexCoords(levelPosRect, meterOn, levelUVRect);
-                        offset += meterWidth + 5.0f;
-                    }
-                    GUILayout.EndArea();
+                    PreviewEvent(previewRect, selectedItem.EventRef);
                 }
-
 
                 if (selectedItem != null && selectedItem.EventRef != null && selectedItem.EventRef.Path.StartsWith("snapshot:"))
                 {
-                    GUILayout.BeginArea(previewAutoRect);
-
-                    var style = new GUIStyle(GUI.skin.FindStyle("label"));
-                    style.richText = true;
-
-                    var selectedEvent = selectedItem.EventRef;
-
-                    // path
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.PrefixLabel("<b>Full Path</b>", style, style);
-                    EditorGUILayout.LabelField(selectedEvent.Path);
-                    EditorGUILayout.EndHorizontal();
-
-                    // guid
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.PrefixLabel("<b>GUID</b>", style, style);
-                    EditorGUILayout.LabelField(selectedEvent.Guid.ToString("b"));
-                    EditorGUILayout.EndHorizontal();
-
-                    GUILayout.EndArea();
+                    PreviewSnapshot(previewRect, selectedItem.EventRef);
                 }
 
                 if (selectedItem != null && selectedItem.BankRef != null)
                 {
-                    GUILayout.BeginArea(previewRect);
-                    string[] SizeSuffix = { "B", "KB", "MB", "GB" };
-                    var selectedBank = selectedItem.BankRef;
-                    var style = new GUIStyle(GUI.skin.FindStyle("label"));
-                    style.richText = true;
-                    GUILayout.Label("<b>Platform Bank Sizes</b>", style);
-                    EditorGUI.indentLevel++;
-                    foreach (var sizeInfo in selectedBank.FileSizes)
-                    {
-                        int order = 0;
-                        long len = sizeInfo.Value;
-                        while (len >= 1024 && order + 1 < SizeSuffix.Length)
-                        {
-                            order++;
-                            len /= 1024;
-                        }
-                        EditorGUILayout.LabelField(sizeInfo.Name, String.Format("{0} {1}", len, SizeSuffix[order]));
-                    }
-                    EditorGUI.indentLevel--;
-
-                    GUILayout.EndArea();
+                    PreviewBank(previewRect, selectedItem.BankRef);
                 }
+            }
+        }
+
+        Rect previewCustomRect;
+        Rect previewPathRect;
+
+        private void PreviewEvent(Rect previewRect, EditorEventRef selectedEvent)
+        {
+            GUILayout.BeginArea(previewRect);
+
+            bool isNarrow = previewRect.width < 400;
+
+            var style = new GUIStyle(EditorStyles.label);
+            EditorStyles.label.fontStyle = FontStyle.Bold;
+            EditorGUIUtility.labelWidth = 75;
+
+            EditorGUILayout.LabelField("Full Path", selectedEvent.Path, style);
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                previewPathRect = GUILayoutUtility.GetLastRect();
+            }
+            if (Event.current.type == EventType.mouseDown && previewPathRect.Contains(Event.current.mousePosition) && Event.current.clickCount == 2)
+            {
+                EditorGUIUtility.systemCopyBuffer = selectedEvent.Path;
+                this.ShowNotification(new GUIContent("Event Path Copied to Clipboard"));
+                Event.current.Use();
+            }
+
+            StringBuilder builder = new StringBuilder();
+            selectedEvent.Banks.ForEach((x) => { builder.Append(Path.GetFileNameWithoutExtension(x.Path)); builder.Append(", "); });
+            EditorGUILayout.LabelField("Banks", builder.ToString(0, Math.Max(0, builder.Length - 2)), style);
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Panning", selectedEvent.Is3D ? "3D" : "2D", style);
+            EditorGUILayout.LabelField("Oneshot", selectedEvent.IsOneShot.ToString(), style);
+            if (!isNarrow) EditorGUILayout.LabelField("Streaming", selectedEvent.IsStream.ToString(), style);
+            EditorGUILayout.EndHorizontal();
+            if (isNarrow) EditorGUILayout.LabelField("Streaming", selectedEvent.IsStream.ToString(), style);
+
+            EditorGUIUtility.labelWidth = 0;
+            EditorStyles.label.fontStyle = FontStyle.Normal;            
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                var lastRect = GUILayoutUtility.GetLastRect();
+                if (!isNarrow)
+                {
+                    previewCustomRect = new Rect(lastRect.width / 2 - 200, lastRect.yMax + 10, 400, 150);
+                }
+                else
+                {
+                    previewCustomRect = new Rect(lastRect.width / 2 - 130, lastRect.yMax + 10, 260, 150);
+                }
+            }
+            
+            GUI.Box(new Rect(0, previewCustomRect.yMin, previewRect.width, 1), GUIContent.none);
+            GUI.Box(new Rect(0, previewCustomRect.yMax, previewRect.width, 1), GUIContent.none);
+
+            GUILayout.BeginArea(previewCustomRect);
+            
+            Texture playOff = EditorGUIUtility.Load("FMOD/TransportPlayButtonOff.png") as Texture;
+            Texture playOn = EditorGUIUtility.Load("FMOD/TransportPlayButtonOn.png") as Texture;
+            Texture stopOff = EditorGUIUtility.Load("FMOD/TransportStopButtonOff.png") as Texture;
+            Texture stopOn = EditorGUIUtility.Load("FMOD/TransportStopButtonOn.png") as Texture;
+            Texture openIcon = EditorGUIUtility.Load("FMOD/transportOpen.png") as Texture;
+
+            var transportButtonStyle = new GUIStyle();
+            transportButtonStyle.padding.left = 4;
+            transportButtonStyle.padding.top = 10;
+
+            var previewState = EditorUtils.PreviewState;
+            bool playing = previewState == PreviewState.Playing;
+            bool paused = previewState == PreviewState.Paused;
+            bool stopped = previewState == PreviewState.Stopped;
+            EditorGUILayout.BeginVertical();
+            if (!isNarrow) GUILayout.FlexibleSpace();
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button(stopped || paused ? stopOn : stopOff, transportButtonStyle, GUILayout.ExpandWidth(false)))
+            {
+                forceRepaint = false;
+                if (paused)
+                {
+                    EditorUtils.PreviewStop();
+                }
+                if (playing)
+                {
+                    EditorUtils.PreviewPause();
+                }
+            }
+            if (GUILayout.Button(playing ? playOn : playOff, transportButtonStyle, GUILayout.ExpandWidth(false)))
+            {
+                if (playing || stopped)
+                {
+                    EditorUtils.PreviewEvent(selectedEvent);
+                }
+                else
+                {
+                    EditorUtils.PreviewPause();
+                }
+                forceRepaint = true;
+            }
+            if (GUILayout.Button(new GUIContent(openIcon, "Show Event in FMOD Studio"), transportButtonStyle, GUILayout.ExpandWidth(false)))
+            {
+                string cmd = string.Format("studio.window.navigateTo(studio.project.lookup(\"{0}\"))", selectedEvent.Guid.ToString("b"));
+                EditorUtils.SendScriptCommand(cmd);
+            }
+
+
+            EditorGUILayout.EndHorizontal();
+            if (!isNarrow) GUILayout.FlexibleSpace();
+            EditorGUILayout.EndVertical();
+            
+            {
+                Texture circle = EditorGUIUtility.Load("FMOD/preview.png") as Texture;
+                Texture circle2 = EditorGUIUtility.Load("FMOD/previewemitter.png") as Texture;
+
+                var originalColour = GUI.color;
+                if (!selectedEvent.Is3D)
+                {
+                    GUI.color = new Color(1.0f, 1.0f, 1.0f, 0.1f);
+                }
+                
+                Rect rect = new Rect(isNarrow ? 120 : 150, 10, 128, 128);
+                GUI.DrawTexture(rect, circle);
+
+                Vector2 centre = rect.center;
+                Rect rect2 = new Rect(rect.center.x + eventPosition.x - 6, rect.center.y + eventPosition.y - 6, 12, 12);
+                GUI.DrawTexture(rect2, circle2);
+
+                GUI.color = originalColour;
+
+
+                if (selectedEvent.Is3D && (Event.current.type == EventType.mouseDown || Event.current.type == EventType.mouseDrag) && rect.Contains(Event.current.mousePosition))
+                {
+                    var newPosition = Event.current.mousePosition;
+                    Vector2 delta = (newPosition - centre);
+                    float distance = delta.magnitude;
+                    if (distance < 60)
+                    {
+                        eventPosition = newPosition - rect.center;
+                        previewDistance = distance / 60.0f * selectedEvent.MaxDistance;
+                        delta.Normalize();
+                        float angle = Mathf.Atan2(delta.y, delta.x);
+                        previewOrientation = angle + Mathf.PI * 0.5f;
+                    }
+                    Event.current.Use();
+                }
+
+                EditorUtils.PreviewUpdatePosition(previewDistance, previewOrientation);
+            }
+
+
+            float hoffset = isNarrow ? 15 : 300;
+            float voffset = isNarrow ? 50 : 10;
+            Texture meterOn = EditorGUIUtility.Load("FMOD/LevelMeter.png") as Texture;
+            Texture meterOff = EditorGUIUtility.Load("FMOD/LevelMeterOff.png") as Texture;
+            float[] metering = EditorUtils.GetMetering();
+            int meterHeight = isNarrow ? 86 : 128;
+            int meterWidth = (int)((128 / (float)meterOff.height) * meterOff.width);
+            foreach (float rms in metering)
+            {
+                GUI.DrawTexture(new Rect(hoffset, voffset, meterWidth, meterHeight), meterOff);
+                
+                float db = 20.0f * Mathf.Log10(rms * Mathf.Sqrt(2.0f));
+                db = Mathf.Clamp(db, -80.0f, 10.0f);
+                float visible = 0;
+                int[] segmentPixels = new int[] { 0, 18, 38, 60, 89, 130, 187, 244, 300 };
+                float[] segmentDB = new float[] { -80.0f, -60.0f, -50.0f, -40.0f, -30.0f, -20.0f, -10.0f, 0, 10.0f };
+                int segment = 1;
+                while (segmentDB[segment] < db)
+                {
+                    segment++;
+                }
+                visible = segmentPixels[segment - 1] + ((db - segmentDB[segment - 1]) / (segmentDB[segment] - segmentDB[segment - 1])) * (segmentPixels[segment] - segmentPixels[segment - 1]);
+
+                visible *= meterHeight / (float)meterOff.height;
+
+                Rect levelPosRect = new Rect(hoffset, meterHeight - visible + voffset, meterWidth, visible);
+                Rect levelUVRect = new Rect(0, 0, 1.0f, visible / meterHeight);
+                GUI.DrawTextureWithTexCoords(levelPosRect, meterOn, levelUVRect);
+                hoffset += meterWidth + 5.0f;
+            }
+
+            GUILayout.EndArea();
+            
+            Rect paramRect = new Rect(0, previewCustomRect.yMax + 10, previewRect.width, previewRect.height - (previewCustomRect.yMax + 10));
+            GUILayout.BeginArea(paramRect);
+
+            paramScroll = GUILayout.BeginScrollView(paramScroll, false, false);
+            foreach (var paramRef in selectedEvent.Parameters)
+            {
+                if (!previewParamValues.ContainsKey(paramRef.Name))
+                {
+                    previewParamValues[paramRef.Name] = 0;
+                }
+                previewParamValues[paramRef.Name] = EditorGUILayout.Slider(paramRef.Name, previewParamValues[paramRef.Name], paramRef.Min, paramRef.Max);
+                EditorUtils.PreviewUpdateParameter(paramRef.Name, previewParamValues[paramRef.Name]);
+            }
+            GUILayout.EndScrollView();
+
+            GUILayout.EndArea();
+            GUILayout.EndArea();
+        }
+
+        private void PreviewBank(Rect previewRect, EditorBankRef selectedBank)
+        {
+            GUILayout.BeginArea(previewRect);
+            EditorGUIUtility.labelWidth = 75;
+            string[] SizeSuffix = { "B", "KB", "MB", "GB" };
+            EditorStyles.label.fontStyle = FontStyle.Bold;
+            EditorGUILayout.LabelField("Platform Bank Sizes");
+            EditorStyles.label.fontStyle = FontStyle.Normal;
+            EditorGUI.indentLevel++;
+            foreach (var sizeInfo in selectedBank.FileSizes)
+            {
+                int order = 0;
+                long len = sizeInfo.Value;
+                while (len >= 1024 && order + 1 < SizeSuffix.Length)
+                {
+                    order++;
+                    len /= 1024;
+                }
+                EditorGUILayout.LabelField(sizeInfo.Name, String.Format("{0} {1}", len, SizeSuffix[order]));
+            }
+            EditorGUI.indentLevel--;
+            EditorGUIUtility.labelWidth = 0;
+            GUILayout.EndArea();
+        }
+
+        private void PreviewSnapshot(Rect previewRect, EditorEventRef selectedEvent)
+        {
+            using (new GUILayout.AreaScope(previewRect))
+            {
+                var style = new GUIStyle(EditorStyles.label);
+                EditorStyles.label.fontStyle = FontStyle.Bold;
+                EditorGUIUtility.labelWidth = 75;
+
+                EditorGUILayout.LabelField("Full Path", selectedEvent.Path, style);
+
+                EditorGUIUtility.labelWidth = 0;
+                EditorStyles.label.fontStyle = FontStyle.Normal;
             }
         }
 

@@ -9,6 +9,14 @@ using System.Net.Sockets;
 
 namespace FMODUnity
 {
+
+    public enum PreviewState
+    {
+        Stopped,
+        Playing,
+        Paused,
+    }
+
     [InitializeOnLoad]
     class EditorUtils : MonoBehaviour
     {
@@ -204,6 +212,16 @@ namespace FMODUnity
             {
                 CheckResult(system.update());
             }
+
+            if (previewEventInstance != null)
+            {
+                FMOD.Studio.PLAYBACK_STATE state;
+                previewEventInstance.getPlaybackState(out state);
+                if (previewState == PreviewState.Playing && state == FMOD.Studio.PLAYBACK_STATE.STOPPED)
+                {
+                    PreviewStop();
+                }
+            }
         }
 
         static FMOD.Studio.System system;
@@ -231,7 +249,7 @@ namespace FMODUnity
             CheckResult(system.getLowLevelSystem(out lowlevel));
 
             // Use play-in-editor speaker mode for event browser preview and metering
-            lowlevel.setSoftwareFormat(0, (FMOD.SPEAKERMODE)Settings.Instance.GetSpeakerMode(FMODPlatform.PlayInEditor), 0);
+            lowlevel.setSoftwareFormat(0, (FMOD.SPEAKERMODE)Settings.Instance.GetSpeakerMode(FMODPlatform.Default),0 );
 
             CheckResult(system.initialize(256, FMOD.Studio.INITFLAGS.ALLOW_MISSING_PLUGINS | FMOD.Studio.INITFLAGS.SYNCHRONOUS_UPDATE, FMOD.INITFLAGS.NORMAL, IntPtr.Zero));
 
@@ -306,6 +324,12 @@ namespace FMODUnity
         static FMOD.Studio.Bank previewBank;
         static FMOD.Studio.EventDescription previewEventDesc;
         static FMOD.Studio.EventInstance previewEventInstance;
+        
+        static PreviewState previewState;
+        public static PreviewState PreviewState
+        {
+            get { return previewState; }
+        }
 
         public static void PreviewEvent(EditorEventRef eventRef)
         {
@@ -334,6 +358,7 @@ namespace FMODUnity
             }
 
             CheckResult(previewEventInstance.start());
+            previewState = PreviewState.Playing;
         }
 
         public static void PreviewUpdateParameter(string paramName, float paramValue)
@@ -365,6 +390,7 @@ namespace FMODUnity
                 bool paused;
                 CheckResult(previewEventInstance.getPaused(out paused));
                 CheckResult(previewEventInstance.setPaused(!paused));
+                previewState = paused ? PreviewState.Playing : PreviewState.Paused;
             }
         }
 
@@ -378,6 +404,7 @@ namespace FMODUnity
                 previewEventDesc = null;
                 previewBank.unload();
                 masterBank.unload();
+                previewState = PreviewState.Stopped;
             }
         }
 
@@ -394,8 +421,17 @@ namespace FMODUnity
             FMOD.DSP_METERING_INFO outputMetering = new FMOD.DSP_METERING_INFO();
             CheckResult(masterHead.getMeteringInfo(inputMetering, outputMetering));
 
-            float[] data = new float[outputMetering.numchannels];
-            Array.Copy(outputMetering.rmslevel, data, outputMetering.numchannels);
+            FMOD.SPEAKERMODE mode;
+            int rate, raw;
+            lowlevel.getSoftwareFormat(out rate, out mode, out raw);
+            int channels;
+            lowlevel.getSpeakerModeChannels(mode, out channels);
+
+            float[] data = new float[outputMetering.numchannels > 0 ? outputMetering.numchannels : channels];
+            if (outputMetering.numchannels > 0)
+            {
+                Array.Copy(outputMetering.rmslevel, data, outputMetering.numchannels);
+            }
             return data;
         }
 
