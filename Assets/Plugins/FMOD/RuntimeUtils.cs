@@ -321,7 +321,7 @@ namespace FMODUnity
             
             #endif
 
-            #if !UNITY_IPHONE // iOS is statically linked
+			#if !UNITY_IPHONE || UNITY_EDITOR // iOS is statically linked
 
             // Call a function in fmod.dll to make sure it's loaded before fmodstudio.dll
             int temp1, temp2;
