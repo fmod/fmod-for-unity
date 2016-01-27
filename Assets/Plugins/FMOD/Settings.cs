@@ -190,8 +190,9 @@ namespace FMODUnity
                 case FMODPlatform.Console:
                 case FMODPlatform.Mobile:
                     return FMODPlatform.Default;
-                case FMODPlatform.Default:
                 case FMODPlatform.PlayInEditor:
+                    return FMODPlatform.Default;
+                case FMODPlatform.Default:
                 default:
                     return FMODPlatform.None;
             }
