@@ -301,8 +301,8 @@ namespace FMODUnity
             SetSetting(LiveUpdateSettings, FMODPlatform.PlayInEditor, true);
             SetSetting(OverlaySettings, FMODPlatform.PlayInEditor, true);
             // These are not editable, set them high
-            SetSetting(RealChannelSettings, FMODPlatform.Default, 256);
-            SetSetting(VirtualChannelSettings, FMODPlatform.Default, 1024);
+            SetSetting(RealChannelSettings, FMODPlatform.PlayInEditor, 256);
+            SetSetting(VirtualChannelSettings, FMODPlatform.PlayInEditor, 1024);
 
             // Default runtime settings
             SetSetting(LoggingSettings, FMODPlatform.Default, false);
