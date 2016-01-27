@@ -42,11 +42,6 @@ namespace FMODUnity
                             instance.mixerHead = new FMOD.DSP((IntPtr)instance.cachedPointers[2]);
                             return instance;
                         }
-                        else
-                        {
-                            Destroy(existing.gameObject);
-                            existing = null;
-                        }
                     }                    
 
                     var gameObject = new GameObject("FMOD.UnityItegration.RuntimeManager");
@@ -100,13 +95,13 @@ namespace FMODUnity
 
         public static FMOD.Studio.System StudioSystem
         {
-            get { return instance.studioSystem; }
+            get { return Instance.studioSystem; }
         }
 
 
         public static FMOD.System LowlevelSystem
         {
-            get { return instance.lowlevelSystem; }
+            get { return Instance.lowlevelSystem; }
         }
 
         FMOD.Studio.System studioSystem;
