@@ -3408,9 +3408,16 @@ namespace FMOD
         }
 
         // Nested channel groups.
-        public RESULT addGroup               (ChannelGroup group)
+        public RESULT addGroup               (ChannelGroup group, bool propagatedspclock, out DSPConnection connection)
         {
-            return FMOD5_ChannelGroup_AddGroup(getRaw(), group.getRaw());
+            connection = null;
+
+            IntPtr connectionRaw;
+            RESULT result = FMOD5_ChannelGroup_AddGroup(getRaw(), group.getRaw(), propagatedspclock, out connectionRaw);
+            connection = new DSPConnection(connectionRaw);
+
+            return result;
+
         }
         public RESULT getNumGroups           (out int numgroups)
         {
@@ -3468,7 +3475,7 @@ namespace FMOD
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_ChannelGroup_Release          (IntPtr channelgroup);
         [DllImport(VERSION.dll)]
-        private static extern RESULT FMOD5_ChannelGroup_AddGroup         (IntPtr channelgroup, IntPtr group);
+        private static extern RESULT FMOD5_ChannelGroup_AddGroup         (IntPtr channelgroup, IntPtr group, bool propogatedspclocks, out IntPtr connection);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_ChannelGroup_GetNumGroups     (IntPtr channelgroup, out int numgroups);
         [DllImport(VERSION.dll)]
