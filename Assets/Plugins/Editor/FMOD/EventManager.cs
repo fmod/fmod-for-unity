@@ -442,7 +442,7 @@ namespace FMODUnity
         public static EditorEventRef EventFromPath(string path)
         {
             UpdateCache();
-            return eventCache.EditorEvents.Find((x) => x.Path == path);
+            return eventCache.EditorEvents.Find((x) => x.Path.Equals(path, StringComparison.CurrentCultureIgnoreCase));
         }
 
         public static EditorEventRef EventFromGUID(Guid guid)

@@ -140,7 +140,7 @@ namespace FMODUnity
             {
                 case BuildTarget.Android:
                     return FMODPlatform.Android;
-				#if UNITY_4_6
+				#if UNITY_4_6 || UNITY_4_7
                 case BuildTarget.iPhone:
 				#else
 				case BuildTarget.iOS:
@@ -163,12 +163,16 @@ namespace FMODUnity
                     return FMODPlatform.Windows;
                 case BuildTarget.XboxOne:
                     return FMODPlatform.XboxOne;
-				#if UNITY_4_6
-                case BuildTarget.MetroPlayer:
+				#if UNITY_4_6 || UNITY_4_7
+                    case BuildTarget.MetroPlayer:
                 #else
-                case BuildTarget.WSAPlayer:
+                    case BuildTarget.WSAPlayer:
                 #endif
                     return FMODPlatform.WindowsPhone; // TODO: not correct if we support Win RT
+                #if !UNITY_4_6 && !UNITY_4_7 && !UNITY_5_0 && !UNITY_5_1 && !UNITY_5_2
+			    case BuildTarget.tvOS:
+					return FMODPlatform.AppleTV;
+                #endif
                 default:
                     return FMODPlatform.None;
             }

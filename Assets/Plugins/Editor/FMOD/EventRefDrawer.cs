@@ -58,7 +58,7 @@ namespace FMODUnity
             {
                 var eventBrowser = EventBrowser.CreateInstance<EventBrowser>();
 
-                #if UNITY_4_6
+                #if UNITY_4_6 || UNITY_4_7
 				eventBrowser.title  = "Select FMOD Event";
                 #else
                 eventBrowser.titleContent = new GUIContent("Select FMOD Event");
@@ -129,8 +129,9 @@ namespace FMODUnity
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
+            bool expanded = property.isExpanded && !String.IsNullOrEmpty(property.stringValue) && EventManager.EventFromPath(property.stringValue) != null;
             float baseHeight = GUI.skin.textField.CalcSize(new GUIContent()).y;            
-            return baseHeight * (property.isExpanded ? 7 : 2); // 6 lines of info
+            return baseHeight * (expanded ? 7 : 2); // 6 lines of info
         }
     }
 }

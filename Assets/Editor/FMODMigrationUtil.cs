@@ -106,7 +106,7 @@ namespace FMODUnity
         {
             int oldUndoIndex = Undo.GetCurrentGroup();
             Undo.IncrementCurrentGroup();
-            #if !UNITY_4_6
+            #if !UNITY_4_6 || UNITY_4_7
             Undo.SetCurrentGroupName("FMOD Studio Integration Migration");
             #endif
 

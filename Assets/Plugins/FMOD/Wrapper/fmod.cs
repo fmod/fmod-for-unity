@@ -22,8 +22,8 @@ namespace FMOD
     */
     public class VERSION
     {
-        public const int    number = 0x00010705;
-#if UNITY_IPHONE && !UNITY_EDITOR
+        public const int    number = 0x00010707;
+#if (UNITY_IPHONE || UNITY_TVOS) && !UNITY_EDITOR
         public const string dll    = "__Internal";
 #elif (UNITY_PS4) && !UNITY_EDITOR
         public const string dll    = "libfmod";

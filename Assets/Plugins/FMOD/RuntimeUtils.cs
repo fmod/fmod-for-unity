@@ -154,6 +154,8 @@ namespace FMODUnity
             return FMODPlatform.Mac;
             #elif UNITY_STANDALONE_LINUX
             return FMODPlatform.Linux;
+			#elif UNITY_TVOS
+			return FMODPlatform.AppleTV;
             #elif UNITY_IOS
             FMODPlatform result;
             switch (UnityEngine.iOS.Device.generation)
@@ -278,7 +280,7 @@ namespace FMODUnity
 
         internal static string GetPluginPath(string pluginName)
         {
-            #if UNITY_IOS
+			#if (UNITY_IOS || UNITY_TVOS)
 				return "";
 			#else
 	            #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_XBOXONE || UNITY_WINRT_8_1

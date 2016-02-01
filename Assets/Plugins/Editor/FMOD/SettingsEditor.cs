@@ -61,7 +61,9 @@ namespace FMODUnity
                 case FMODPlatform.PSVita:
                     return "PS Vita";
                 case FMODPlatform.Android:
-                    return "Android";
+				    return "Android";
+			    case FMODPlatform.AppleTV:
+				    return "Apple TV";
                 case FMODPlatform.MobileHigh:
                     return "High-End Mobile";
                 case FMODPlatform.MobileLow:
@@ -516,7 +518,7 @@ namespace FMODUnity
 
             // ----- Windows ----------------------------------------------
             DisplayPlatform(FMODPlatform.Desktop, null);
-            DisplayPlatform(FMODPlatform.Mobile, new FMODPlatform[] { FMODPlatform.MobileHigh, FMODPlatform.MobileLow, FMODPlatform.PSVita });
+			DisplayPlatform(FMODPlatform.Mobile, new FMODPlatform[] { FMODPlatform.MobileHigh, FMODPlatform.MobileLow, FMODPlatform.PSVita, FMODPlatform.AppleTV });
             DisplayPlatform(FMODPlatform.Console, new FMODPlatform[] { FMODPlatform.XboxOne, FMODPlatform.PS4, FMODPlatform.WiiU });
 
             if (hasBankSourceChanged)

@@ -686,17 +686,16 @@ namespace FMODUnity
 
         private void PreviewSnapshot(Rect previewRect, EditorEventRef selectedEvent)
         {
-            using (new GUILayout.AreaScope(previewRect))
-            {
-                var style = new GUIStyle(EditorStyles.label);
-                EditorStyles.label.fontStyle = FontStyle.Bold;
-                EditorGUIUtility.labelWidth = 75;
+            GUILayout.BeginArea(previewRect);
+            var style = new GUIStyle(EditorStyles.label);
+            EditorStyles.label.fontStyle = FontStyle.Bold;
+            EditorGUIUtility.labelWidth = 75;
 
-                EditorGUILayout.LabelField("Full Path", selectedEvent.Path, style);
+            EditorGUILayout.LabelField("Full Path", selectedEvent.Path, style);
 
-                EditorGUIUtility.labelWidth = 0;
-                EditorStyles.label.fontStyle = FontStyle.Normal;
-            }
+            EditorGUIUtility.labelWidth = 0;
+            EditorStyles.label.fontStyle = FontStyle.Normal;
+            GUILayout.EndArea();
         }
 
         private void RebuildDisplayFromCache()

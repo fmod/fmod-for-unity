@@ -31,6 +31,7 @@ namespace FMODUnity
         PS4,
         WiiU,
         PSVita,
+		AppleTV,
         Count,
     }
 
@@ -180,7 +181,8 @@ namespace FMODUnity
                 case FMODPlatform.iOS:
                 case FMODPlatform.Android:
                 case FMODPlatform.WindowsPhone:
-                case FMODPlatform.PSVita:
+				case FMODPlatform.PSVita:
+			    case FMODPlatform.AppleTV:
                     return FMODPlatform.Mobile;
                 case FMODPlatform.XboxOne:
                 case FMODPlatform.PS4:
