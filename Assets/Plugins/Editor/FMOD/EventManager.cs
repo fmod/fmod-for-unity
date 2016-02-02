@@ -183,7 +183,13 @@ namespace FMODUnity
             }
 
             // All files are finished being modified by studio so update the cache
-
+            // Reload the strings bank
+            EditorUtils.CheckResult(EditorUtils.System.loadBankFile(stringBankPath, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out stringBank));
+            if (stringBank == null)
+            {
+                ClearCache();
+                return;
+            }
             eventCache.StringsBankWriteTime = File.GetLastWriteTime(stringBankPath);
             string masterBankFileName = Path.GetFileName(stringBankPath).Replace(StringBankExtension, BankExtension);
 
@@ -192,15 +198,7 @@ namespace FMODUnity
             foreach (string bankFileName in bankFileNames)
             {
                 string bankPath = Path.Combine(defaultBankFolder, bankFileName);
-
-                if (!File.Exists(bankPath))
-                {
-                    // If bank files are missing we might be in the middle of a build.
-                    // Force the cache to be stale until all the files appear
-                    eventCache.StringsBankWriteTime = DateTime.MinValue;
-                    continue;
-                }
-
+                
                 EditorBankRef bankRef = eventCache.EditorBanks.Find((x) => bankPath == x.Path);
 
                 // New bank we've never seen before
@@ -242,6 +240,9 @@ namespace FMODUnity
                 }
             }
 
+
+            // Unload the strings bank
+            stringBank.unload();
 
             // Remove any stale entries from bank and event lists
             eventCache.EditorBanks.FindAll((x) => !x.Exists).ForEach(RemoveCacheBank);
