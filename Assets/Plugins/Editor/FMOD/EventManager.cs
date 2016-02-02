@@ -330,7 +330,7 @@ namespace FMODUnity
                     FileInfo targetInfo = new FileInfo(targetPath);
 
                     if (!targetInfo.Exists ||
-                        sourceInfo.Length != targetPath.Length ||
+                        sourceInfo.Length != targetInfo.Length ||
                         sourceInfo.LastWriteTime != targetInfo.LastWriteTime)
                     {
                         File.Copy(sourcePath, targetPath, true);
