@@ -490,5 +490,21 @@ namespace FMODUnity
                 return false;
             }
         }
+        
+        public static bool IsFileOpenByStudio(string path)
+        {
+            bool open = true;
+            try
+            {
+                using (var file = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None))
+                {
+                    open = false;
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return open;
+        }
     }
 }

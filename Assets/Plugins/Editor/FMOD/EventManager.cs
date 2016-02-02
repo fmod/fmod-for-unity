@@ -20,8 +20,11 @@ namespace FMODUnity
         const string BankExtension = "bank";
         const string DefaultBankPlatform = "Desktop";
 
+        static int countdownTimer;
+
         static void ClearCache()
         {
+            countdownTimer = 1;
             eventCache.StringsBankWriteTime = DateTime.MinValue;
             eventCache.EditorBanks.Clear();
             eventCache.EditorEvents.Clear();
@@ -96,20 +99,24 @@ namespace FMODUnity
             string stringBankPath = stringBanks[0];
 
             // Use the string bank timestamp as a marker for the most recent build of any bank because it gets exported every time
-            if (File.GetLastWriteTime(stringBankPath) <= eventCache.StringsBankWriteTime)
+            if (File.GetLastWriteTime(stringBankPath) == eventCache.StringsBankWriteTime)
             {
+                countdownTimer = 1;
+                return;
+            }            
+
+            if (EditorUtils.IsFileOpenByStudio(stringBankPath))
+            {
+                countdownTimer = 1;
                 return;
             }
             
-            eventCache.StringsBankWriteTime = File.GetLastWriteTime(stringBankPath);
-
-            string masterBankFileName = Path.GetFileName(stringBankPath).Replace(StringBankExtension, BankExtension);
 
             FMOD.Studio.Bank stringBank = null;
             EditorUtils.CheckResult(EditorUtils.System.loadBankFile(stringBankPath, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out stringBank));
             if (stringBank == null)
             {
-                ClearCache();
+                countdownTimer = 1;
                 return;
             }
 
@@ -133,6 +140,52 @@ namespace FMODUnity
                     }
                 }
             }
+
+            // Unload the strings bank
+            stringBank.unload();
+
+            // Check if any of the files are still being written by studio
+            foreach (string bankFileName in bankFileNames)
+            {
+                string bankPath = Path.Combine(defaultBankFolder, bankFileName);
+
+                if (!File.Exists(bankPath))
+                {
+                    countdownTimer = 1;
+                    return;
+                }                
+
+                EditorBankRef bankRef = eventCache.EditorBanks.Find((x) => bankPath == x.Path);
+                if (bankRef == null)
+                {
+                    if (EditorUtils.IsFileOpenByStudio(bankPath))
+                    {
+                        countdownTimer = 1;
+                        return;
+                    }
+                    continue;
+                }
+
+                if (bankRef.LastModified != File.GetLastWriteTime(bankPath))
+                {
+                    if (EditorUtils.IsFileOpenByStudio(bankPath))
+                    {
+                        countdownTimer = 1;
+                        return;
+                    }
+                }
+            }
+
+            // Do one extra loop through the in-use check in case we catch studio exactly in-between updating two files.
+            if (countdownTimer-- > 0)
+            {
+                return;
+            }
+
+            // All files are finished being modified by studio so update the cache
+
+            eventCache.StringsBankWriteTime = File.GetLastWriteTime(stringBankPath);
+            string masterBankFileName = Path.GetFileName(stringBankPath).Replace(StringBankExtension, BankExtension);
 
             eventCache.EditorBanks.ForEach((x) => x.Exists = false);
 
@@ -189,8 +242,6 @@ namespace FMODUnity
                 }
             }
 
-            // Unload the strings bank
-            stringBank.unload();
 
             // Remove any stale entries from bank and event lists
             eventCache.EditorBanks.FindAll((x) => !x.Exists).ForEach(RemoveCacheBank);
@@ -280,6 +331,7 @@ namespace FMODUnity
 
         static EventManager()
 	    {
+            countdownTimer = 1;
             EditorUserBuildSettings.activeBuildTargetChanged += BuildTargetChanged;
             EditorApplication.update += Update;
 	    }               
@@ -397,10 +449,10 @@ namespace FMODUnity
         static float lastCheckTime;
         static void Update()
         {
-            if (lastCheckTime + 10 < Time.realtimeSinceStartup)
+            if (lastCheckTime + 1 < Time.realtimeSinceStartup)
             {
                 UpdateCache();
-                lastCheckTime = Time.time;
+                lastCheckTime = Time.realtimeSinceStartup;
             }
         }
 
