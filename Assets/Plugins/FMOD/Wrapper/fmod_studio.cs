@@ -461,7 +461,7 @@ namespace FMOD.Studio
     public delegate RESULT EVENT_CALLBACK(EVENT_CALLBACK_TYPE type, IntPtr eventInstance, IntPtr parameters);
 
     public delegate RESULT COMMANDREPLAY_FRAME_CALLBACK(IntPtr replay, int commandIndex, float currentTime, IntPtr userdata);
-    public delegate RESULT COMMANDREPLAY_LOAD_BANK_CALLBACK(IntPtr replay, ref Guid guid, StringWrapper bankFilename, LOAD_BANK_FLAGS flags, out IntPtr bank, IntPtr userdata);
+	public delegate RESULT COMMANDREPLAY_LOAD_BANK_CALLBACK(IntPtr replay, IntPtr guid, StringWrapper bankFilename, LOAD_BANK_FLAGS flags, out IntPtr bank, IntPtr userdata);
     public delegate RESULT COMMANDREPLAY_CREATE_INSTANCE_CALLBACK(IntPtr replay, IntPtr eventDescription, IntPtr originalHandle, out IntPtr instance, IntPtr userdata);
 
     public enum INSTANCETYPE
@@ -495,12 +495,15 @@ namespace FMOD.Studio
     {
         public static RESULT ParseID(string idString, out Guid id)
         {
-            return FMOD_Studio_ParseID(Encoding.UTF8.GetBytes(idString + Char.MinValue), out id);
+			byte[] rawguid = new byte[16];
+			RESULT result = FMOD_Studio_ParseID(Encoding.UTF8.GetBytes(idString + Char.MinValue), rawguid);
+			id = new Guid(rawguid);
+			return result;
         }
 
         #region importfunctions
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_ParseID                      (byte[] idString, out Guid id);
+		private static extern RESULT FMOD_Studio_ParseID                      (byte[] idString, byte[] id);
         #endregion
     }
 
@@ -689,7 +692,7 @@ namespace FMOD.Studio
             _event = null;
 
             IntPtr eventraw = new IntPtr();
-            RESULT result = FMOD_Studio_System_GetEventByID(rawPtr, ref guid, out eventraw);
+			RESULT result = FMOD_Studio_System_GetEventByID(rawPtr, guid.ToByteArray(), out eventraw);
             if (result != RESULT.OK)
             {
                 return result;
@@ -703,7 +706,7 @@ namespace FMOD.Studio
             bus = null;
 
             IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_System_GetBusByID(rawPtr, ref guid, out newPtr);
+			RESULT result = FMOD_Studio_System_GetBusByID(rawPtr, guid.ToByteArray(), out newPtr);
             if (result != RESULT.OK)
             {
                 return result;
@@ -717,7 +720,7 @@ namespace FMOD.Studio
             vca = null;
 
             IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_System_GetVCAByID(rawPtr, ref guid, out newPtr);
+			RESULT result = FMOD_Studio_System_GetVCAByID(rawPtr, guid.ToByteArray(), out newPtr);
             if (result != RESULT.OK)
             {
                 return result;
@@ -731,7 +734,7 @@ namespace FMOD.Studio
             bank = null;
 
             IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_System_GetBankByID(rawPtr, ref guid, out newPtr);
+			RESULT result = FMOD_Studio_System_GetBankByID(rawPtr, guid.ToByteArray(), out newPtr);
             if (result != RESULT.OK)
             {
                 return result;
@@ -757,7 +760,10 @@ namespace FMOD.Studio
         }
         public RESULT lookupID(string path, out Guid guid)
         {
-            return FMOD_Studio_System_LookupID(rawPtr, Encoding.UTF8.GetBytes(path + Char.MinValue), out guid);
+			byte[] rawguid = new byte[16];
+			RESULT result =  FMOD_Studio_System_LookupID(rawPtr, Encoding.UTF8.GetBytes(path + Char.MinValue), rawguid);
+			guid = new Guid(rawguid);
+			return result;
         }
         public RESULT lookupPath(Guid guid, out string path)
         {
@@ -765,12 +771,12 @@ namespace FMOD.Studio
 
             byte[] buffer = new byte[256];
             int retrieved = 0;
-            RESULT result = FMOD_Studio_System_LookupPath(rawPtr, ref guid, buffer, buffer.Length, out retrieved);
+			RESULT result = FMOD_Studio_System_LookupPath(rawPtr, guid.ToByteArray(), buffer, buffer.Length, out retrieved);
 
             if (result == RESULT.ERR_TRUNCATED)
             {
                 buffer = new byte[retrieved];
-                result = FMOD_Studio_System_LookupPath(rawPtr, ref guid, buffer, buffer.Length, out retrieved);
+				result = FMOD_Studio_System_LookupPath(rawPtr, guid.ToByteArray(), buffer, buffer.Length, out retrieved);
             }
 
             if (result == RESULT.OK)
@@ -965,19 +971,19 @@ namespace FMOD.Studio
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_GetBank                 (IntPtr studiosystem, byte[] path, out IntPtr bank);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetEventByID            (IntPtr studiosystem, ref Guid guid, out IntPtr description);
+		private static extern RESULT FMOD_Studio_System_GetEventByID            (IntPtr studiosystem, byte[] guid, out IntPtr description);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetBusByID              (IntPtr studiosystem, ref Guid guid, out IntPtr bus);
+		private static extern RESULT FMOD_Studio_System_GetBusByID              (IntPtr studiosystem, byte[] guid, out IntPtr bus);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetVCAByID              (IntPtr studiosystem, ref Guid guid, out IntPtr vca);
+		private static extern RESULT FMOD_Studio_System_GetVCAByID              (IntPtr studiosystem, byte[] guid, out IntPtr vca);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetBankByID             (IntPtr studiosystem, ref Guid guid, out IntPtr bank);
+		private static extern RESULT FMOD_Studio_System_GetBankByID             (IntPtr studiosystem, byte[] guid, out IntPtr bank);
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_GetSoundInfo            (IntPtr studiosystem, byte[] key, out SOUND_INFO_INTERNAL info);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_LookupID                (IntPtr studiosystem, byte[] path, out Guid guid);
+		private static extern RESULT FMOD_Studio_System_LookupID                (IntPtr studiosystem, byte[] path, [Out] byte[] guid);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_LookupPath              (IntPtr studiosystem, ref Guid guid, [Out] byte[] path, int size, out int retrieved);
+		private static extern RESULT FMOD_Studio_System_LookupPath              (IntPtr studiosystem, byte[] guid, [Out] byte[] path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_GetNumListeners         (IntPtr studiosystem, out int numlisteners);
         [DllImport (STUDIO_VERSION.dll)]
@@ -1039,7 +1045,10 @@ namespace FMOD.Studio
     {
         public RESULT getID(out Guid id)
         {
-            return FMOD_Studio_EventDescription_GetID(rawPtr, out id);
+			byte[] rawguid = new byte[16];
+			RESULT result = FMOD_Studio_EventDescription_GetID(rawPtr, rawguid);
+			id = new Guid(rawguid);
+			return result;
         }
         public RESULT getPath(out string path)
         {
@@ -1244,7 +1253,7 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern bool FMOD_Studio_EventDescription_IsValid(IntPtr eventdescription);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetID(IntPtr eventdescription, out Guid id);
+		private static extern RESULT FMOD_Studio_EventDescription_GetID(IntPtr eventdescription, [Out] byte[] id);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventDescription_GetPath(IntPtr eventdescription, [Out] byte[] path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
@@ -1654,7 +1663,10 @@ namespace FMOD.Studio
     {
         public RESULT getID(out Guid id)
         {
-            return FMOD_Studio_Bus_GetID(rawPtr, out id);
+			byte[] rawguid = new byte[16];
+			RESULT result = FMOD_Studio_Bus_GetID(rawPtr, rawguid);
+			id = new Guid(rawguid);
+			return result;
         }
         public RESULT getPath(out string path)
         {
@@ -1733,7 +1745,7 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern bool FMOD_Studio_Bus_IsValid(IntPtr bus);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_GetID(IntPtr bus, out Guid id);
+		private static extern RESULT FMOD_Studio_Bus_GetID(IntPtr bus, [Out] byte[] id);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_Bus_GetPath(IntPtr bus, [Out] byte[] path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
@@ -1777,7 +1789,10 @@ namespace FMOD.Studio
     {
         public RESULT getID(out Guid id)
         {
-            return FMOD_Studio_VCA_GetID(rawPtr, out id);
+			byte[] rawguid = new byte[16];
+			RESULT result = FMOD_Studio_VCA_GetID(rawPtr, rawguid);
+			id = new Guid(rawguid);
+			return result;
         }
         public RESULT getPath(out string path)
         {
@@ -1813,7 +1828,7 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern bool FMOD_Studio_VCA_IsValid(IntPtr vca);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_VCA_GetID(IntPtr vca, out Guid id);
+		private static extern RESULT FMOD_Studio_VCA_GetID(IntPtr vca, [Out] byte[] id);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_VCA_GetPath(IntPtr vca, [Out] byte[] path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
@@ -1843,7 +1858,10 @@ namespace FMOD.Studio
 
         public RESULT getID(out Guid id)
         {
-            return FMOD_Studio_Bank_GetID(rawPtr, out id);
+			byte[] rawguid = new byte[16];
+			RESULT result = FMOD_Studio_Bank_GetID(rawPtr, rawguid);
+			id = new Guid(rawguid);
+			return result;
         }
         public RESULT getPath(out string path)
         {
@@ -1904,20 +1922,23 @@ namespace FMOD.Studio
         public RESULT getStringInfo(int index, out Guid id, out string path)
         {
             path = null;
+			id = Guid.Empty;
 
             byte[] buffer = new byte[256];
             int retrieved = 0;
-            RESULT result = FMOD_Studio_Bank_GetStringInfo(rawPtr, index, out id, buffer, buffer.Length, out retrieved);
+			byte[] rawguid = new byte[16];
+            RESULT result = FMOD_Studio_Bank_GetStringInfo(rawPtr, index, rawguid, buffer, buffer.Length, out retrieved);
 
             if (result == RESULT.ERR_TRUNCATED)
             {
                 buffer = new byte[retrieved];
-                result = FMOD_Studio_Bank_GetStringInfo(rawPtr, index, out id, buffer, buffer.Length, out retrieved);
+                result = FMOD_Studio_Bank_GetStringInfo(rawPtr, index, rawguid, buffer, buffer.Length, out retrieved);
             }
 
             if (result == RESULT.OK)
             {
                 path = Encoding.UTF8.GetString(buffer, 0, retrieved - 1);
+				id = new Guid(rawguid);
             }
 
             return RESULT.OK;
@@ -2055,7 +2076,7 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern bool FMOD_Studio_Bank_IsValid(IntPtr bank);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetID(IntPtr bank, out Guid id);
+		private static extern RESULT FMOD_Studio_Bank_GetID(IntPtr bank, [Out] byte[] id);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_Bank_GetPath(IntPtr bank, [Out] byte[] path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
@@ -2071,7 +2092,7 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_Bank_GetStringCount(IntPtr bank, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetStringInfo(IntPtr bank, int index, out Guid id, [Out] byte[] path, int size, out int retrieved);
+		private static extern RESULT FMOD_Studio_Bank_GetStringInfo(IntPtr bank, int index, [Out] byte[] id, [Out] byte[] path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_Bank_GetEventCount(IntPtr bank, out int count);
         [DllImport(STUDIO_VERSION.dll)]
