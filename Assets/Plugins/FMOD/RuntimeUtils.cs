@@ -280,7 +280,7 @@ namespace FMODUnity
 
         internal static string GetPluginPath(string pluginName)
         {
-			#if (UNITY_IOS || UNITY_TVOS)
+			#if (UNITY_IOS || UNITY_TVOS || UNITY_PSP2)
 				return "";
 			#else
 	            #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_XBOXONE || UNITY_WINRT_8_1
