@@ -116,10 +116,24 @@ namespace FMODUnity
             public FMOD.Studio.Bank Bank;
             public int RefCount;
         }
-
+        
         Dictionary<string, LoadedBank> loadedBanks = new Dictionary<string, LoadedBank>();
         Dictionary<string, uint> loadedPlugins = new Dictionary<string, uint>();
-        Dictionary<Guid, FMOD.Studio.EventDescription> cachedDescriptions = new Dictionary<Guid, FMOD.Studio.EventDescription>();
+
+        // Explicit comparer to avoid issues on platforms that don't support JIT compilation
+        class GuidComparer : IEqualityComparer<Guid>
+        {
+            bool IEqualityComparer<Guid>.Equals(Guid x, Guid y)
+            {
+                return x.Equals(y);
+            }
+
+            int IEqualityComparer<Guid>.GetHashCode(Guid obj)
+            {
+                return obj.GetHashCode();
+            }
+        }
+        Dictionary<Guid, FMOD.Studio.EventDescription> cachedDescriptions = new Dictionary<Guid, FMOD.Studio.EventDescription>(new GuidComparer());
 
         void CheckInitResult(FMOD.RESULT result, string cause)
         {
