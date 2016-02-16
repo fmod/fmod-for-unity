@@ -366,7 +366,8 @@ namespace FMODUnity
                 string[] currentBankFiles = Directory.GetFiles(bankTargetFolder, "*.bank");
                 foreach (var bankFileName in currentBankFiles)
                 {
-                    if (!eventCache.EditorBanks.Exists((x) => Path.GetFileNameWithoutExtension(bankFileName) == x.Name))
+                    string bankName = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(bankFileName));
+                    if (!eventCache.EditorBanks.Exists((x) => bankName == x.Name))
                     {
                         File.Delete(bankFileName);
                         madeChanges = true;
