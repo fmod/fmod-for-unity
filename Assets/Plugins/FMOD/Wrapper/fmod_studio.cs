@@ -137,8 +137,10 @@ namespace FMOD.Studio
     public struct PARAMETER_DESCRIPTION
     {
         public string name;                                /* Name of the parameter. */
+        public int index;                                  /* Index of the parameter */
         public float minimum;                              /* Minimum parameter value. */
         public float maximum;                              /* Maximum parameter value. */
+        public float defaultValue;                         /* Default parameter value. */
         public PARAMETER_TYPE type;                        /* Type of the parameter */
     }
 
@@ -149,16 +151,20 @@ namespace FMOD.Studio
     struct PARAMETER_DESCRIPTION_INTERNAL
     {
         public IntPtr name;                                /* Name of the parameter. */
+        public int index;                                  /* Index of the parameter */
         public float minimum;                              /* Minimum parameter value. */
         public float maximum;                              /* Maximum parameter value. */
+        public float defaultValue;                         /* Default parameter value. */
         public PARAMETER_TYPE type;                        /* Type of the parameter */
 
         // Helper functions
         public void assign(out PARAMETER_DESCRIPTION publicDesc)
         {
             publicDesc.name = MarshallingHelper.stringFromNativeUtf8(name);
+            publicDesc.index = index;
             publicDesc.minimum = minimum;
             publicDesc.maximum = maximum;
+            publicDesc.defaultValue = defaultValue;
             publicDesc.type = type;
         }
     }
@@ -443,18 +449,20 @@ namespace FMOD.Studio
     [Flags]
     public enum EVENT_CALLBACK_TYPE : uint
     {
-        STARTED                  = 0x00000001,  /* Called when an instance starts. Parameters = unused. */
-        RESTARTED                = 0x00000002,  /* Called when an instance is restarted. Parameters = unused. */
-        STOPPED                  = 0x00000004,  /* Called when an instance stops. Parameters = unused. */
-        CREATE_PROGRAMMER_SOUND  = 0x00000008,  /* Called when a programmer sound needs to be created in order to play a programmer instrument. Parameters = FMOD_STUDIO_PROGRAMMER_SOUND_PROPERTIES. */
-        DESTROY_PROGRAMMER_SOUND = 0x00000010,  /* Called when a programmer sound needs to be destroyed. Parameters = FMOD_STUDIO_PROGRAMMER_SOUND_PROPERTIES. */
-        PLUGIN_CREATED           = 0x00000020,  /* Called when a DSP plugin instance has just been created. Parameters = FMOD_STUDIO_PLUGIN_INSTANCE_PROPERTIES. */
-        PLUGIN_DESTROYED         = 0x00000040,  /* Called when a DSP plugin instance is about to be destroyed. Parameters = FMOD_STUDIO_PLUGIN_INSTANCE_PROPERTIES. */
-        CREATED                  = 0x00000080,  /* Called when an instance is fully created. Parameters = unused. */
-        DESTROYED                = 0x00000100,  /* Called when an instance is just about to be destroyed. Parameters = unused. */
-        START_FAILED             = 0x00000200,  /* Called when an instance did not start, e.g. due to polyphony. Parameters = unused. */
-        TIMELINE_MARKER          = 0x00000400,  /* Called when the timeline passes a named marker.  Parameters = FMOD_STUDIO_TIMELINE_MARKER_PROPERTIES. */
-        TIMELINE_BEAT            = 0x00000800,  /* Called when the timeline hits a beat in a tempo section.  Parameters = FMOD_STUDIO_TIMELINE_BEAT_PROPERTIES. */
+        CREATED                  = 0x00000001,  /* Called when an instance is fully created. Parameters = unused. */
+        DESTROYED                = 0x00000002,  /* Called when an instance is just about to be destroyed. Parameters = unused. */
+        STARTING                 = 0x00000004,  /* Called when an instance is preparing to start. Parameters = unused. */
+        STARTED                  = 0x00000008,  /* Called when an instance starts playing. Parameters = unused. */
+        RESTARTED                = 0x00000010,  /* Called when an instance is restarted. Parameters = unused. */
+        STOPPED                  = 0x00000020,  /* Called when an instance stops. Parameters = unused. */
+        START_FAILED             = 0x00000040,  /* Called when an instance did not start, e.g. due to polyphony. Parameters = unused. */
+        CREATE_PROGRAMMER_SOUND  = 0x00000080,  /* Called when a programmer sound needs to be created in order to play a programmer instrument. Parameters = FMOD_STUDIO_PROGRAMMER_SOUND_PROPERTIES. */
+        DESTROY_PROGRAMMER_SOUND = 0x00000100,  /* Called when a programmer sound needs to be destroyed. Parameters = FMOD_STUDIO_PROGRAMMER_SOUND_PROPERTIES. */
+        PLUGIN_CREATED           = 0x00000200,  /* Called when a DSP plugin instance has just been created. Parameters = FMOD_STUDIO_PLUGIN_INSTANCE_PROPERTIES. */
+        PLUGIN_DESTROYED         = 0x00000400,  /* Called when a DSP plugin instance is about to be destroyed. Parameters = FMOD_STUDIO_PLUGIN_INSTANCE_PROPERTIES. */
+        TIMELINE_MARKER          = 0x00000800,  /* Called when the timeline passes a named marker.  Parameters = FMOD_STUDIO_TIMELINE_MARKER_PROPERTIES. */
+        TIMELINE_BEAT            = 0x00001000,  /* Called when the timeline hits a beat in a tempo section.  Parameters = FMOD_STUDIO_TIMELINE_BEAT_PROPERTIES. */
+
         ALL                      = 0xFFFFFFFF,  /* Pass this mask to Studio::EventDescription::setCallback or Studio::EventInstance::setCallback to receive all callback types. */
     }
 
@@ -471,7 +479,6 @@ namespace FMOD.Studio
         EVENTDESCRIPTION,
         EVENTINSTANCE,
         PARAMETERINSTANCE,
-        CUEINSTANCE,
         BUS,
         VCA,
         BANK,
@@ -859,6 +866,10 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_System_FlushCommands(rawPtr);
         }
+        public RESULT flushSampleLoading()
+        {
+            return FMOD_Studio_System_FlushSampleLoading(rawPtr);
+        }
         public RESULT startCommandCapture(string path, COMMANDCAPTURE_FLAGS flags)
         {
             return FMOD_Studio_System_StartCommandCapture(rawPtr, Encoding.UTF8.GetBytes(path + Char.MinValue), flags);
@@ -1002,6 +1013,8 @@ namespace FMOD.Studio
         private static extern RESULT FMOD_Studio_System_UnloadAll               (IntPtr studiosystem);
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_FlushCommands           (IntPtr studiosystem);
+        [DllImport (STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_FlushSampleLoading      (IntPtr studiosystem);
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_StartCommandCapture     (IntPtr studiosystem, byte[] path, COMMANDCAPTURE_FLAGS flags);
         [DllImport (STUDIO_VERSION.dll)]
@@ -1160,6 +1173,10 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_EventDescription_Is3D(rawPtr, out is3D);
         }
+        public RESULT hasCue(out bool cue)
+        {
+            return FMOD_Studio_EventDescription_HasCue(rawPtr, out cue);
+        }
 
         public RESULT createInstance(out EventInstance instance)
         {
@@ -1280,6 +1297,8 @@ namespace FMOD.Studio
         private static extern RESULT FMOD_Studio_EventDescription_IsStream(IntPtr eventdescription, out bool isStream);
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventDescription_Is3D(IntPtr eventdescription, out bool is3D);
+        [DllImport (STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_HasCue(IntPtr eventdescription, out bool cue);
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventDescription_CreateInstance(IntPtr eventdescription, out IntPtr instance);
         [DllImport (STUDIO_VERSION.dll)]
@@ -1446,45 +1465,25 @@ namespace FMOD.Studio
 
             return result;
         }
+        public RESULT getParameterValue(string name, out float value)
+        {
+            return FMOD_Studio_EventInstance_GetParameterValue(rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), out value);
+        }
         public RESULT setParameterValue(string name, float value)
         {
             return FMOD_Studio_EventInstance_SetParameterValue(rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), value);
+        }
+        public RESULT getParameterValueByIndex(int index, out float value)
+        {
+            return FMOD_Studio_EventInstance_GetParameterValueByIndex(rawPtr, index, out value);
         }
         public RESULT setParameterValueByIndex(int index, float value)
         {
             return FMOD_Studio_EventInstance_SetParameterValueByIndex(rawPtr, index, value);
         }
-        public RESULT getCue(string name, out CueInstance instance)
+        public RESULT triggerCue()
         {
-            instance = null;
-
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_EventInstance_GetCue(rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), out newPtr);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-            instance = new CueInstance(newPtr);
-
-            return result;
-        }
-        public RESULT getCueByIndex(int index, out CueInstance instance)
-        {
-            instance = null;
-
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_EventInstance_GetCueByIndex(rawPtr, index, out newPtr);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-            instance = new CueInstance(newPtr);
-
-            return result;
-        }
-        public RESULT getCueCount(out int count)
-        {
-            return FMOD_Studio_EventInstance_GetCueCount(rawPtr, out count);
+            return FMOD_Studio_EventInstance_TriggerCue(rawPtr);
         }
         public RESULT setCallback(EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask = EVENT_CALLBACK_TYPE.ALL)
         {
@@ -1547,15 +1546,15 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_GetParameterCount    (IntPtr _event, out int count);
         [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValue    (IntPtr _event, byte[] name, out float value);
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_SetParameterValue    (IntPtr _event, byte[] name, float value);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValueByIndex (IntPtr _event, int index, out float value);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_SetParameterValueByIndex (IntPtr _event, int index, float value);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetCue               (IntPtr _event, byte[] name, out IntPtr cue);
-        [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetCueByIndex        (IntPtr _event, int index, out IntPtr cue);
-        [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetCueCount          (IntPtr _event, out int count);
+        private static extern RESULT FMOD_Studio_EventInstance_TriggerCue           (IntPtr _event);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_SetCallback          (IntPtr _event, EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask);
         [DllImport (STUDIO_VERSION.dll)]
@@ -1574,35 +1573,6 @@ namespace FMOD.Studio
         protected override bool isValidInternal()
         {
             return FMOD_Studio_EventInstance_IsValid(rawPtr);
-        }
-
-        #endregion
-    }
-
-    public class CueInstance : HandleBase
-    {
-        public RESULT trigger()
-        {
-            return FMOD_Studio_CueInstance_Trigger(rawPtr);
-        }
-
-        #region importfunctions
-        [DllImport(STUDIO_VERSION.dll)]
-        private static extern bool FMOD_Studio_CueInstance_IsValid(IntPtr cue);
-        [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CueInstance_Trigger(IntPtr cue);
-        #endregion
-
-        #region wrapperinternal
-
-        public CueInstance(IntPtr raw)
-        : base(raw)
-        {
-        }
-
-        protected override bool isValidInternal()
-        {
-            return FMOD_Studio_CueInstance_IsValid(rawPtr);
         }
 
         #endregion
