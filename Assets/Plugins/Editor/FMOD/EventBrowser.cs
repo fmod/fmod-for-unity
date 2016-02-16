@@ -16,13 +16,7 @@ namespace FMODUnity
             eventBrowser.minSize = new Vector2(280, 600);
             eventBrowser.Show();
         }
-        void OnLostFocus()
-        {
-            if (fromInspector)
-            {
-                Close();
-            }
-        }
+
         void OnDestroy()
         {
             EditorUtils.PreviewStop();
@@ -64,6 +58,7 @@ namespace FMODUnity
         Texture folderClosedIcon;
         Texture bankIcon;
         Texture snapshotIcon;
+        Texture2D borderIcon;
         GUIStyle eventStyle;
 
         [NonSerialized]
@@ -115,7 +110,7 @@ namespace FMODUnity
             {
                 foreach (var paramRef in eventRef.Parameters)
                 {
-                    previewParamValues.Add(paramRef.Name, 0);
+                    previewParamValues.Add(paramRef.Name, paramRef.Default);
                 }
             }
             eventPosition = new Vector2(0, 0);
@@ -181,8 +176,9 @@ namespace FMODUnity
 
                     if (fromInspector && e.clickCount >= 2)
                     {
+                        outputProperty.stringValue = "";
                         outputProperty.stringValue = item.EventRef.Path;
-                        EditorUtils.UpdateParamsOnEmmitter(outputProperty.serializedObject);
+                        EditorUtils.UpdateParamsOnEmitter(outputProperty.serializedObject, item.EventRef.Path);
                         outputProperty.serializedObject.ApplyModifiedProperties();
                         
                         Close();
@@ -322,12 +318,20 @@ namespace FMODUnity
                 searchIcon = EditorGUIUtility.Load("FMOD/SearchIcon.png") as Texture;
                 bankIcon = EditorGUIUtility.Load("FMOD/BankIcon.png") as Texture;
                 snapshotIcon = EditorGUIUtility.Load("FMOD/SnapshotIcon.png") as Texture;
+                borderIcon = EditorGUIUtility.Load("FMOD/Border.png") as Texture2D;
+            }
+
+            if (fromInspector)
+            {
+                var border = new GUIStyle(GUI.skin.box);
+                border.normal.background = borderIcon;
+                GUI.Box(new Rect(1, 1, position.width - 1, position.height - 1), GUIContent.none, border);
             }
 
             // Split the window int search box, tree view, preview pane (only if full browser)
-            Rect searchRect = new Rect(0, 0, position.width, 16);
+            Rect searchRect = new Rect(4, 4, position.width-8, 16);
             float previewBoxHeight = fromInspector ? 0 : 300;
-            Rect listRect = new Rect(0, searchRect.height + 2, position.width, position.height - previewBoxHeight - searchRect.height - 15);
+            Rect listRect = new Rect(0, searchRect.height + 6, position.width, position.height - previewBoxHeight - searchRect.height - 15);
             Rect previewRect = new Rect(0, position.height - previewBoxHeight, position.width, previewBoxHeight);     
 
             // Scroll the selected item in the tree view - put above the search box otherwise it will take
@@ -361,14 +365,14 @@ namespace FMODUnity
                     }
                     Event.current.Use();
                 }
-            }
+            }            
 
             // Show the search box at the top
             GUILayout.BeginArea(searchRect);
             GUILayout.BeginHorizontal();
             GUILayout.Label(new GUIContent(searchIcon), GUILayout.ExpandWidth(false));
             GUI.SetNextControlName("SearchBox");
-            searchString = GUILayout.TextField(searchString);
+            searchString = EditorGUILayout.TextField(searchString);
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
 
@@ -382,8 +386,9 @@ namespace FMODUnity
 
                     if (selectedItem.EventRef != null)
                     {
+                        outputProperty.stringValue = "";
                         outputProperty.stringValue = selectedItem.EventRef.Path;
-                        EditorUtils.UpdateParamsOnEmmitter(outputProperty.serializedObject);
+                        EditorUtils.UpdateParamsOnEmitter(outputProperty.serializedObject, selectedItem.EventRef.Path);
                     }
                     else
                     {
@@ -648,7 +653,7 @@ namespace FMODUnity
             {
                 if (!previewParamValues.ContainsKey(paramRef.Name))
                 {
-                    previewParamValues[paramRef.Name] = 0;
+                    previewParamValues[paramRef.Name] = paramRef.Default;
                 }
                 previewParamValues[paramRef.Name] = EditorGUILayout.Slider(paramRef.Name, previewParamValues[paramRef.Name], paramRef.Min, paramRef.Max);
                 EditorUtils.PreviewUpdateParameter(paramRef.Name, previewParamValues[paramRef.Name]);
@@ -808,6 +813,7 @@ namespace FMODUnity
             fromInspector = true;
             showBanks = false;
             outputProperty = property;
+            JumpToEvent(outputProperty.stringValue);
         }
 
         internal void SelectBank(SerializedProperty property)
@@ -815,6 +821,69 @@ namespace FMODUnity
             fromInspector = true;
             showEvents = false;
             outputProperty = property;
+            JumpToBank(outputProperty.stringValue);
+        }
+
+        void JumpToEvent(string eventPath)
+        {
+            if (!String.IsNullOrEmpty(eventPath))
+            {
+                RebuildDisplayFromCache();
+                TreeItem currentItem = null;
+                if (eventPath.StartsWith("event:/"))
+                {
+                    currentItem = treeItems[0];
+                    eventPath = eventPath.Replace("event:/", "");
+                }
+                else if (eventPath.StartsWith("snapshot:/"))
+                {
+                    currentItem = treeItems[1];
+                    eventPath = eventPath.Replace("snapshot:/", "");
+                }
+                else
+                {
+                    return;
+                }
+
+                currentItem.Expanded = true;
+                var pathElements = eventPath.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var pathElement in pathElements)
+                {
+                    var nextItem = currentItem.Children.Find(x => x.Name.Equals(pathElement, StringComparison.CurrentCultureIgnoreCase));
+                    if (nextItem == null)
+                    {
+                        return;
+                    }
+                    nextItem.Expanded = true;
+                    if (nextItem.EventRef)
+                    {
+                        SetSelectedItem(nextItem);
+                        return;
+                    }
+                    currentItem = nextItem;
+                }
+            }
+        }
+
+        void JumpToBank(string bankName)
+        {
+            if (!String.IsNullOrEmpty(bankName))
+            {
+                RebuildDisplayFromCache();
+                TreeItem currentItem = treeItems[2];
+
+                currentItem.Expanded = true;
+                var nextItem = currentItem.Children.Find(x => x.Name.Equals(bankName, StringComparison.CurrentCultureIgnoreCase));
+                if (nextItem == null)
+                {
+                    return;
+                }
+                if (nextItem.BankRef)
+                {
+                    SetSelectedItem(nextItem);
+                    return;
+                }
+            }
         }
 
         public EventBrowser()
@@ -862,7 +931,6 @@ namespace FMODUnity
                         var emitter = Undo.AddComponent<StudioEventEmitter>(target);
                         emitter.Event = ((EditorEventRef)DragAndDrop.objectReferences[0]).Path;
                         var so = new SerializedObject(emitter);
-                        EditorUtils.UpdateParamsOnEmmitter(so);
                         so.ApplyModifiedProperties();
                     }
                     else
@@ -898,7 +966,6 @@ namespace FMODUnity
                         var emitter = newObject.AddComponent<StudioEventEmitter>();
                         emitter.Event = path;
                         var so = new SerializedObject(emitter);
-                        EditorUtils.UpdateParamsOnEmmitter(so);
                         so.ApplyModifiedProperties();
                         Undo.RegisterCreatedObjectUndo(newObject, "Create FMOD Studio Emitter");
                     }

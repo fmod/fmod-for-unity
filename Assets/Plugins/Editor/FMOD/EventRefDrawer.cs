@@ -13,7 +13,8 @@ namespace FMODUnity
         {
             Texture browseIcon = EditorGUIUtility.Load("FMOD/SearchIconBlack.png") as Texture;
             Texture openIcon = EditorGUIUtility.Load("FMOD/StudioIcon.png") as Texture;
-            
+            Texture addIcon = EditorGUIUtility.Load("FMOD/AddIcon.png") as Texture;
+
             EditorGUI.BeginProperty(position, label, property);
             SerializedProperty pathProperty = property;
 
@@ -48,25 +49,38 @@ namespace FMODUnity
             GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
             buttonStyle.padding.top = 1;
             buttonStyle.padding.bottom = 1;
-            
-            Rect openRect = new Rect(position.x + position.width - openIcon.width - 15, position.y, openIcon.width + 10, baseHeight);
-            Rect searchRect = new Rect(openRect.x - browseIcon.width - 15, position.y, browseIcon.width + 10, baseHeight);
-            Rect pathRect = new Rect(position.x, position.y, searchRect.x - position.x - 5, baseHeight);
-            
-            EditorGUI.PropertyField(pathRect, pathProperty, GUIContent.none);
+
+            Rect addRect = new Rect(position.x + position.width - addIcon.width - 7, position.y, addIcon.width + 7, baseHeight);
+            Rect openRect = new Rect(addRect.x - openIcon.width - 7, position.y, openIcon.width + 6, baseHeight);
+            Rect searchRect = new Rect(openRect.x - browseIcon.width - 9, position.y, browseIcon.width + 8, baseHeight);
+            Rect pathRect = new Rect(position.x, position.y, searchRect.x - position.x - 3, baseHeight);
+
+            EditorGUI.PropertyField(pathRect, pathProperty, GUIContent.none);                       
+
             if (GUI.Button(searchRect, new GUIContent(browseIcon, "Search"), buttonStyle))
             {
                 var eventBrowser = EventBrowser.CreateInstance<EventBrowser>();
-
-                #if UNITY_4_6 || UNITY_4_7
-				eventBrowser.title  = "Select FMOD Event";
-                #else
-                eventBrowser.titleContent = new GUIContent("Select FMOD Event");
-                #endif
-
+                
                 eventBrowser.SelectEvent(property);
-                eventBrowser.ShowUtility();
+                var windowRect = position;
+                windowRect.width += windowRect.x - 15;
+                windowRect.x = 15;
+                windowRect.position = GUIUtility.GUIToScreenPoint(windowRect.position);
+                windowRect.height = openRect.height + 1;
+                eventBrowser.ShowAsDropDown(windowRect, new Vector2(windowRect.width, 400));
+
             }
+            /*if (GUI.Button(addRect, new GUIContent(addIcon, "Create New Event in Studio"), buttonStyle))
+            {
+                var addDropdown= EventBrowser.CreateInstance<CreateEvent>();
+
+                addDropdown.SelectEvent(property);
+                var windowRect = position;
+                windowRect.position = GUIUtility.GUIToScreenPoint(windowRect.position);
+                windowRect.height = openRect.height + 1;
+                addDropdown.ShowAsDropDown(windowRect, new Vector2(windowRect.width, 500));
+
+            }*/
             if (GUI.Button(openRect, new GUIContent(openIcon, "Open In FMOD Studio"), buttonStyle) &&
                 !String.IsNullOrEmpty(pathProperty.stringValue) && 
                 EventManager.EventFromPath(pathProperty.stringValue) != null

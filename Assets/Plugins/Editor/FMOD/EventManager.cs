@@ -37,11 +37,12 @@ namespace FMODUnity
             if (eventCache == null)
             {
                 eventCache = AssetDatabase.LoadAssetAtPath(CacheAssetFullName, typeof(EventCache)) as EventCache;
-                if (eventCache == null)
+                if (eventCache == null || eventCache.cacheVersion != EventCache.CurrentCacheVersion)
                 {
-                    UnityEngine.Debug.Log("FMOD Studio: Cannot find serialized event cache, creating new instance");
+                    UnityEngine.Debug.Log("FMOD Studio: Cannot find serialized event cache or cache in old format, creating new instance");
                     eventCache = ScriptableObject.CreateInstance<EventCache>();
-                    
+                    eventCache.cacheVersion = EventCache.CurrentCacheVersion;
+
                     AssetDatabase.CreateAsset(eventCache, CacheAssetFullName);
                 }
             }
@@ -311,6 +312,7 @@ namespace FMODUnity
                             paramRef.Name = param.name;
                             paramRef.Min = param.minimum;
                             paramRef.Max = param.maximum;
+                            paramRef.Default = param.defaultValue;
                             eventRef.Parameters.Add(paramRef);
                         }
                     }

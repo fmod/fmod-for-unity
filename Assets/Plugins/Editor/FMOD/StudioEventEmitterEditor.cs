@@ -11,9 +11,6 @@ namespace FMODUnity
     [CanEditMultipleObjects]
     class StudioEventEmitterEditor : Editor
     {
-        bool showAdvanced;
-        bool showParameters;
-
         public override void OnInspectorGUI()
         {
             var begin = serializedObject.FindProperty("PlayEvent");
@@ -21,7 +18,9 @@ namespace FMODUnity
             var tag = serializedObject.FindProperty("CollisionTag");
             var ev = serializedObject.FindProperty("Event");
             var param = serializedObject.FindProperty("Params");
-
+            var fadeout = serializedObject.FindProperty("AllowFadeout");
+            var once = serializedObject.FindProperty("TriggerOnce");
+            
             EditorGUILayout.PropertyField(begin, new GUIContent("Play Event"));
             EditorGUILayout.PropertyField(end, new GUIContent("Stop Event"));
 
@@ -37,41 +36,235 @@ namespace FMODUnity
                         
             if (EditorGUI.EndChangeCheck())
             {
-                EditorUtils.UpdateParamsOnEmmitter(serializedObject);
+                EditorUtils.UpdateParamsOnEmitter(serializedObject, ev.stringValue);
             }
 
-            showParameters = EditorGUILayout.Foldout(showParameters, "Parameters");
-            if (showParameters && param.arraySize > 0)
+            param.isExpanded = EditorGUILayout.Foldout(param.isExpanded, "Initial Parameter Values");
+            if (ev.hasMultipleDifferentValues)
+            {
+                if (param.isExpanded)
+                {
+                    GUILayout.Box("Cannot change parameters when different events are selected", GUILayout.ExpandWidth(true));
+                }
+            }
+            else
             {
                 var eventRef = EventManager.EventFromPath(ev.stringValue);
-                for (int i = 0; i < param.arraySize; i++)
+                if (param.isExpanded && eventRef != null)
                 {
-                    var parami = param.GetArrayElementAtIndex(i);
-                    var nameProperty = parami.FindPropertyRelative("Name");
-                    var valueProperty = parami.FindPropertyRelative("Value");
-
-                    var paramRef = eventRef.Parameters.Find(x => x.Name == nameProperty.stringValue);
-                    if (paramRef == null)
+                    foreach (var paramRef in eventRef.Parameters)
                     {
-                        param.DeleteArrayElementAtIndex(i);
-                        i--;
-                        continue;
+                        bool set;
+                        float value;
+                        bool matchingSet, matchingValue;
+                        CheckParameter(paramRef.Name, out set, out matchingSet, out value, out matchingValue);
+
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.PrefixLabel(paramRef.Name);
+                        EditorGUI.showMixedValue = !matchingSet;
+                        EditorGUI.BeginChangeCheck();
+                        bool newSet = EditorGUILayout.Toggle(set, GUILayout.Width(20));
+                        EditorGUI.showMixedValue = false;
+
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            Undo.RecordObjects(serializedObject.isEditingMultipleObjects ? serializedObject.targetObjects : new UnityEngine.Object[] { serializedObject.targetObject }, "Inspector");
+                            if (newSet)
+                            {
+                                AddParameterValue(paramRef.Name, paramRef.Default);
+                            }
+                            else
+                            {
+                                DeleteParameterValue(paramRef.Name);
+                            }
+                            set = newSet;
+                        }
+
+                        EditorGUI.BeginDisabledGroup(!newSet);
+                        if (set)
+                        {
+                            EditorGUI.showMixedValue = !matchingValue;
+                            EditorGUI.BeginChangeCheck();
+                            value = EditorGUILayout.Slider(value, paramRef.Min, paramRef.Max);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                Undo.RecordObjects(serializedObject.isEditingMultipleObjects ? serializedObject.targetObjects : new UnityEngine.Object[] { serializedObject.targetObject }, "Inspector");
+                                SetParameterValue(paramRef.Name, value);
+                            }
+                            EditorGUI.showMixedValue = false;
+                        }
+                        else
+                        {
+                            EditorGUI.showMixedValue = !matchingValue;
+                            EditorGUILayout.Slider(paramRef.Default, paramRef.Min, paramRef.Max);
+                            EditorGUI.showMixedValue = false;
+                        }
+                        EditorGUI.EndDisabledGroup();
+                        EditorGUILayout.EndHorizontal();
                     }
                     
-                    EditorGUILayout.Slider(valueProperty, paramRef.Min, paramRef.Max, nameProperty.stringValue);
                 }
-            }            
+            }
 
-            showAdvanced = EditorGUILayout.Foldout(showAdvanced, "Advanced Controls");
-            if (showAdvanced)
+            fadeout.isExpanded = EditorGUILayout.Foldout(fadeout.isExpanded, "Advanced Controls");
+            if (fadeout.isExpanded)
             {
-                var fadout = serializedObject.FindProperty("AllowFadeout");
-                EditorGUILayout.PropertyField(fadout, new GUIContent("Allow Fadeout When Stopping"));
-                var once = serializedObject.FindProperty("TriggerOnce");
+                EditorGUILayout.PropertyField(fadeout, new GUIContent("Allow Fadeout When Stopping"));
                 EditorGUILayout.PropertyField(once, new GUIContent("Trigger Once"));
             }
 
             serializedObject.ApplyModifiedProperties();
         }
+
+        void CheckParameter(string name, out bool set, out bool matchingSet, out float value, out bool matchingValue)
+        {
+            value = 0;
+            set = false;
+            if (serializedObject.isEditingMultipleObjects)
+            {
+                bool first = true;
+                matchingValue = true;
+                matchingSet = true;
+                foreach (var obj in serializedObject.targetObjects)
+                {
+                    var emitter = obj as StudioEventEmitter;
+                    var param = emitter.Params != null && emitter.Params.Length > 0 ? emitter.Params.First((x) => x.Name == name) : null;
+                    if (first)
+                    {
+                        set = param != null;
+                        value = set ? param.Value : 0;
+                        first = false;
+                    }
+                    else
+                    {
+                        if (set)
+                        {
+                            if (param == null)
+                            {
+                                matchingSet = false;
+                                matchingValue = false;
+                                return;
+                            }
+                            else
+                            {
+                                if (param.Value != value)
+                                {
+                                    matchingValue = false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (param != null)
+                            {
+                                matchingSet = false;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                matchingSet = matchingValue = true;
+
+                var emitter = serializedObject.targetObject as StudioEventEmitter;
+                var param = emitter.Params != null && emitter.Params.Length > 0 ? emitter.Params.First((x) => x.Name == name) : null;
+                if (param != null)
+                {
+                    set = true;
+                    value = param.Value;
+                }
+            }
+        }
+
+        void SetParameterValue(string name, float value)
+        {            
+            if (serializedObject.isEditingMultipleObjects)
+            {
+                foreach (var obj in serializedObject.targetObjects)
+                {
+                    SetParameterValue(obj, name, value);
+                }
+            }
+            else
+            {
+                SetParameterValue(serializedObject.targetObject, name, value);
+            }
+        }
+
+        void SetParameterValue(UnityEngine.Object obj, string name, float value)
+        {
+            var emitter = obj as StudioEventEmitter;
+            var param = emitter.Params != null && emitter.Params.Length > 0 ? emitter.Params.First((x) => x.Name == name) : null;
+            if (param != null)
+            {
+                param.Value = value;
+            }
+        }
+
+
+        void AddParameterValue(string name, float value)
+        {
+            if (serializedObject.isEditingMultipleObjects)
+            {
+                foreach (var obj in serializedObject.targetObjects)
+                {
+                    AddParameterValue(obj, name, value);
+                }
+            }
+            else
+            {
+                AddParameterValue(serializedObject.targetObject, name, value);
+            }
+        }
+
+        void AddParameterValue(UnityEngine.Object obj, string name, float value)
+        {
+            var emitter = obj as StudioEventEmitter;
+            var param = emitter.Params != null && emitter.Params.Length > 0 ? emitter.Params.First((x) => x.Name == name) : null;
+            if (param == null)
+            {
+                int end = emitter.Params.Length;
+                Array.Resize<ParamRef>(ref emitter.Params, end + 1);
+                emitter.Params[end] = new ParamRef();
+                emitter.Params[end].Name = name;
+                emitter.Params[end].Value = value;
+            }
+        }
+
+        void DeleteParameterValue(string name)
+        {
+            if (serializedObject.isEditingMultipleObjects)
+            {
+                foreach (var obj in serializedObject.targetObjects)
+                {
+                    DeleteParameterValue(obj, name);
+                }
+            }
+            else
+            {
+                DeleteParameterValue(serializedObject.targetObject, name);
+            }
+        }
+
+        void DeleteParameterValue(UnityEngine.Object obj, string name)
+        {
+            var emitter = obj as StudioEventEmitter;
+            int found = -1;
+            for (int i = 0; i < emitter.Params.Length; i++)
+            {
+                if (emitter.Params[i].Name == name)
+                {
+                    found = i;
+                }
+            }
+            if (found >= 0)
+            {
+                int end = emitter.Params.Length - 1;
+                emitter.Params[found] = emitter.Params[end];
+                Array.Resize<ParamRef>(ref emitter.Params, end);
+            }
+        }
     }
+
 }

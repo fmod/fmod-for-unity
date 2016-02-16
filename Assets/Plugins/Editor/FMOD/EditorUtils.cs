@@ -164,9 +164,9 @@ namespace FMODUnity
                 case BuildTarget.XboxOne:
                     return FMODPlatform.XboxOne;
 				#if UNITY_4_6 || UNITY_4_7
-                    case BuildTarget.MetroPlayer:
+                case BuildTarget.MetroPlayer:
                 #else
-                    case BuildTarget.WSAPlayer:
+                case BuildTarget.WSAPlayer:
                 #endif
                     return FMODPlatform.WindowsPhone; // TODO: not correct if we support Win RT
                 #if !UNITY_4_6 && !UNITY_4_7 && !UNITY_5_0 && !UNITY_5_1 && !UNITY_5_2
@@ -264,26 +264,40 @@ namespace FMODUnity
             CheckResult(masterHead.setMeteringEnabled(false, true));
         }
 
-        public static void UpdateParamsOnEmmitter(SerializedObject serializedObject)
+        public static void UpdateParamsOnEmitter(SerializedObject serializedObject, string path)
         {
-            var param = serializedObject.FindProperty("Params");
-            var path = serializedObject.FindProperty("Event");
-            if (path == null || param == null)
+            if (String.IsNullOrEmpty(path) || EventManager.EventFromPath(path) == null)
             {
                 return;
             }
 
-            param.ClearArray();
-
-            if (!String.IsNullOrEmpty(path.stringValue) && EventManager.EventFromPath(path.stringValue) != null)
+            var eventRef = EventManager.EventFromPath(path);
+            serializedObject.ApplyModifiedProperties();
+            if (serializedObject.isEditingMultipleObjects)
             {
-                var eventRef = EventManager.EventFromPath(path.stringValue);
-                foreach (var paramRef in eventRef.Parameters)
+                foreach (var obj in serializedObject.targetObjects)
                 {
-                    param.InsertArrayElementAtIndex(0);
-                    var parami = param.GetArrayElementAtIndex(0);
-                    parami.FindPropertyRelative("Name").stringValue = paramRef.Name;
-                    parami.FindPropertyRelative("Value").floatValue = 0;
+                    UpdateParamsOnEmitter(obj, eventRef);
+                }
+            }
+            else
+            {
+                UpdateParamsOnEmitter(serializedObject.targetObject, eventRef);
+            }
+            serializedObject.Update();
+        }
+        
+        private static void UpdateParamsOnEmitter(UnityEngine.Object obj, EditorEventRef eventRef)
+        {
+            var emitter = obj as StudioEventEmitter;
+            for (int i = 0; i < emitter.Params.Length; i++)
+            {
+                if (!eventRef.Parameters.Exists((x) => x.Name == emitter.Params[i].Name))
+                {
+                    int end = emitter.Params.Length - 1;
+                    emitter.Params[i] = emitter.Params[end];
+                    Array.Resize<ParamRef>(ref emitter.Params, end);
+                    i--;
                 }
             }
         }
@@ -300,16 +314,28 @@ namespace FMODUnity
             }
         }
 
-        [MenuItem("FMOD/Online Integration Manual", priority = 5)]
+        [MenuItem("FMOD/Help/Integration Manual", priority = 3)]
         static void OnlineManual()
         {
             Application.OpenURL("http://www.fmod.org/documentation/#content/generated/engine_new_unity/overview.html");
         }
 
-        [MenuItem("FMOD/Online API Documentation", priority = 6)]
+        [MenuItem("FMOD/Help/API Documentation", priority = 4)]
         static void OnlineAPIDocs()
         {
             Application.OpenURL("http://www.fmod.org/documentation/#content/generated/studio_api.html");
+        }
+
+        [MenuItem("FMOD/Help/Support Forum", priority = 5)]
+        static void OnlineQA()
+        {
+            Application.OpenURL("http://www.fmod.org/questions");
+        }
+
+        [MenuItem("FMOD/Help/Revision History", priority = 6)]
+        static void OnlineRevisions()
+        {
+            Application.OpenURL("http://www.fmod.org/documentation/#content/generated/common/revision.html");
         }
 
         [MenuItem("FMOD/About Integration", priority = 7)]
@@ -473,6 +499,18 @@ namespace FMODUnity
             }
         }
 
+        public static bool IsConnectedToStudio()
+        {
+            try
+            {
+                return SendScriptCommand("true");
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+        }
+
         public static bool SendScriptCommand(string command)
         {
             byte[] commandBytes = Encoding.UTF8.GetBytes(command);
@@ -490,7 +528,30 @@ namespace FMODUnity
                 return false;
             }
         }
-        
+
+
+        public static string GetScriptOutput(string command)
+        {
+            byte[] commandBytes = Encoding.UTF8.GetBytes(command);
+            try
+            {
+                ScriptStream.Write(commandBytes, 0, commandBytes.Length);
+                byte[] commandReturnBytes = new byte[2048];
+                int read = ScriptStream.Read(commandReturnBytes, 0, commandReturnBytes.Length);
+                string result = Encoding.UTF8.GetString(commandReturnBytes, 0, read - 1);
+                if (result.StartsWith("out():"))
+                {
+                    return result.Substring(6).Trim();
+                }
+                return null;
+            }
+            catch (Exception)
+            {
+                UnityEngine.Debug.Log("FMOD Studio: Script Client failed to connect - Check FMOD Studio is running");
+                return null;
+            }
+        }
+
         public static bool IsFileOpenByStudio(string path)
         {
             bool open = true;
@@ -505,6 +566,82 @@ namespace FMODUnity
             {
             }
             return open;
+        }
+        
+        private static string GetMasterBank()
+        {
+            GetScriptOutput(String.Format("masterBankFolder = studio.project.workspace.masterBankFolder;"));
+            string bankCountString = GetScriptOutput(String.Format("masterBankFolder.items.length;"));
+            int bankCount = Int32.Parse(bankCountString);
+            for (int i = 0; i < bankCount; i++)
+            {
+                string isMaster = GetScriptOutput(String.Format("masterBankFolder.items[{1}].isOfExactType(\"MasterBank\");", i));
+                if (isMaster == "true")
+                {
+                    string guid = GetScriptOutput(String.Format("masterBankFolder.items[{1}].id;", i));
+                    return guid;
+                }
+            }
+            return "";
+        }
+        
+        private static bool CheckForNameConflict(string folderGuid, string eventName)
+        {
+            GetScriptOutput(String.Format("nameConflict = false;"));
+            GetScriptOutput(String.Format("checkFunction = function(val) {{ nameConflict |= val.name == \"{0}\"; }};", eventName));
+            GetScriptOutput(String.Format("studio.project.lookup(\"{0}\").items.forEach(checkFunction, this); ", folderGuid));
+            string conflictBool = GetScriptOutput(String.Format("nameConflict;"));
+            return conflictBool == "1";
+        }
+        
+        public static string CreateStudioEvent(string eventPath, string eventName)
+        {
+            var folders = eventPath.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            string debug;
+
+            string folderGuid = EditorUtils.GetScriptOutput("studio.project.workspace.masterEventFolder.id;");
+            for (int i = 0; i < folders.Length; i++)
+            {
+                string parentGuid = folderGuid;
+                debug = GetScriptOutput(String.Format("guid = \"\";"));
+                debug = GetScriptOutput(String.Format("findFunc = function(val) {{ guid = val.isOfType(\"EventFolder\") && val.name == \"{0}\" ? val.id : guid; }};", folders[i]));
+                debug = GetScriptOutput(String.Format("studio.project.lookup(\"{0}\").items.forEach(findFunc, this);", folderGuid));
+                folderGuid = GetScriptOutput(String.Format("guid;"));
+                if (folderGuid == "")
+                {
+                    debug = GetScriptOutput(String.Format("folder = studio.project.create(\"EventFolder\");"));
+                    debug = GetScriptOutput(String.Format("folder.name = \"{0}\"", folders[i]));
+                    debug = GetScriptOutput(String.Format("folder.folder = studio.project.lookup(\"{1}\");", parentGuid));
+                    folderGuid = GetScriptOutput(String.Format("folder.id;"));
+                }
+            }
+
+            if (CheckForNameConflict(folderGuid, eventName))
+            {
+                //EditorUtility.DisplayDialog("Name Conflict", String.Format("The event {0} already exists under {1}", eventName, eventFolder), "OK");
+                return null;
+            }
+
+            debug = GetScriptOutput("event = studio.project.create(\"Event\");");
+            debug = GetScriptOutput("event.note = \"Placeholder created via Unity\";");
+            debug = GetScriptOutput(String.Format("event.name = \"{0}\"", eventName));
+            debug = GetScriptOutput(String.Format("event.folder = studio.project.lookup(\"{0}\");", folderGuid));
+
+            // Add a group track
+            debug = GetScriptOutput("track = studio.project.create(\"GroupTrack\");");
+            debug = GetScriptOutput("track.mixerGroup.output = event.mixer.masterBus;");
+            debug = GetScriptOutput("track.mixerGroup.name = \"Audio 1\";");
+            debug = GetScriptOutput("event.relationships.groupTracks.add(track);");
+
+            // Add tags
+            debug = GetScriptOutput("tag = studio.project.create(\"Tag\");");
+            debug = GetScriptOutput("tag.name = \"placeholder\";");
+            debug = GetScriptOutput("tag.folder = studio.project.workspace.masterTagFolder;");
+            debug = GetScriptOutput("event.relationships.tags.add(tag);");
+
+            string eventGuid = GetScriptOutput(String.Format("event.id;"));
+            return eventGuid;
         }
     }
 }

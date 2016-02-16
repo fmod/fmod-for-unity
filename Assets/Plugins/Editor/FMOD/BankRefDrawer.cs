@@ -55,16 +55,13 @@ namespace FMODUnity
             EditorGUI.PropertyField(pathRect, pathProperty, GUIContent.none);
             if (GUI.Button(searchRect, new GUIContent(browseIcon, "Select FMOD Bank"), buttonStyle))
             {
-                var browser = EventBrowser.CreateInstance<EventBrowser>();
+                var eventBrowser = EventBrowser.CreateInstance<EventBrowser>();
 
-                #if UNITY_4_6 || UNITY_4_7
-				browser.title  = "Select FMOD Bank";
-                #else
-                browser.titleContent = new GUIContent("Select FMOD Bank");
-                #endif
-
-                browser.SelectBank(property);
-                browser.ShowUtility();
+                eventBrowser.SelectBank(property);
+                var windowRect = position;
+                windowRect.position = GUIUtility.GUIToScreenPoint(windowRect.position);
+                windowRect.height = searchRect.height + 1;
+                eventBrowser.ShowAsDropDown(windowRect, new Vector2(windowRect.width, 400));
             }
 
             EditorGUI.EndProperty();

@@ -15,5 +15,7 @@ namespace FMODUnity
         public float Min;
         [SerializeField]
         public float Max;
+        [SerializeField]
+        public float Default;
     }
 }

@@ -335,8 +335,7 @@ namespace FMODUnity
                     debug.AppendFormat("MEMORY: cur = {0}MB, max = {1}MB\n", currentAlloc >> 20, maxAlloc >> 20);
 
                     int realchannels, channels;
-                    lowlevelSystem.getChannelsPlaying(out channels);
-                    lowlevelSystem.getChannelsReal(out realchannels);
+                    lowlevelSystem.getChannelsPlaying(out channels, out realchannels);
                     debug.AppendFormat("CHANNELS: real = {0}, total = {1}\n", realchannels, channels);
 
                     FMOD.DSP_METERING_INFO metering = new FMOD.DSP_METERING_INFO();
