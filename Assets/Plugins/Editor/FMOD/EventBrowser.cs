@@ -285,7 +285,7 @@ namespace FMODUnity
                 return;
             }
 
-            if (!EventManager.IsLoaded)
+            if (!EventManager.IsValid)
             {
                 this.ShowNotification(new GUIContent("No FMOD Studio banks loaded. Please check your settings."));
                 return;

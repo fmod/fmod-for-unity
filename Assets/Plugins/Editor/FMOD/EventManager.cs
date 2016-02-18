@@ -18,7 +18,6 @@ namespace FMODUnity
 
         const string StringBankExtension = "strings.bank";
         const string BankExtension = "bank";
-        const string DefaultBankPlatform = "Desktop";
 
         static int countdownTimer;
 
@@ -79,7 +78,6 @@ namespace FMODUnity
             }
             catch
             {
-                UnityEngine.Debug.LogWarning(String.Format("FMOD Studio: Directory {0} doesn't exist. Build from the tool or check the path in the settings", defaultBankFolder));
             }
 
             // Strip out OSX resource-fork files that appear on FAT32
@@ -87,10 +85,11 @@ namespace FMODUnity
 
             if (stringBanks.Count == 0)
             {
+                bool wasValid = eventCache.StringsBankWriteTime != DateTime.MinValue;
                 ClearCache();
-                if (eventCache.StringsBankWriteTime != DateTime.MinValue)
+                if (wasValid)
                 {
-                    UnityEngine.Debug.LogWarning(String.Format("FMOD Studio: Directory {0} doesn't contain any banks. Build from the tool or check the path in the settings", defaultBankFolder));
+                    UnityEngine.Debug.LogError(String.Format("FMOD Studio: Directory {0} doesn't contain any banks. Build from the tool or check the path in the settings", defaultBankFolder));
                 }
                 return;
             }
@@ -337,7 +336,7 @@ namespace FMODUnity
             countdownTimer = 1;
             EditorUserBuildSettings.activeBuildTargetChanged += BuildTargetChanged;
             EditorApplication.update += Update;
-	    }               
+        }               
 
         public static void CopyToStreamingAssets()
         {
@@ -359,7 +358,7 @@ namespace FMODUnity
                 return;
             }
 
-            bool madeChanges = false;
+            bool madeChanges = !true;
 
             try
             {
@@ -450,9 +449,25 @@ namespace FMODUnity
             EventBrowser.RepaintEventBrowser();
         }
 
+        static bool firstUpdate = true;
         static float lastCheckTime;
         static void Update()
         {
+            if (firstUpdate)
+            {
+                UpdateCache();
+                CopyToStreamingAssets();
+                bool isValid;
+                string validateMessage;
+                EditorUtils.ValidateSource(out isValid, out validateMessage);
+                if (!isValid)
+                {
+                    Debug.LogError("FMOD Studio: " + validateMessage);
+                }
+                firstUpdate = false;
+                lastCheckTime = Time.realtimeSinceStartup;
+            }
+
             if (lastCheckTime + 1 < Time.realtimeSinceStartup)
             {
                 UpdateCache();
@@ -492,6 +507,15 @@ namespace FMODUnity
             get
             {
                 return EditorUtils.GetBankDirectory() != null;
+            }
+        }
+
+        public static bool IsValid
+        {
+            get
+            {
+                UpdateCache();
+                return eventCache.StringsBankWriteTime != DateTime.MinValue;
             }
         }
 
