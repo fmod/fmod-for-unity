@@ -136,15 +136,20 @@ namespace FMODUnity
         void ShowEventFolder(TreeItem item, Predicate<TreeItem> filter)
         {
             eventStyle.padding.left += 17;
-
-            if (item.EventRef != null || item.BankRef != null)
+            
             {
                 // Highlight first found item
-                if (!String.IsNullOrEmpty(searchString) && 
-                    itemCount == 0 &&
-                    selectedItem == null)
+                if (item.EventRef != null || item.BankRef != null)
                 {
-                    SetSelectedItem(item);
+                    if (!String.IsNullOrEmpty(searchString) &&
+                        itemCount == 0 &&
+                        selectedItem == null                       
+                        )
+                    {
+                        SetSelectedItem(item);
+                    }
+
+                    itemCount++;
                 }
 
                 item.Next = null;
@@ -154,7 +159,6 @@ namespace FMODUnity
                     lastDrawnItem.Next = item;
                 }
                 lastDrawnItem = item;
-                itemCount++;
             }
 
             if (item.EventRef != null)
@@ -238,10 +242,11 @@ namespace FMODUnity
             }
             else
             {
-                eventStyle.normal.background = null;
+                eventStyle.normal.background = selectedItem == item ? EditorGUIUtility.Load("FMOD/Selected.png") as Texture2D : null;
+
                 bool expanded = item.Expanded || !string.IsNullOrEmpty(searchString);
                 GUIContent content = new GUIContent(item.Name, expanded ? folderOpenIcon : folderClosedIcon);
-                GUILayout.Label(content, eventStyle);
+                GUILayout.Label(content, eventStyle, GUILayout.ExpandWidth(true));
 
                 Rect rect = GUILayoutUtility.GetLastRect();
                 if (Event.current.type == EventType.MouseDown && 
@@ -250,6 +255,7 @@ namespace FMODUnity
                 {
                     Event.current.Use();
                     item.Expanded = !item.Expanded;
+                    SetSelectedItem(item);
                 }
                 
                 if (item.Expanded || !string.IsNullOrEmpty(searchString))
@@ -268,6 +274,11 @@ namespace FMODUnity
                             ShowEventFolder(childFolder, filter);
                         }
                     }
+                }
+
+                if (Event.current.type == EventType.Repaint)
+                {
+                    item.Rect = rect;
                 }
             }
             eventStyle.padding.left -= 17;
@@ -295,7 +306,7 @@ namespace FMODUnity
             {
                 RebuildDisplayFromCache();
             }
-            
+
             //if (eventStyle == null)
             {
                 eventStyle = new GUIStyle(GUI.skin.button);
@@ -329,10 +340,8 @@ namespace FMODUnity
             }
 
             // Split the window int search box, tree view, preview pane (only if full browser)
-            Rect searchRect = new Rect(4, 4, position.width-8, 16);
-            float previewBoxHeight = fromInspector ? 0 : 300;
-            Rect listRect = new Rect(0, searchRect.height + 6, position.width, position.height - previewBoxHeight - searchRect.height - 15);
-            Rect previewRect = new Rect(0, position.height - previewBoxHeight, position.width, previewBoxHeight);     
+            Rect searchRect, listRect, previewRect;
+            SplitWindow(out searchRect, out listRect, out previewRect);
 
             // Scroll the selected item in the tree view - put above the search box otherwise it will take
             // our key presses
@@ -365,7 +374,17 @@ namespace FMODUnity
                     }
                     Event.current.Use();
                 }
-            }            
+                if (Event.current.keyCode == KeyCode.RightArrow)
+                {
+                    selectedItem.Expanded = true;
+                    Event.current.Use();
+                }
+                if (Event.current.keyCode == KeyCode.LeftArrow)
+                {
+                    selectedItem.Expanded = false;
+                    Event.current.Use();
+                }
+            }
 
             // Show the search box at the top
             GUILayout.BeginArea(searchRect);
@@ -380,7 +399,8 @@ namespace FMODUnity
             {
                 EditorGUI.FocusTextInControl("SearchBox");
 
-                if (selectedItem != null && Event.current.isKey && Event.current.keyCode == KeyCode.Return)
+                if (selectedItem != null && Event.current.isKey && Event.current.keyCode == KeyCode.Return
+                    && !(selectedItem.EventRef == null && selectedItem.BankRef == null))
                 {
                     Event.current.Use();
 
@@ -397,6 +417,10 @@ namespace FMODUnity
                     outputProperty.serializedObject.ApplyModifiedProperties();
                     Close();
                 }
+                if (Event.current.isKey && Event.current.keyCode == KeyCode.Escape)
+                {
+                    Close();
+                }
             }
 
             // Show the tree view
@@ -405,7 +429,7 @@ namespace FMODUnity
             searchFilter = (x) => (x.Name.ToLower().Contains(searchString.ToLower()) || x.Children.Exists(searchFilter));
 
             // Check if our selected item still matches the search string
-            if (selectedItem != null && !String.IsNullOrEmpty(searchString))
+            if (selectedItem != null && !String.IsNullOrEmpty(searchString) && selectedItem.Children.Count == 0)
             {
                 Predicate<TreeItem> containsSelected = null;
                 containsSelected = (x) => (x == selectedItem || x.Children.Exists(containsSelected));
@@ -413,7 +437,7 @@ namespace FMODUnity
                 matchForSelected = (x) => (x.Name.ToLower().Contains(searchString.ToLower()) && (x == selectedItem || x.Children.Exists(containsSelected))) || x.Children.Exists(matchForSelected);
                 if (!treeItems.Exists(matchForSelected))
                 {
-                    SetSelectedItem(null);
+                  SetSelectedItem(null);
                 }
             }
 
@@ -433,11 +457,11 @@ namespace FMODUnity
             {
                 treeItems[2].Expanded = fromInspector ? true : treeItems[2].Expanded;
                 ShowEventFolder(treeItems[2], searchFilter);
-            }  
+            }
 
             GUILayout.EndScrollView();
             GUILayout.EndArea();
-            
+
             // If the standalone event browser show a preview of the selected item
             if (!fromInspector)
             {
@@ -459,6 +483,14 @@ namespace FMODUnity
                     PreviewBank(previewRect, selectedItem.BankRef);
                 }
             }
+        }
+
+        private void SplitWindow(out Rect searchRect, out Rect listRect, out Rect previewRect)
+        {
+            searchRect = new Rect(4, 4, position.width - 8, 16);
+            float previewBoxHeight = fromInspector ? 0 : 300;
+            listRect = new Rect(0, searchRect.height + 6, position.width, position.height - previewBoxHeight - searchRect.height - 15);
+            previewRect = new Rect(0, position.height - previewBoxHeight, position.width, previewBoxHeight);
         }
 
         Rect previewCustomRect;
@@ -826,6 +858,7 @@ namespace FMODUnity
         {
             if (!String.IsNullOrEmpty(eventPath))
             {
+                searchString = "";
                 RebuildDisplayFromCache();
                 TreeItem currentItem = null;
                 if (eventPath.StartsWith("event:/"))
@@ -856,6 +889,17 @@ namespace FMODUnity
                     if (nextItem.EventRef)
                     {
                         SetSelectedItem(nextItem);
+
+                        Rect searchRect, listRect, previewRect;
+                        SplitWindow(out searchRect, out listRect, out previewRect);
+                        if (selectedItem.Rect.y < treeScroll.y)
+                        {
+                            treeScroll.y = selectedItem.Rect.y;
+                        }
+                        else if (selectedItem.Rect.y + selectedItem.Rect.height > treeScroll.y + listRect.height)
+                        {
+                            treeScroll.y += (selectedItem.Rect.y + selectedItem.Rect.height) - listRect.height;
+                        }
                         return;
                     }
                     currentItem = nextItem;
