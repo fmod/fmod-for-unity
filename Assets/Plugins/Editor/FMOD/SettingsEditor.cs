@@ -277,7 +277,7 @@ namespace FMODUnity
                     if (Settings.HasSetting(settings.BankDirectorySettings, platform))
                     {
                         DisplayChildSpeakerMode("Speaker Mode", settings.SpeakerModeSettings, platform);
-                        EditorGUILayout.HelpBox(String.Format("Match the speaker mode to the setting of the platform <b>{0}</b> inside FMOD Studio", settings.GetBankPlatform(FMODPlatform.PlayInEditor)), MessageType.Info, false);
+                        EditorGUILayout.HelpBox(String.Format("Match the speaker mode to the setting of the platform <b>{0}</b> inside FMOD Studio", settings.GetBankPlatform(platform)), MessageType.Info, false);
                     }
                     else
                     {
@@ -512,7 +512,7 @@ namespace FMODUnity
             DisplayParentSpeakerMode("Speaker Mode", settings.SpeakerModeSettings, FMODPlatform.Default);
             if (settings.HasPlatforms)
             {
-                EditorGUILayout.HelpBox(String.Format("Match the speaker mode to the setting of the platform <b>{0}</b> inside FMOD Studio", settings.GetBankPlatform(FMODPlatform.PlayInEditor)), MessageType.Info, false);
+                EditorGUILayout.HelpBox(String.Format("Match the speaker mode to the setting of the platform <b>{0}</b> inside FMOD Studio", settings.GetBankPlatform(FMODPlatform.Default)), MessageType.Info, false);
             }
             else
             {

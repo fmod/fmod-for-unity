@@ -60,7 +60,13 @@ namespace FMODUnity
             }
             else
             {
-                defaultBankFolder = Path.Combine(EditorUtils.GetBankDirectory(), Settings.Instance.GetBankPlatform(FMODPlatform.PlayInEditor));
+                FMODPlatform platform = EditorUtils.GetFMODPlatform(EditorUserBuildSettings.activeBuildTarget);
+                if (platform == FMODPlatform.None)
+                {
+                    platform = FMODPlatform.PlayInEditor;
+                }
+
+                defaultBankFolder = Path.Combine(EditorUtils.GetBankDirectory(), Settings.Instance.GetBankPlatform(platform));
             }
 
             string[] bankPlatforms = EditorUtils.GetBankPlatforms();

@@ -68,7 +68,6 @@ namespace FMODUnity
                 string projectPath = settings.SourceProjectPath;
                 string projectFolder = Path.GetDirectoryName(projectPath);
                 string buildFolder = Path.Combine(projectFolder, BuildFolder);
-                string defaultBankFolder = Path.Combine(buildFolder, settings.GetBankPlatform(FMODPlatform.Default));
                 if (!Directory.Exists(buildFolder) ||
                     Directory.GetDirectories(buildFolder).Length == 0 ||
                     Directory.GetFiles(Directory.GetDirectories(buildFolder)[0], "*.bank").Length == 0
