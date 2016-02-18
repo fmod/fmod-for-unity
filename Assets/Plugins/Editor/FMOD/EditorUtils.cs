@@ -468,6 +468,8 @@ namespace FMODUnity
 
         const int StudioScriptPort = 3663;
         static NetworkStream networkStream = null;
+        static Socket socket = null;
+        static IAsyncResult socketConnection = null;
 
         static NetworkStream ScriptStream
         {
@@ -477,8 +479,19 @@ namespace FMODUnity
                 {
                     try
                     {
-                        Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                        socket.Connect("127.0.0.1", StudioScriptPort);
+                        if (socket == null)
+                        {
+                            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        }
+
+                        if (!socket.Connected)
+                        {
+                            socketConnection = socket.BeginConnect("127.0.0.1", StudioScriptPort, null, null);
+                            socketConnection.AsyncWaitHandle.WaitOne();
+                            socket.EndConnect(socketConnection);
+                            socketConnection = null;
+                        }
+
                         networkStream = new NetworkStream(socket);
 
                         byte[] headerBytes = new byte[128];
@@ -492,6 +505,11 @@ namespace FMODUnity
                     catch (Exception e)
                     {
                         UnityEngine.Debug.Log("FMOD Studio: Script Client failed to connect - Check FMOD Studio is running");
+
+                        socketConnection = null;
+                        socket = null;
+                        networkStream = null;
+
                         throw e;
                     }
                 }
@@ -499,14 +517,45 @@ namespace FMODUnity
             }
         }
 
+        private static void AsyncConnectCallback(IAsyncResult result)
+        {
+            try
+            {
+                socket.EndConnect(result);
+            }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                socketConnection = null;
+            }
+        }
+
         public static bool IsConnectedToStudio()
         {
             try
             {
-                return SendScriptCommand("true");
+                if (socket != null && socket.Connected)
+                {
+                    if (SendScriptCommand("true"))
+                    {
+                        return true;
+                    }
+                }
+
+                if (socketConnection == null)
+                {
+                    socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    socketConnection = socket.BeginConnect("127.0.0.1", StudioScriptPort, AsyncConnectCallback, null);
+                }
+
+                return false;
+
             }
-            catch(Exception)
+            catch(Exception e)
             {
+                Debug.LogException(e);
                 return false;
             }
         }
@@ -524,7 +573,12 @@ namespace FMODUnity
             }
             catch (Exception)
             {
-                UnityEngine.Debug.Log("FMOD Studio: Script Client failed to connect - Check FMOD Studio is running");
+                if (networkStream != null)
+                {
+                    networkStream.Close();
+                    networkStream = null;
+                }
+                //UnityEngine.Debug.Log("FMOD Studio: Script Client failed to connect - Check FMOD Studio is running");
                 return false;
             }
         }
@@ -547,7 +601,9 @@ namespace FMODUnity
             }
             catch (Exception)
             {
-                UnityEngine.Debug.Log("FMOD Studio: Script Client failed to connect - Check FMOD Studio is running");
+                networkStream.Close();
+                networkStream = null;
+                //UnityEngine.Debug.Log("FMOD Studio: Script Client failed to connect - Check FMOD Studio is running");
                 return null;
             }
         }
@@ -598,47 +654,45 @@ namespace FMODUnity
         {
             var folders = eventPath.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
-            string debug;
-
             string folderGuid = EditorUtils.GetScriptOutput("studio.project.workspace.masterEventFolder.id;");
             for (int i = 0; i < folders.Length; i++)
             {
                 string parentGuid = folderGuid;
-                debug = GetScriptOutput(String.Format("guid = \"\";"));
-                debug = GetScriptOutput(String.Format("findFunc = function(val) {{ guid = val.isOfType(\"EventFolder\") && val.name == \"{0}\" ? val.id : guid; }};", folders[i]));
-                debug = GetScriptOutput(String.Format("studio.project.lookup(\"{0}\").items.forEach(findFunc, this);", folderGuid));
+                GetScriptOutput(String.Format("guid = \"\";"));
+                GetScriptOutput(String.Format("findFunc = function(val) {{ guid = val.isOfType(\"EventFolder\") && val.name == \"{0}\" ? val.id : guid; }};", folders[i]));
+                GetScriptOutput(String.Format("studio.project.lookup(\"{0}\").items.forEach(findFunc, this);", folderGuid));
                 folderGuid = GetScriptOutput(String.Format("guid;"));
                 if (folderGuid == "")
                 {
-                    debug = GetScriptOutput(String.Format("folder = studio.project.create(\"EventFolder\");"));
-                    debug = GetScriptOutput(String.Format("folder.name = \"{0}\"", folders[i]));
-                    debug = GetScriptOutput(String.Format("folder.folder = studio.project.lookup(\"{1}\");", parentGuid));
+                    GetScriptOutput(String.Format("folder = studio.project.create(\"EventFolder\");"));
+                    GetScriptOutput(String.Format("folder.name = \"{0}\"", folders[i]));
+                    GetScriptOutput(String.Format("folder.folder = studio.project.lookup(\"{0}\");", parentGuid));
                     folderGuid = GetScriptOutput(String.Format("folder.id;"));
                 }
             }
 
             if (CheckForNameConflict(folderGuid, eventName))
             {
-                //EditorUtility.DisplayDialog("Name Conflict", String.Format("The event {0} already exists under {1}", eventName, eventFolder), "OK");
+                EditorUtility.DisplayDialog("Name Conflict", String.Format("The event {0} already exists under {1}", eventName, eventPath), "OK");
                 return null;
             }
 
-            debug = GetScriptOutput("event = studio.project.create(\"Event\");");
-            debug = GetScriptOutput("event.note = \"Placeholder created via Unity\";");
-            debug = GetScriptOutput(String.Format("event.name = \"{0}\"", eventName));
-            debug = GetScriptOutput(String.Format("event.folder = studio.project.lookup(\"{0}\");", folderGuid));
+            GetScriptOutput("event = studio.project.create(\"Event\");");
+            GetScriptOutput("event.note = \"Placeholder created via Unity\";");
+            GetScriptOutput(String.Format("event.name = \"{0}\"", eventName));
+            GetScriptOutput(String.Format("event.folder = studio.project.lookup(\"{0}\");", folderGuid));
 
             // Add a group track
-            debug = GetScriptOutput("track = studio.project.create(\"GroupTrack\");");
-            debug = GetScriptOutput("track.mixerGroup.output = event.mixer.masterBus;");
-            debug = GetScriptOutput("track.mixerGroup.name = \"Audio 1\";");
-            debug = GetScriptOutput("event.relationships.groupTracks.add(track);");
+            GetScriptOutput("track = studio.project.create(\"GroupTrack\");");
+            GetScriptOutput("track.mixerGroup.output = event.mixer.masterBus;");
+            GetScriptOutput("track.mixerGroup.name = \"Audio 1\";");
+            GetScriptOutput("event.relationships.groupTracks.add(track);");
 
             // Add tags
-            debug = GetScriptOutput("tag = studio.project.create(\"Tag\");");
-            debug = GetScriptOutput("tag.name = \"placeholder\";");
-            debug = GetScriptOutput("tag.folder = studio.project.workspace.masterTagFolder;");
-            debug = GetScriptOutput("event.relationships.tags.add(tag);");
+            GetScriptOutput("tag = studio.project.create(\"Tag\");");
+            GetScriptOutput("tag.name = \"placeholder\";");
+            GetScriptOutput("tag.folder = studio.project.workspace.masterTagFolder;");
+            GetScriptOutput("event.relationships.tags.add(tag);");
 
             string eventGuid = GetScriptOutput(String.Format("event.id;"));
             return eventGuid;

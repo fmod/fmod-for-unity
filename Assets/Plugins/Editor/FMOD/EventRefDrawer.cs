@@ -12,9 +12,9 @@ namespace FMODUnity
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             Texture browseIcon = EditorGUIUtility.Load("FMOD/SearchIconBlack.png") as Texture;
-            Texture openIcon = EditorGUIUtility.Load("FMOD/StudioIcon.png") as Texture;
+            Texture openIcon = EditorGUIUtility.Load("FMOD/BrowserIcon.png") as Texture;
             Texture addIcon = EditorGUIUtility.Load("FMOD/AddIcon.png") as Texture;
-
+                        
             EditorGUI.BeginProperty(position, label, property);
             SerializedProperty pathProperty = property;
 
@@ -63,16 +63,14 @@ namespace FMODUnity
                 
                 eventBrowser.SelectEvent(property);
                 var windowRect = position;
-                windowRect.width += windowRect.x - 15;
-                windowRect.x = 15;
                 windowRect.position = GUIUtility.GUIToScreenPoint(windowRect.position);
                 windowRect.height = openRect.height + 1;
                 eventBrowser.ShowAsDropDown(windowRect, new Vector2(windowRect.width, 400));
 
             }
-            /*if (GUI.Button(addRect, new GUIContent(addIcon, "Create New Event in Studio"), buttonStyle))
+            if (GUI.Button(addRect, new GUIContent(addIcon, "Create New Event in Studio"), buttonStyle))
             {
-                var addDropdown= EventBrowser.CreateInstance<CreateEvent>();
+                var addDropdown= EditorWindow.CreateInstance<CreateEventPopup>();
 
                 addDropdown.SelectEvent(property);
                 var windowRect = position;
@@ -80,15 +78,15 @@ namespace FMODUnity
                 windowRect.height = openRect.height + 1;
                 addDropdown.ShowAsDropDown(windowRect, new Vector2(windowRect.width, 500));
 
-            }*/
-            if (GUI.Button(openRect, new GUIContent(openIcon, "Open In FMOD Studio"), buttonStyle) &&
+            }
+            if (GUI.Button(openRect, new GUIContent(openIcon, "Open In Browser"), buttonStyle) &&
                 !String.IsNullOrEmpty(pathProperty.stringValue) && 
                 EventManager.EventFromPath(pathProperty.stringValue) != null
                 )
             {
-                EditorEventRef eventRef = EventManager.EventFromPath(pathProperty.stringValue);
-                string cmd = string.Format("studio.window.navigateTo(studio.project.lookup(\"{0}\"))", eventRef.Guid.ToString("b"));
-                EditorUtils.SendScriptCommand(cmd);
+                EventBrowser.ShowEventBrowser();
+                var eventBrowser = EditorWindow.GetWindow<EventBrowser>();
+                eventBrowser.JumpToEvent(pathProperty.stringValue);
             }
             
             if (!String.IsNullOrEmpty(pathProperty.stringValue) && EventManager.EventFromPath(pathProperty.stringValue) != null)

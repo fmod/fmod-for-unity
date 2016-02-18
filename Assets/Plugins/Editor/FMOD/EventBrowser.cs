@@ -10,7 +10,7 @@ namespace FMODUnity
     class EventBrowser : EditorWindow, ISerializationCallbackReceiver
     {
         [MenuItem("FMOD/Event Browser", priority = 1)]
-        static void ShowEventBrowser()
+        public static void ShowEventBrowser()
         {
             EventBrowser eventBrowser = EditorWindow.GetWindow<EventBrowser>("FMOD Events");
             eventBrowser.minSize = new Vector2(280, 600);
@@ -378,7 +378,7 @@ namespace FMODUnity
 
             if (fromInspector)
             {
-                GUI.FocusControl("SearchBox");
+                EditorGUI.FocusTextInControl("SearchBox");
 
                 if (selectedItem != null && Event.current.isKey && Event.current.keyCode == KeyCode.Return)
                 {
@@ -474,18 +474,16 @@ namespace FMODUnity
             EditorStyles.label.fontStyle = FontStyle.Bold;
             EditorGUIUtility.labelWidth = 75;
 
-            EditorGUILayout.LabelField("Full Path", selectedEvent.Path, style);
-
-            if (Event.current.type == EventType.Repaint)
-            {
-                previewPathRect = GUILayoutUtility.GetLastRect();
-            }
-            if (Event.current.type == EventType.mouseDown && previewPathRect.Contains(Event.current.mousePosition) && Event.current.clickCount == 2)
+            var copyIcon = EditorGUIUtility.Load("FMOD/CopyIcon.png") as Texture;
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Full Path", selectedEvent.Path, style, GUILayout.ExpandWidth(true));
+            if (GUILayout.Button(copyIcon, GUILayout.ExpandWidth(false)))
             {
                 EditorGUIUtility.systemCopyBuffer = selectedEvent.Path;
-                this.ShowNotification(new GUIContent("Event Path Copied to Clipboard"));
-                Event.current.Use();
             }
+            EditorGUILayout.EndHorizontal();
+
+            
 
             StringBuilder builder = new StringBuilder();
             selectedEvent.Banks.ForEach((x) => { builder.Append(Path.GetFileNameWithoutExtension(x.Path)); builder.Append(", "); });
@@ -824,7 +822,7 @@ namespace FMODUnity
             JumpToBank(outputProperty.stringValue);
         }
 
-        void JumpToEvent(string eventPath)
+        public void JumpToEvent(string eventPath)
         {
             if (!String.IsNullOrEmpty(eventPath))
             {
