@@ -292,6 +292,12 @@ namespace FMODUnity
         private static void UpdateParamsOnEmitter(UnityEngine.Object obj, EditorEventRef eventRef)
         {
             var emitter = obj as StudioEventEmitter;
+            if (emitter == null)
+            {
+                // Custom game object
+                return;
+            }
+
             for (int i = 0; i < emitter.Params.Length; i++)
             {
                 if (!eventRef.Parameters.Exists((x) => x.Name == emitter.Params[i].Name))
