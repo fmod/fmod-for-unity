@@ -168,7 +168,7 @@ namespace FMODUnity
                 matchingSet = matchingValue = true;
 
                 var emitter = serializedObject.targetObject as StudioEventEmitter;
-                var param = emitter.Params != null && emitter.Params.Length > 0 ? emitter.Params.First((x) => x.Name == name) : null;
+                var param = emitter.Params != null ? emitter.Params.FirstOrDefault((x) => x.Name == name) : null;
                 if (param != null)
                 {
                     set = true;
@@ -195,7 +195,7 @@ namespace FMODUnity
         void SetParameterValue(UnityEngine.Object obj, string name, float value)
         {
             var emitter = obj as StudioEventEmitter;
-            var param = emitter.Params != null && emitter.Params.Length > 0 ? emitter.Params.First((x) => x.Name == name) : null;
+            var param = emitter.Params != null ? emitter.Params.FirstOrDefault((x) => x.Name == name) : null;
             if (param != null)
             {
                 param.Value = value;
@@ -221,7 +221,7 @@ namespace FMODUnity
         void AddParameterValue(UnityEngine.Object obj, string name, float value)
         {
             var emitter = obj as StudioEventEmitter;
-            var param = emitter.Params != null && emitter.Params.Length > 0 ? emitter.Params.First((x) => x.Name == name) : null;
+            var param = emitter.Params != null ? emitter.Params.FirstOrDefault((x) => x.Name == name) : null;
             if (param == null)
             {
                 int end = emitter.Params.Length;
