@@ -287,6 +287,15 @@ namespace FMODUnity
             master.getDSP(0, out mixerHead);
             mixerHead.setMeteringEnabled(false, true);
         }
+        
+        class AttachedInstance            
+        {
+            public FMOD.Studio.EventInstance instance;
+            public Transform transform;
+            public Rigidbody rigidBody;
+        }
+
+        List<AttachedInstance> attachedInstances = new List<AttachedInstance>(128);
 
         bool listenerWarningIssued = false;
         void Update()
@@ -298,6 +307,41 @@ namespace FMODUnity
                 {
                     listenerWarningIssued = true;
                     UnityEngine.Debug.LogWarning("FMOD Studio Integration: Please add an 'FMOD Studio Listener' component to your a camera in the scene for correct 3D positioning of sounds");
+                }
+
+                for (int i = 0; i < attachedInstances.Count; i++)
+                {
+                    FMOD.Studio.PLAYBACK_STATE playbackState = FMOD.Studio.PLAYBACK_STATE.STOPPED;
+                    attachedInstances[i].instance.getPlaybackState(out playbackState);
+                    if (!attachedInstances[i].instance.isValid() || playbackState == FMOD.Studio.PLAYBACK_STATE.STOPPED)
+                    {
+                        attachedInstances.RemoveAt(i);
+                        i--;
+                        continue;
+                    }
+                    attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform, attachedInstances[i].rigidBody));
+                }
+            }
+        }
+
+        public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, Transform transform, Rigidbody rigidBody)
+        {
+            var attachedInstance = new AttachedInstance();
+            attachedInstance.transform = transform;
+            attachedInstance.instance = instance;
+            attachedInstance.rigidBody = rigidBody;
+            Instance.attachedInstances.Add(attachedInstance);
+        }
+
+        public static void DetachInstanceFromGameObject(FMOD.Studio.EventInstance instance)
+        {
+            var manager = Instance;
+            for (int i = 0; i < manager.attachedInstances.Count; i++)
+            {
+                if (manager.attachedInstances[i].instance == instance)
+                {
+                    manager.attachedInstances.RemoveAt(i);
+                    return;
                 }
             }
         }
