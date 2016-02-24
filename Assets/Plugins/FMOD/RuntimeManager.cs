@@ -162,7 +162,14 @@ namespace FMODUnity
 
             #if UNITY_EDITOR || ((UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX) && DEVELOPMENT_BUILD)
                 result = FMOD.Debug.Initialize(FMOD.DEBUG_FLAGS.LOG, FMOD.DEBUG_MODE.FILE, null, RuntimeUtils.LogFileName);
-                CheckInitResult(result, "Applying debug settings");
+                if (result == FMOD.RESULT.ERR_FILE_NOTFOUND)
+                {
+                    UnityEngine.Debug.LogWarningFormat("FMOD Studio: Cannot open FMOD debug log file '{0}', logs will be missing for this session.", System.IO.Path.Combine(Application.dataPath, RuntimeUtils.LogFileName));
+                }
+                else
+                {
+                    CheckInitResult(result, "Applying debug settings");
+                }
             #endif
 
             int realChannels = fmodSettings.GetRealChannels(fmodPlatform);
