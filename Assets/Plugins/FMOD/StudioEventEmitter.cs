@@ -104,7 +104,7 @@ namespace FMODUnity
             bool isOneshot;
             eventDescription.isOneshot(out isOneshot);
             bool is3D;
-            eventDescription.isOneshot(out is3D);
+            eventDescription.is3D(out is3D);
 
             if (instance != null && !instance.isValid())
             {
