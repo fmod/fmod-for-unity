@@ -320,7 +320,10 @@ namespace FMODUnity
                 {
                     FMOD.Studio.PLAYBACK_STATE playbackState = FMOD.Studio.PLAYBACK_STATE.STOPPED;
                     attachedInstances[i].instance.getPlaybackState(out playbackState);
-                    if (!attachedInstances[i].instance.isValid() || playbackState == FMOD.Studio.PLAYBACK_STATE.STOPPED)
+                    if (!attachedInstances[i].instance.isValid() || 
+                        playbackState == FMOD.Studio.PLAYBACK_STATE.STOPPED ||
+                        attachedInstances[i].transform == null // destroyed game object
+                        )
                     {
                         attachedInstances.RemoveAt(i);
                         i--;
@@ -583,7 +586,27 @@ namespace FMODUnity
             instance.start();
             instance.release();
         }
-        
+
+        public static void PlayOneShotAttached(string path, GameObject gameObject)
+        {
+            try
+            {
+                PlayOneShotAttached(PathToGUID(path), gameObject);
+            }
+            catch (EventNotFoundException)
+            {
+                // Switch from exception with GUID to exception with path
+                throw new EventNotFoundException(path);
+            }
+        }
+
+        public static void PlayOneShotAttached(Guid guid, GameObject gameObject)
+        {
+            var instance = CreateInstance(guid);
+            AttachInstanceToGameObject(instance, gameObject.transform, gameObject.GetComponent<Rigidbody>());
+            instance.start();
+        }
+
         public static FMOD.Studio.EventDescription GetEventDescription(string path)
         {
             try

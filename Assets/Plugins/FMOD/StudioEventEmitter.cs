@@ -38,6 +38,10 @@ namespace FMODUnity
             if (!isQuitting)
             {
                 HandleGameEvent(EmitterGameEvent.LevelEnd);
+                if (instance != null && instance.isValid())
+                {
+                    RuntimeManager.DetachInstanceFromGameObject(instance);
+                }
             }
         }
 
@@ -101,8 +105,11 @@ namespace FMODUnity
                 Lookup();
             }
 
-            bool isOneshot;
-            eventDescription.isOneshot(out isOneshot);
+            bool isOneshot = false;
+            if (!Event.StartsWith("snapshot", StringComparison.CurrentCultureIgnoreCase))
+            {
+                eventDescription.isOneshot(out isOneshot);
+            }
             bool is3D;
             eventDescription.is3D(out is3D);
 
