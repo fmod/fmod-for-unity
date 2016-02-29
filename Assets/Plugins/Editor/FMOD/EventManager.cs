@@ -199,6 +199,7 @@ namespace FMODUnity
             eventCache.StringsBankWriteTime = File.GetLastWriteTime(stringBankPath);
             string masterBankFileName = Path.GetFileName(stringBankPath).Replace(StringBankExtension, BankExtension);
 
+            AssetDatabase.StartAssetEditing();
             eventCache.EditorBanks.ForEach((x) => x.Exists = false);
 
             foreach (string bankFileName in bankFileNames)
@@ -256,6 +257,7 @@ namespace FMODUnity
             eventCache.EditorEvents.RemoveAll((x) => x.Banks.Count == 0);
 
             OnCacheChange();
+            AssetDatabase.StopAssetEditing();
         }
 
         static void UpdateCacheBank(EditorBankRef bankRef)
