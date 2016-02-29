@@ -317,7 +317,7 @@ namespace FMODUnity
         {
             Settings settings = target as Settings;
             
-            EditorUtility.SetDirty(settings);
+            EditorGUI.BeginChangeCheck();
 
             hasBankSourceChanged = false;
 
@@ -442,6 +442,10 @@ namespace FMODUnity
             if (!validBanks)
             {
                 EditorGUILayout.HelpBox(failReason, MessageType.Error, true);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    EditorUtility.SetDirty(settings);
+                }
                 return;
             }
 
@@ -552,6 +556,11 @@ namespace FMODUnity
             DisplayPlatform(FMODPlatform.Desktop, null);
 			DisplayPlatform(FMODPlatform.Mobile, new FMODPlatform[] { FMODPlatform.MobileHigh, FMODPlatform.MobileLow, FMODPlatform.PSVita, FMODPlatform.AppleTV });
             DisplayPlatform(FMODPlatform.Console, new FMODPlatform[] { FMODPlatform.XboxOne, FMODPlatform.PS4, FMODPlatform.WiiU });
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(settings);
+            }
 
             if (hasBankSourceChanged)
             {
