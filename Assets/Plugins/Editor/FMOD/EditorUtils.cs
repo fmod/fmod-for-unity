@@ -136,9 +136,9 @@ namespace FMODUnity
             return new string[0];
         }
 
-        public static FMODPlatform GetFMODPlatform(BuildTarget target)
+        public static FMODPlatform GetFMODPlatform()
         {
-            switch (target)
+            switch (EditorUserBuildSettings.activeBuildTarget)
             {
                 case BuildTarget.Android:
                     return FMODPlatform.Android;
@@ -170,7 +170,17 @@ namespace FMODUnity
                 #else
                 case BuildTarget.WSAPlayer:
                 #endif
-                    return FMODPlatform.WindowsPhone; // TODO: not correct if we support Win RT
+                #if !UNITY_4_6 && !UNITY_4_7 && !UNITY_5_0 && !UNITY_5_1
+                    if (EditorUserBuildSettings.wsaSDK == WSASDK.UWP)
+                    {
+                        return FMODPlatform.UWP;
+                    }
+                #endif
+                    if (EditorUserBuildSettings.wsaSDK == WSASDK.PhoneSDK81)
+                    { 
+                        return FMODPlatform.WindowsPhone;
+                    }
+                    return FMODPlatform.None;
                 #if !UNITY_4_6 && !UNITY_4_7 && !UNITY_5_0 && !UNITY_5_1 && !UNITY_5_2
 			    case BuildTarget.tvOS:
 					return FMODPlatform.AppleTV;
@@ -194,8 +204,9 @@ namespace FMODUnity
             EditorApplication.update += Update;
 		    EditorApplication.playmodeStateChanged += HandleOnPlayModeChanged;
 	    }
- 
-	    static void HandleOnPlayModeChanged()
+        
+
+        static void HandleOnPlayModeChanged()
 	    {
             // Ensure we don't leak system handles in the DLL
 		    if (EditorApplication.isPlayingOrWillChangePlaymode &&

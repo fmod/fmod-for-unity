@@ -32,6 +32,7 @@ namespace FMODUnity
         WiiU,
         PSVita,
 		AppleTV,
+        UWP,
         Count,
     }
     
@@ -165,6 +166,7 @@ namespace FMODUnity
                 case FMODPlatform.Windows:
                 case FMODPlatform.Linux:
                 case FMODPlatform.Mac:
+                case FMODPlatform.UWP:
                     return FMODPlatform.Desktop;
                 case FMODPlatform.MobileHigh:
                 case FMODPlatform.MobileLow:

@@ -251,6 +251,8 @@ namespace FMODUnity
             return FMODPlatform.PSVita;
             #elif UNITY_WIIU
             return FMODPlatform.WiiU;
+            #elif UNITY_WSA_10_0
+            return FMODPlatform.UWP;
             #endif
         }
 
@@ -274,7 +276,7 @@ namespace FMODUnity
             {
                 bankFolder = String.Format("jar:file://{0}!/assets", Application.dataPath);
             }
-            #elif UNITY_WINRT_8_1
+            #elif UNITY_WINRT_8_1 || UNITY_WSA_10_0
             string bankFolder = "ms-appx:///Data/StreamingAssets";
             #else
             string bankFolder = Application.streamingAssetsPath;
@@ -295,7 +297,7 @@ namespace FMODUnity
 			#if (UNITY_IOS || UNITY_TVOS || UNITY_PSP2)
 				return "";
 			#else
-	            #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_XBOXONE || UNITY_WINRT_8_1
+	            #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_XBOXONE || UNITY_WINRT_8_1 || UNITY_WSA_10_0
 	                string pluginFileName = pluginName + ".dll";
 	            #elif UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
 					string pluginFileName = pluginName + ".bundle";
@@ -309,7 +311,7 @@ namespace FMODUnity
 	                string pluginFolder = Application.dataPath + "/Plugins/X86_64/";
 	            #elif UNITY_EDITOR_WIN
 	                string pluginFolder = Application.dataPath + "/Plugins/X86/";
-	            #elif UNITY_STANDALONE_WIN || UNITY_PS4 || UNITY_XBOXONE || UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX || UNITY_STANDALONE_LINUX
+	            #elif UNITY_STANDALONE_WIN || UNITY_PS4 || UNITY_XBOXONE || UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX || UNITY_STANDALONE_LINUX || UNITY_WSA_10_0
 	                string pluginFolder = Application.dataPath + "/Plugins/";
 	            #elif UNITY_WINRT_8_1
 	                string pluginFolder = "";

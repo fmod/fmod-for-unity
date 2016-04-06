@@ -53,7 +53,9 @@ namespace FMODUnity
                 case FMODPlatform.Windows:
                     return "Windows";
                 case FMODPlatform.WindowsPhone:
-                    return "Windows Phone";
+                    return "Windows Phone 8.1";
+                case FMODPlatform.UWP:
+                    return "UWP";
                 case FMODPlatform.XboxOne:
                     return "XBox One";
                 case FMODPlatform.WiiU:

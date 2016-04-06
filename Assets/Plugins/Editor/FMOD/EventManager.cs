@@ -60,7 +60,7 @@ namespace FMODUnity
             }
             else
             {
-                FMODPlatform platform = EditorUtils.GetFMODPlatform(EditorUserBuildSettings.activeBuildTarget);
+                FMODPlatform platform = EditorUtils.GetFMODPlatform();
                 if (platform == FMODPlatform.None)
                 {
                     platform = FMODPlatform.PlayInEditor;
@@ -199,6 +199,8 @@ namespace FMODUnity
             eventCache.StringsBankWriteTime = File.GetLastWriteTime(stringBankPath);
             string masterBankFileName = Path.GetFileName(stringBankPath).Replace(StringBankExtension, BankExtension);
 
+            AssetDatabase.StartAssetEditing();
+
             eventCache.EditorBanks.ForEach((x) => x.Exists = false);
 
             foreach (string bankFileName in bankFileNames)
@@ -256,6 +258,7 @@ namespace FMODUnity
             eventCache.EditorEvents.RemoveAll((x) => x.Banks.Count == 0);
 
             OnCacheChange();
+            AssetDatabase.StopAssetEditing();
         }
 
         static void UpdateCacheBank(EditorBankRef bankRef)
@@ -346,7 +349,7 @@ namespace FMODUnity
 
         public static void CopyToStreamingAssets()
         {
-            FMODPlatform platform = EditorUtils.GetFMODPlatform(EditorUserBuildSettings.activeBuildTarget);
+            FMODPlatform platform = EditorUtils.GetFMODPlatform();
             if (platform == FMODPlatform.None)
             {
                 UnityEngine.Debug.LogWarning(String.Format("FMOD Studio: copy banks for platform {0} : Unsupported platform", EditorUserBuildSettings.activeBuildTarget.ToString()));
