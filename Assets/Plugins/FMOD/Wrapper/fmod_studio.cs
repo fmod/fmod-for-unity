@@ -71,6 +71,7 @@ namespace FMOD.Studio
         public int commandQueueSize;     /* [r/w] Optional. Specify 0 to ignore. Specify the command queue size for studio async processing.  Default 4096 (4kb) */
         public int handleInitialSize;    /* [r/w] Optional. Specify 0 to ignore. Specify the initial size to allocate for handles.  Memory for handles will grow as needed in pages. */
         public int studioUpdatePeriod;   /* [r/w] Optional. Specify 0 to ignore. Specify the update period of Studio when in async mode, in milliseconds.  Will be quantised to the nearest multiple of mixer duration.  Default is 20ms. */
+        public int idleSampleDataPoolSize; /* [r/w] Optional. Specify 0 to ignore. Specify the amount of sample data to keep in memory when no longer used, to avoid repeated disk IO.  Use -1 to disable.  Default is 256kB. */
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -230,7 +231,7 @@ namespace FMOD.Studio
     {
         IntPtr name_or_data;
         MODE mode;
-        CREATESOUNDEXINFO exinfo;
+        CREATESOUNDEXINFO_INTERNAL exinfo;
         int subsoundIndex;
 
         // Helper functions
@@ -239,7 +240,7 @@ namespace FMOD.Studio
             publicInfo = new SOUND_INFO();
 
             publicInfo.mode = mode;
-            publicInfo.exinfo = exinfo;
+            publicInfo.exinfo = CREATESOUNDEXINFO_INTERNAL.CreateFromInternal(ref exinfo);
 
             // Somewhat hacky: we know the inclusion list always points to subsoundIndex, so recreate it here
             #if NETFX_CORE
@@ -752,16 +753,19 @@ namespace FMOD.Studio
         }
         public RESULT getSoundInfo(string key, out SOUND_INFO info)
         {
-            SOUND_INFO_INTERNAL internalInfo;
-
-            RESULT result = FMOD_Studio_System_GetSoundInfo(rawPtr, Encoding.UTF8.GetBytes(key + Char.MinValue), out internalInfo);
+            var size = Marshal.SizeOf(typeof(SOUND_INFO_INTERNAL));
+            IntPtr infoPtr = Marshal.AllocHGlobal(size);
+            
+            RESULT result = FMOD_Studio_System_GetSoundInfo(rawPtr, Encoding.UTF8.GetBytes(key + Char.MinValue), infoPtr);
             if (result != RESULT.OK)
             {
+                Marshal.FreeHGlobal(infoPtr);
                 info = new SOUND_INFO();
                 return result;
             }
-
+            SOUND_INFO_INTERNAL internalInfo = (SOUND_INFO_INTERNAL)Marshal.PtrToStructure(infoPtr, typeof(SOUND_INFO_INTERNAL));
             internalInfo.assign(out info);
+            Marshal.FreeHGlobal(infoPtr);
 
             return result;
         }
@@ -990,7 +994,7 @@ namespace FMOD.Studio
         [DllImport (STUDIO_VERSION.dll)]
 		private static extern RESULT FMOD_Studio_System_GetBankByID             (IntPtr studiosystem, byte[] guid, out IntPtr bank);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetSoundInfo            (IntPtr studiosystem, byte[] key, out SOUND_INFO_INTERNAL info);
+        private static extern RESULT FMOD_Studio_System_GetSoundInfo            (IntPtr studiosystem, byte[] key, IntPtr info);
         [DllImport (STUDIO_VERSION.dll)]
 		private static extern RESULT FMOD_Studio_System_LookupID                (IntPtr studiosystem, byte[] path, [Out] byte[] guid);
         [DllImport(STUDIO_VERSION.dll)]
