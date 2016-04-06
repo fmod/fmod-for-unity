@@ -200,7 +200,7 @@ namespace FMODUnity
             string masterBankFileName = Path.GetFileName(stringBankPath).Replace(StringBankExtension, BankExtension);
 
             AssetDatabase.StartAssetEditing();
-
+            
             eventCache.EditorBanks.ForEach((x) => x.Exists = false);
 
             foreach (string bankFileName in bankFileNames)
