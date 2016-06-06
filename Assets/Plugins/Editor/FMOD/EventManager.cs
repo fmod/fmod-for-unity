@@ -200,7 +200,7 @@ namespace FMODUnity
             string masterBankFileName = Path.GetFileName(stringBankPath).Replace(StringBankExtension, BankExtension);
 
             AssetDatabase.StartAssetEditing();
-            
+
             eventCache.EditorBanks.ForEach((x) => x.Exists = false);
 
             foreach (string bankFileName in bankFileNames)
@@ -377,7 +377,7 @@ namespace FMODUnity
                 foreach (var bankFileName in currentBankFiles)
                 {
                     string bankName = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(bankFileName));
-                    if (!eventCache.EditorBanks.Exists((x) => bankName == x.Name))
+                    if (!eventCache.EditorBanks.Exists((x) => (String.Equals(bankName, x.Name, StringComparison.CurrentCultureIgnoreCase))))
                     {
                         File.Delete(bankFileName);
                         madeChanges = true;
