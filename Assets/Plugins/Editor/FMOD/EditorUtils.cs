@@ -400,7 +400,14 @@ namespace FMODUnity
             if (load)
             {
                 CheckResult(System.loadBankFile(EventManager.MasterBank.Path, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out masterBank));
-                CheckResult(System.loadBankFile(eventRef.Banks[0].Path, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out previewBank));
+                if (eventRef.Banks[0] != EventManager.MasterBank)
+                {
+                    CheckResult(System.loadBankFile(eventRef.Banks[0].Path, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out previewBank));
+                }
+                else
+                {
+                    previewBank = null;
+                }
 
                 CheckResult(System.getEventByID(eventRef.Guid, out previewEventDesc));
                 CheckResult(previewEventDesc.createInstance(out previewEventInstance));
@@ -451,8 +458,13 @@ namespace FMODUnity
                 previewEventInstance.release();
                 previewEventInstance = null;
                 previewEventDesc = null;
-                previewBank.unload();
+                if (previewBank != null)
+                {
+                    previewBank.unload();
+                }
                 masterBank.unload();
+                masterBank = null;
+                previewBank = null;
                 previewState = PreviewState.Stopped;
             }
         }
