@@ -463,6 +463,8 @@ namespace FMOD.Studio
         PLUGIN_DESTROYED         = 0x00000400,  /* Called when a DSP plugin instance is about to be destroyed. Parameters = FMOD_STUDIO_PLUGIN_INSTANCE_PROPERTIES. */
         TIMELINE_MARKER          = 0x00000800,  /* Called when the timeline passes a named marker.  Parameters = FMOD_STUDIO_TIMELINE_MARKER_PROPERTIES. */
         TIMELINE_BEAT            = 0x00001000,  /* Called when the timeline hits a beat in a tempo section.  Parameters = FMOD_STUDIO_TIMELINE_BEAT_PROPERTIES. */
+        SOUND_PLAYED             = 0x00002000,  /* Called when the event plays a sound.  Parameters = FMOD::Sound. */
+        SOUND_STOPPED            = 0x00004000,  /* Called when the event finishes playing a sound.  Parameters = FMOD::Sound. */
 
         ALL                      = 0xFFFFFFFF,  /* Pass this mask to Studio::EventDescription::setCallback or Studio::EventInstance::setCallback to receive all callback types. */
     }
@@ -1165,6 +1167,10 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_EventDescription_GetMaximumDistance(rawPtr, out distance);
         }
+        public RESULT getSoundSize(out float size)
+        {
+            return FMOD_Studio_EventDescription_GetSoundSize(rawPtr, out size);
+        }
         public RESULT isOneshot(out bool oneshot)
         {
             return FMOD_Studio_EventDescription_IsOneshot(rawPtr, out oneshot);
@@ -1295,6 +1301,8 @@ namespace FMOD.Studio
         private static extern RESULT FMOD_Studio_EventDescription_GetMinimumDistance(IntPtr eventdescription, out float distance);
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventDescription_GetMaximumDistance(IntPtr eventdescription, out float distance);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_GetSoundSize(IntPtr eventdescription, out float size);
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventDescription_IsOneshot(IntPtr eventdescription, out bool oneshot);
         [DllImport (STUDIO_VERSION.dll)]
