@@ -258,7 +258,11 @@ namespace FMODUnity
             UnityEngine.Debug.Log("FMOD Studio: Creating editor system instance");
             RuntimeUtils.EnforceLibraryOrder();
 
-            CheckResult(FMOD.Debug.Initialize(FMOD.DEBUG_FLAGS.LOG, FMOD.DEBUG_MODE.FILE, null, "fmod_editor.log"));
+            FMOD.RESULT result = FMOD.Debug.Initialize(FMOD.DEBUG_FLAGS.LOG, FMOD.DEBUG_MODE.FILE, null, "fmod_editor.log");
+            if (result != FMOD.RESULT.OK)
+            {
+                UnityEngine.Debug.LogWarning("FMOD Studio: Cannot open fmod_editor.log. Logging will be disabled for importing and previewing");
+            }
 
             CheckResult(FMOD.Studio.System.create(out system));
 
