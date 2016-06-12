@@ -7,9 +7,19 @@ using System.IO;
 namespace FMODUnity
 {    
     [CustomPropertyDrawer(typeof(EventRefAttribute))]
-    class EventRefDrawer : PropertyDrawer
+    public class EventRefDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            DrawEventRef(position, property, label);
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            return GetEventRefPropertyHeight(property, label);
+        }
+
+        public static void DrawEventRef(Rect position, SerializedProperty property, GUIContent label)
         {
             Texture browseIcon = EditorGUIUtility.Load("FMOD/SearchIconBlack.png") as Texture;
             Texture openIcon = EditorGUIUtility.Load("FMOD/BrowserIcon.png") as Texture;
@@ -139,7 +149,7 @@ namespace FMODUnity
             EditorGUI.EndProperty();
         }
 
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        public static float GetEventRefPropertyHeight(SerializedProperty property, GUIContent label)
         {
             bool expanded = property.isExpanded && !String.IsNullOrEmpty(property.stringValue) && EventManager.EventFromPath(property.stringValue) != null;
             float baseHeight = GUI.skin.textField.CalcSize(new GUIContent()).y;            
