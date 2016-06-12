@@ -655,6 +655,11 @@ namespace FMODUnity
             Instance.studioSystem.setListenerAttributes(0, RuntimeUtils.To3DAttributes(gameObject, rigidBody));
         }
 
+        public static void SetListenerLocation(GameObject gameObject, Rigidbody2D rigidBody = null)
+        {
+            Instance.studioSystem.setListenerAttributes(0, RuntimeUtils.To3DAttributes(gameObject, rigidBody));
+        }
+
         public static void SetListenerLocation(Transform transform)
         {
             Instance.studioSystem.setListenerAttributes(0, transform.To3DAttributes());
