@@ -75,7 +75,8 @@ namespace FMODUnity
                 {
                     UnityEngine.Debug.LogException(e);
                 }
-            }            
+            }
+            RuntimeManager.WaitForAllLoads();     
         }
 
         public void Unload()

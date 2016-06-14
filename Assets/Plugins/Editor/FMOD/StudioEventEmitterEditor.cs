@@ -20,7 +20,8 @@ namespace FMODUnity
             var param = serializedObject.FindProperty("Params");
             var fadeout = serializedObject.FindProperty("AllowFadeout");
             var once = serializedObject.FindProperty("TriggerOnce");
-            
+            var preload = serializedObject.FindProperty("Preload");
+
             EditorGUILayout.PropertyField(begin, new GUIContent("Play Event"));
             EditorGUILayout.PropertyField(end, new GUIContent("Stop Event"));
 
@@ -109,6 +110,7 @@ namespace FMODUnity
             fadeout.isExpanded = EditorGUILayout.Foldout(fadeout.isExpanded, "Advanced Controls");
             if (fadeout.isExpanded)
             {
+                EditorGUILayout.PropertyField(preload, new GUIContent("Preload Sample Data"));
                 EditorGUILayout.PropertyField(fadeout, new GUIContent("Allow Fadeout When Stopping"));
                 EditorGUILayout.PropertyField(once, new GUIContent("Trigger Once"));
             }

@@ -286,6 +286,8 @@ namespace FMODUnity
                             UnityEngine.Debug.LogException(e);
                         }
                     }
+
+                    WaitForAllLoads();
                 }
             };
 
@@ -525,6 +527,23 @@ namespace FMODUnity
                     Instance.loadedBanks.Remove(bankName);
                 }
             }
+        }
+
+        public static bool AnyBankLoading()
+        {
+            bool loading = false;
+            foreach (LoadedBank bank in Instance.loadedBanks.Values)
+            {
+                FMOD.Studio.LOADING_STATE loadingState;
+                bank.Bank.getSampleLoadingState(out loadingState);
+                loading |= (loadingState == FMOD.Studio.LOADING_STATE.LOADING);
+            }
+            return loading;
+        }
+        
+        public static void WaitForAllLoads()
+        {
+            Instance.studioSystem.flushSampleLoading();
         }
 
         public static Guid PathToGUID(string path)

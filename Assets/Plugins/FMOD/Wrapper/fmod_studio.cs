@@ -1171,6 +1171,10 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_EventDescription_GetSoundSize(rawPtr, out size);
         }
+        public RESULT isSnapshot(out bool snapshot)
+        {
+            return FMOD_Studio_EventDescription_IsSnapshot(rawPtr, out snapshot);
+        }
         public RESULT isOneshot(out bool oneshot)
         {
             return FMOD_Studio_EventDescription_IsOneshot(rawPtr, out oneshot);
@@ -1303,6 +1307,8 @@ namespace FMOD.Studio
         private static extern RESULT FMOD_Studio_EventDescription_GetMaximumDistance(IntPtr eventdescription, out float distance);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventDescription_GetSoundSize(IntPtr eventdescription, out float size);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_IsSnapshot(IntPtr eventdescription, out bool snapshot);
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventDescription_IsOneshot(IntPtr eventdescription, out bool oneshot);
         [DllImport (STUDIO_VERSION.dll)]
