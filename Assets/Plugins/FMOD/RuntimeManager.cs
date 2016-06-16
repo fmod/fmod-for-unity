@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -237,6 +238,9 @@ namespace FMODUnity
             else
             {
                 // Load plugins (before banks)
+		    	#if (UNITY_IOS || UNITY_TVOS) && !UNITY_EDITOR
+				FmodUnityNativePluginInit(lowlevelSystem.getRaw());
+				#else
                 foreach (var pluginName in fmodSettings.Plugins)
                 {
                     string pluginPath = RuntimeUtils.GetPluginPath(pluginName);
@@ -253,6 +257,7 @@ namespace FMODUnity
                     CheckInitResult(result, String.Format("Loading plugin '{0}' from '{1}'", pluginName, pluginPath));
                     loadedPlugins.Add(pluginName, handle);
                 }
+                #endif
 
                 // Always load strings bank
                 try
@@ -702,5 +707,10 @@ namespace FMODUnity
             }
             return vca;
         }
+
+	    #if (UNITY_IOS || UNITY_TVOS) && !UNITY_EDITOR
+	    [DllImport("__Internal")]
+	    private static extern FMOD.RESULT FmodUnityNativePluginInit(IntPtr system);
+	    #endif
     }
 }
