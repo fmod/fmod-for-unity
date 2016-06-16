@@ -1,16 +1,11 @@
-#include "fmod.h"
+struct FMOD_SYSTEM;
+struct FMOD_DSP_DESCRIPTION;
 
+extern "C" uint32_t FMOD5_System_RegisterDSP(FMOD_SYSTEM *system, const FMOD_DSP_DESCRIPTION *description, uint32_t *handle);
 
-FMOD_RESULT F_API FMOD5_System_GetVersion(FMOD_SYSTEM *system, unsigned int *version);
-FMOD_RESULT F_API FMOD5_System_RegisterDSP(FMOD_SYSTEM *system, const FMOD_DSP_DESCRIPTION *description, unsigned int *handle);
-
-extern "C" FMOD_RESULT FmodUnityNativePluginInit(FMOD_SYSTEM* system)
+extern "C" uint32_t FmodUnityNativePluginInit(FMOD_SYSTEM* system)
 {
-    FMOD_RESULT result = FMOD_OK;
-    
-    
-    unsigned int version=0;
-    result = FMOD5_System_GetVersion(system, &version);
+    uint32_t result = 0;
     
     /*
     
@@ -25,8 +20,8 @@ extern "C" FMOD_RESULT FmodUnityNativePluginInit(FMOD_SYSTEM* system)
     */
     
     /*    
-    result = FMOD_System_RegisterDSP(system, GetMyDSPDescription(), nullptr);
-    if (result != FMOD_OK)
+    result = FMOD5_System_RegisterDSP(system, GetMyDSPDescription(), nullptr);
+    if (result != 0)
     {
         return result;
     }    
