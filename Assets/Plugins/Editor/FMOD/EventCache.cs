@@ -7,7 +7,7 @@ namespace FMODUnity
 {
     class EventCache : ScriptableObject
     {
-        public static int CurrentCacheVersion = 1;
+        public static int CurrentCacheVersion = 2;
 
         [SerializeField]
         public List<EditorBankRef> EditorBanks;
@@ -15,6 +15,8 @@ namespace FMODUnity
         public List<EditorEventRef> EditorEvents;
         [SerializeField]
         public EditorBankRef MasterBankRef;
+        [SerializeField]
+        public EditorBankRef StringsBankRef;
         [SerializeField]
         Int64 stringsBankWriteTime;
         [SerializeField]

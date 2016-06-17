@@ -35,7 +35,15 @@ namespace FMODUnity
         UWP,
         Count,
     }
-    
+
+    [Serializable]
+    public enum ImportType
+    {
+        StreamingAssets,
+        AssetBundle,
+    }
+
+
     public class PlatformSettingBase
     {
         public FMODPlatform Platform;
@@ -124,7 +132,12 @@ namespace FMODUnity
 
         [SerializeField]
         public bool AutomaticSampleLoading;
+        
+        [SerializeField]
+        public ImportType ImportType;
 
+        [SerializeField]
+        public string TargetAssetPath;
 
         [SerializeField]
         public List<PlatformIntSetting> SpeakerModeSettings;
@@ -310,8 +323,10 @@ namespace FMODUnity
             SetSetting(SampleRateSettings, FMODPlatform.Default, 0);
             SetSetting(SpeakerModeSettings, FMODPlatform.Default, (int) FMOD.SPEAKERMODE.STEREO);
 
+            ImportType = ImportType.StreamingAssets;
             AutomaticEventLoading = true;
             AutomaticSampleLoading = false;
+            TargetAssetPath = "";
         }
     }
 

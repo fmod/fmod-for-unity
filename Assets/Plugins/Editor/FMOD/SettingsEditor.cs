@@ -322,6 +322,7 @@ namespace FMODUnity
             EditorGUI.BeginChangeCheck();
 
             hasBankSourceChanged = false;
+            bool hasBankTargetChanged = false;
 
             GUIStyle style = new GUIStyle(GUI.skin.label);
             style.richText = true;
@@ -451,6 +452,24 @@ namespace FMODUnity
                 return;
             }
 
+
+            ImportType importType = (ImportType)EditorGUILayout.EnumPopup("Import Type", settings.ImportType);
+            if (importType != settings.ImportType)
+            {
+                hasBankTargetChanged = true;
+                settings.ImportType = importType;
+            }
+
+            EditorGUI.BeginDisabledGroup(settings.ImportType == ImportType.StreamingAssets);
+            string targetAssetPath = EditorGUILayout.TextField("FMOD Asset Folder", settings.TargetAssetPath);
+            if (targetAssetPath != settings.TargetAssetPath)
+            {
+                settings.TargetAssetPath = targetAssetPath;
+                hasBankTargetChanged = true;
+            }
+            EditorGUI.EndDisabledGroup();
+            EditorGUI.BeginDisabledGroup(settings.ImportType == ImportType.AssetBundle);
+
             // ----- Loading -----------------
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("<b>Loading</b>", style);
@@ -460,6 +479,7 @@ namespace FMODUnity
             settings.AutomaticSampleLoading = EditorGUILayout.Toggle("Load All Sample Data at Initialization", settings.AutomaticSampleLoading);
             EditorGUI.EndDisabledGroup();
             EditorGUI.indentLevel--;
+            EditorGUI.EndDisabledGroup();
 
 
             // ----- PIE ----------------------------------------------
@@ -567,6 +587,10 @@ namespace FMODUnity
             if (hasBankSourceChanged)
             {
                 EventManager.UpdateCache();
+            }
+            if (hasBankTargetChanged)
+            {
+                EventManager.CopyToStreamingAssets();
             }
         }
 
