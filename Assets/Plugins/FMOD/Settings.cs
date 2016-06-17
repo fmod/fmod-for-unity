@@ -64,8 +64,15 @@ namespace FMODUnity
     {
     }
 
+    public enum TriStateBool
+    {
+        Disabled,
+        Enabled,
+        Development,
+    }
+
     [Serializable]
-    public class PlatformBoolSetting : PlatformSetting<bool>
+    public class PlatformBoolSetting : PlatformSetting<TriStateBool>
     {
     }
     
@@ -248,20 +255,23 @@ namespace FMODUnity
         // --------   Live Update ----------------------
         public bool IsLiveUpdateEnabled(FMODPlatform platform)
         {
-            return GetSetting(LiveUpdateSettings, platform, false);
+            #if DEVELOPMENT_BUILD || UNITY_EDITOR
+            return GetSetting(LiveUpdateSettings, platform, TriStateBool.Disabled) != TriStateBool.Disabled;
+            #else
+            return GetSetting(LiveUpdateSettings, platform, MyBool.Disabled) == MyBool.Enabled;
+            #endif
         }
 
         // --------   Overlay Update ----------------------
         public bool IsOverlayEnabled(FMODPlatform platform)
         {
-            return GetSetting(OverlaySettings, platform, false);
+            #if DEVELOPMENT_BUILD || UNITY_EDITOR
+            return GetSetting(OverlaySettings, platform, TriStateBool.Disabled) != TriStateBool.Disabled;
+            #else
+            return GetSetting(OverlaySettings, platform, MyBool.Disabled) == MyBool.Enabled;
+            #endif
         }
-
-        // --------   Logging ----------------------
-        public bool IsLoggingEnabled(FMODPlatform platform)
-        {
-            return GetSetting(LoggingSettings, platform, false);
-        }
+        
 
         // --------   Real channels ----------------------
         public int GetRealChannels(FMODPlatform platform)
@@ -305,18 +315,18 @@ namespace FMODUnity
             BankDirectorySettings = new List<PlatformStringSetting>();
             
             // Default play in editor settings
-            SetSetting(LoggingSettings, FMODPlatform.PlayInEditor, true);
-            SetSetting(LiveUpdateSettings, FMODPlatform.PlayInEditor, true);
-            SetSetting(OverlaySettings, FMODPlatform.PlayInEditor, true);
+            SetSetting(LoggingSettings, FMODPlatform.PlayInEditor, TriStateBool.Enabled);
+            SetSetting(LiveUpdateSettings, FMODPlatform.PlayInEditor, TriStateBool.Enabled);
+            SetSetting(OverlaySettings, FMODPlatform.PlayInEditor, TriStateBool.Enabled);
             SetSetting(SpeakerModeSettings, FMODPlatform.PlayInEditor, (int)FMOD.SPEAKERMODE.STEREO);
             // These are not editable, set them high
             SetSetting(RealChannelSettings, FMODPlatform.PlayInEditor, 256);
             SetSetting(VirtualChannelSettings, FMODPlatform.PlayInEditor, 1024);
 
             // Default runtime settings
-            SetSetting(LoggingSettings, FMODPlatform.Default, false);
-            SetSetting(LiveUpdateSettings, FMODPlatform.Default, false);
-            SetSetting(OverlaySettings, FMODPlatform.Default, false);
+            SetSetting(LoggingSettings, FMODPlatform.Default, TriStateBool.Disabled);
+            SetSetting(LiveUpdateSettings, FMODPlatform.Default, TriStateBool.Disabled);
+            SetSetting(OverlaySettings, FMODPlatform.Default, TriStateBool.Disabled);
 
             SetSetting(RealChannelSettings, FMODPlatform.Default, 32); // Match the default in the low level
             SetSetting(VirtualChannelSettings, FMODPlatform.Default, 128);

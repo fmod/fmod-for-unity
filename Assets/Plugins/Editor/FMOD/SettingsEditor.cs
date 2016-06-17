@@ -9,7 +9,9 @@ namespace FMODUnity
     [CustomEditor(typeof(Settings))]
     public class SettingsEditor : Editor
     {
-        string[] ToggleParent = new string[] { "Disabled", "Enabled" };
+        string[] ToggleParent = new string[] { "Disabled", "Enabled", "Development Build Only",  };
+
+        string[] ToggleEditor = new string[] { "Enabled", "Disabled", };
 
         string[] FrequencyDisplay = new string[] { "Platform Default", "22050", "24000", "32000", "44100", "48000"};
         int[] FrequencyValues = new int[] { 0, 22050, 24000, 32000, 44100, 48000 };
@@ -74,23 +76,32 @@ namespace FMODUnity
             return "Unknown";
         }
 
+
+        void DisplayEditorBool(string label, List<PlatformBoolSetting> settings, FMODPlatform platform)
+        {
+            int current = Settings.GetSetting(settings, platform, TriStateBool.Disabled) != TriStateBool.Disabled ? 0 : 1;            
+            int next = EditorGUILayout.Popup(label, (int)current, ToggleEditor);
+            Settings.SetSetting(settings, platform, next == 0 ? TriStateBool.Enabled : TriStateBool.Disabled);
+        }
+
         void DisplayParentBool(string label, List<PlatformBoolSetting> settings, FMODPlatform platform)
         {
-            bool current = Settings.GetSetting(settings, platform, false);
-            int next = EditorGUILayout.Popup(label, current ? 1 : 0, ToggleParent);
-            Settings.SetSetting(settings, platform, next == 1);
+            TriStateBool current = Settings.GetSetting(settings, platform, TriStateBool.Disabled);
+            int next = EditorGUILayout.Popup(label, (int)current, ToggleParent);
+            Settings.SetSetting(settings, platform, (TriStateBool)next);
         }
 
         void DisplayChildBool(string label, List<PlatformBoolSetting> settings, FMODPlatform platform)
         {
             bool overriden = Settings.HasSetting(settings, platform);
-            bool current = Settings.GetSetting(settings, platform, false);
+            TriStateBool parent = Settings.GetSetting(settings, Settings.GetParent(platform), TriStateBool.Disabled);
+            TriStateBool current = Settings.GetSetting(settings, platform, TriStateBool.Disabled);
 
             string[] toggleChild = new string[ToggleParent.Length + 1];
             Array.Copy(ToggleParent, 0, toggleChild, 1, ToggleParent.Length);
-            toggleChild[0] = String.Format("Inherit ({0})", ToggleParent[current ? 1 : 0]);
+            toggleChild[0] = String.Format("Inherit ({0})", ToggleParent[(int)parent]);
 
-            int next = EditorGUILayout.Popup(label, overriden ? (current ? 2 : 1) : 0, toggleChild);
+            int next = EditorGUILayout.Popup(label, overriden ? (int)current  + 1: 0, toggleChild);
             if (next == 0)
             {
                 if (overriden)
@@ -100,7 +111,7 @@ namespace FMODUnity
             }
             else
             {
-                Settings.SetSetting(settings, platform, next == 2);
+                Settings.SetSetting(settings, platform, (TriStateBool)(next-1));
             }
         }
 
@@ -268,7 +279,7 @@ namespace FMODUnity
                     #endif
                     EditorGUILayout.EndHorizontal();
                 }
-                DisplayChildBool("Debug Overlay", settings.LiveUpdateSettings, platform);
+                DisplayChildBool("Debug Overlay", settings.OverlaySettings, platform);
                 DisplayChildFreq("Sample Rate", settings.SampleRateSettings, platform);
                 if (settings.HasPlatforms && AllowBankChange(platform))
                 {
@@ -486,7 +497,7 @@ namespace FMODUnity
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("<b>Play In Editor Settings</b>", style);
             EditorGUI.indentLevel++;
-            DisplayParentBool("Live Update", settings.LiveUpdateSettings, FMODPlatform.PlayInEditor);
+            DisplayEditorBool("Live Update", settings.LiveUpdateSettings, FMODPlatform.PlayInEditor);
             if (settings.IsLiveUpdateEnabled(FMODPlatform.PlayInEditor))
             {
                 #if UNITY_5_0 || UNITY_5_1
@@ -495,7 +506,7 @@ namespace FMODUnity
                 EditorGUILayout.HelpBox("Live update will listen on port <b>9264</b>", MessageType.Info, false);
                 #endif
             }
-            DisplayParentBool("Debug Overlay", settings.OverlaySettings, FMODPlatform.PlayInEditor);
+            DisplayEditorBool("Debug Overlay", settings.OverlaySettings, FMODPlatform.PlayInEditor);
             if (settings.HasPlatforms)
             {
                 DisplayParentBuildDirectory("Bank Platform", settings.BankDirectorySettings, FMODPlatform.PlayInEditor);
