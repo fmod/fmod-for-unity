@@ -214,6 +214,22 @@ namespace FMODUnity
 		    {
         	    DestroySystem();
 		    }
+            
+            if (RuntimeManager.IsInitialized)
+            {
+                if (EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    if (EditorApplication.isPaused)
+                    {
+                        RuntimeManager.GetBus("bus:/").setPaused(true);
+                        RuntimeManager.StudioSystem.update();
+                    }
+                    else
+                    {
+                        RuntimeManager.GetBus("bus:/").setPaused(false);
+                    }
+                }
+            }
 	    }
 
         static void Update()

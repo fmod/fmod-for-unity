@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Text;
@@ -448,8 +448,10 @@ namespace FMODUnity
         void OnApplicationPause(bool pauseStatus)
         {
             if (studioSystem != null && studioSystem.isValid())
-			{
-				if (pauseStatus)
+            {
+                PauseAllEvents(pauseStatus);
+
+                if (pauseStatus)
 				{
 					lowlevelSystem.mixerSuspend();
 				}
@@ -736,7 +738,7 @@ namespace FMODUnity
             result = StudioSystem.getBus(path, out bus);
             if (result != FMOD.RESULT.OK)
             {
-
+                throw new BusNotFoundException(path);
             }
             return bus;
         }
@@ -748,9 +750,27 @@ namespace FMODUnity
             result = StudioSystem.getVCA(path, out vca);
             if (result != FMOD.RESULT.OK)
             {
-
+                throw new VCANotFoundException(path);
             }
             return vca;
+        }
+
+        public static void PauseAllEvents(bool paused)
+        {
+            GetBus("bus:/").setPaused(paused);
+        }
+
+        public static void MuteAllEvents(bool muted)
+        {
+            GetBus("bus:/").setMute(muted);
+        }
+
+        public static bool IsInitialized
+        {
+            get
+            {
+                return instance != null && instance.studioSystem != null;
+            }
         }
 
 	    #if (UNITY_IOS || UNITY_TVOS) && !UNITY_EDITOR
