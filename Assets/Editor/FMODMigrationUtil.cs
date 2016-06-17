@@ -157,8 +157,8 @@ namespace FMODUnity
 
                     var newEmitter = Undo.AddComponent<StudioEventEmitter>(parent);
                     newEmitter.Event = path;
-                    newEmitter.PlayEvent = startOnAwake ? EmitterGameEvent.LevelStart : EmitterGameEvent.None;
-                    newEmitter.PlayEvent = startOnAwake ? EmitterGameEvent.LevelEnd : EmitterGameEvent.None;
+                    newEmitter.PlayEvent = startOnAwake ? EmitterGameEvent.ObjectStart : EmitterGameEvent.None;
+                    newEmitter.PlayEvent = startOnAwake ? EmitterGameEvent.ObjectDestroy : EmitterGameEvent.None;
                 }
 
 

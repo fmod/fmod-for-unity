@@ -80,8 +80,8 @@ namespace FMODUnity
     public enum EmitterGameEvent
     {
         None,
-        LevelStart,
-        LevelEnd,
+        ObjectStart,
+        ObjectDestroy,
         TriggerEnter,
         TriggerExit,
         CollisionEnter,
@@ -91,8 +91,8 @@ namespace FMODUnity
     public enum LoaderGameEvent
     {
         None,
-        LevelStart,
-        LevelEnd,
+        ObjectStart,
+        ObjectDestroy,
         TriggerEnter,
         TriggerExit,
     }

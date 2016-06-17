@@ -39,7 +39,7 @@ namespace FMODUnity
                     eventDescription.getSampleLoadingState(out loadingState);
                 }
             }
-            HandleGameEvent(EmitterGameEvent.LevelStart);
+            HandleGameEvent(EmitterGameEvent.ObjectStart);
         }
 
         void OnApplicationQuit()
@@ -51,7 +51,7 @@ namespace FMODUnity
         {
             if (!isQuitting)
             {
-                HandleGameEvent(EmitterGameEvent.LevelEnd);
+                HandleGameEvent(EmitterGameEvent.ObjectDestroy);
                 if (instance != null && instance.isValid())
                 {
                     RuntimeManager.DetachInstanceFromGameObject(instance);

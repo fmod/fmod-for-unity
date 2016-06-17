@@ -17,15 +17,14 @@ namespace FMODUnity
         public EmitterGameEvent TriggerEvent;
         public string CollisionTag;
         
-        private bool firstUpdate = true;
-
-        void OnEnable()
+        void Start()
         {
+            HandleGameEvent(EmitterGameEvent.ObjectStart);
         }
 
         void OnDestroy()
         {
-            HandleGameEvent(EmitterGameEvent.LevelEnd);
+            HandleGameEvent(EmitterGameEvent.ObjectDestroy);
         }
 
         void OnTriggerEnter(Collider other)
@@ -61,15 +60,7 @@ namespace FMODUnity
                 TriggerParameters();
             }
         }
-        void Update()
-        {
-            if (firstUpdate)
-            {
-                HandleGameEvent(EmitterGameEvent.LevelStart);
-                firstUpdate = false;
-                enabled = false;
-            }
-        }
+
         public void TriggerParameters()
         {
             for (int i = 0; i < Emitters.Length; i++)
