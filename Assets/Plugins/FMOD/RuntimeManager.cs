@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Text;
@@ -250,8 +250,8 @@ namespace FMODUnity
                     // Add a "64" suffix and try again
                     if (result == FMOD.RESULT.ERR_FILE_BAD || result == FMOD.RESULT.ERR_FILE_NOTFOUND)
                     {
-                        pluginPath = RuntimeUtils.GetPluginPath(pluginName + "64");
-                        result = lowlevelSystem.loadPlugin(pluginPath, out handle);
+                        string pluginPath64 = RuntimeUtils.GetPluginPath(pluginName + "64");
+                        result = lowlevelSystem.loadPlugin(pluginPath64, out handle);
                     }
                     #endif
                     CheckInitResult(result, String.Format("Loading plugin '{0}' from '{1}'", pluginName, pluginPath));
@@ -448,10 +448,10 @@ namespace FMODUnity
         void OnApplicationPause(bool pauseStatus)
         {
             if (studioSystem != null && studioSystem.isValid())
-            {
+			{
                 PauseAllEvents(pauseStatus);
 
-                if (pauseStatus)
+				if (pauseStatus)
 				{
 					lowlevelSystem.mixerSuspend();
 				}
@@ -763,7 +763,7 @@ namespace FMODUnity
         public static void MuteAllEvents(bool muted)
         {
             GetBus("bus:/").setMute(muted);
-        }
+            }
 
         public static bool IsInitialized
         {
