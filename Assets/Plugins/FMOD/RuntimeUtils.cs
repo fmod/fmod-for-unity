@@ -311,7 +311,9 @@ namespace FMODUnity
 	                string pluginFolder = Application.dataPath + "/Plugins/X86_64/";
 	            #elif UNITY_EDITOR_WIN
 	                string pluginFolder = Application.dataPath + "/Plugins/X86/";
-	            #elif UNITY_STANDALONE_WIN || UNITY_PS4 || UNITY_XBOXONE || UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX || UNITY_STANDALONE_LINUX || UNITY_WSA_10_0
+                #elif UNITY_STANDALONE_LINUX
+                    string pluginFolder = Application.dataPath + ((IntPtr.Size == 8) ? "/Plugins/x86_64/" : "/Plugins/x86/");
+	            #elif UNITY_STANDALONE_WIN || UNITY_PS4 || UNITY_XBOXONE || UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX || UNITY_WSA_10_0
 	                string pluginFolder = Application.dataPath + "/Plugins/";
 	            #elif UNITY_WINRT_8_1
 	                string pluginFolder = "";
