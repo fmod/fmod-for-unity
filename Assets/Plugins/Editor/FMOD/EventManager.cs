@@ -351,11 +351,15 @@ namespace FMODUnity
                         eventRef.Parameters = new List<EditorParamRef>(paramCount);
                         for (int paramIndex = 0; paramIndex < paramCount; paramIndex++)
                         {
+                            FMOD.Studio.PARAMETER_DESCRIPTION param;
+                            eventDesc.getParameterByIndex(paramIndex, out param);
+                            if (param.type != FMOD.Studio.PARAMETER_TYPE.GAME_CONTROLLED)
+                            {
+                                continue;
+                            }
                             EditorParamRef paramRef = ScriptableObject.CreateInstance<EditorParamRef>();
                             AssetDatabase.AddObjectToAsset(paramRef, eventCache);
                             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(paramRef));
-                            FMOD.Studio.PARAMETER_DESCRIPTION param;
-                            eventDesc.getParameterByIndex(paramIndex, out param);
                             paramRef.Name = param.name;
                             paramRef.Min = param.minimum;
                             paramRef.Max = param.maximum;
