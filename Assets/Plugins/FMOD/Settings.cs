@@ -258,7 +258,7 @@ namespace FMODUnity
             #if DEVELOPMENT_BUILD || UNITY_EDITOR
             return GetSetting(LiveUpdateSettings, platform, TriStateBool.Disabled) != TriStateBool.Disabled;
             #else
-            return GetSetting(LiveUpdateSettings, platform, MyBool.Disabled) == MyBool.Enabled;
+            return GetSetting(LiveUpdateSettings, platform, TriStateBool.Disabled) == TriStateBool.Enabled;
             #endif
         }
 
@@ -268,7 +268,7 @@ namespace FMODUnity
             #if DEVELOPMENT_BUILD || UNITY_EDITOR
             return GetSetting(OverlaySettings, platform, TriStateBool.Disabled) != TriStateBool.Disabled;
             #else
-            return GetSetting(OverlaySettings, platform, MyBool.Disabled) == MyBool.Enabled;
+            return GetSetting(OverlaySettings, platform, TriStateBool.Disabled) == TriStateBool.Enabled;
             #endif
         }
         
