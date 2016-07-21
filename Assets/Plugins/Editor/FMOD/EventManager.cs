@@ -191,6 +191,10 @@ namespace FMODUnity
             }
 
             // All files are finished being modified by studio so update the cache
+            
+            // Stop editor preview so no stale data being held
+            EditorUtils.PreviewStop();
+
             // Reload the strings bank
             EditorUtils.CheckResult(EditorUtils.System.loadBankFile(stringBankPath, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out stringBank));
             if (stringBank == null)
