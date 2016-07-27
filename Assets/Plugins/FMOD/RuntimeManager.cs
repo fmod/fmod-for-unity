@@ -314,6 +314,10 @@ namespace FMODUnity
 
         List<AttachedInstance> attachedInstances = new List<AttachedInstance>(128);
 
+        #if UNITY_EDITOR
+        Dictionary<IntPtr, bool> warnedInvalidInstances = new Dictionary<IntPtr, bool>(2048);
+        #endif
+
         bool listenerWarningIssued = false;
         void Update()
         {
@@ -341,6 +345,49 @@ namespace FMODUnity
                     }
                     attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform, attachedInstances[i].rigidBody));
                 }
+
+
+                #if UNITY_EDITOR
+                // Catch any 3D events that are being played at the origin
+                foreach(FMOD.Studio.EventDescription desc in cachedDescriptions.Values)
+                {
+                    if (!desc.isValid())
+                    {
+                        continue;
+                    }
+                    bool is3d;
+                    desc.is3D(out is3d);
+                    if (!is3d)
+                    {
+                        continue;
+                    }
+
+                    string path;
+                    desc.getPath(out path);
+
+                    int instanceCount;
+                    desc.getInstanceCount(out instanceCount);
+                    FMOD.Studio.EventInstance[] instances = new FMOD.Studio.EventInstance[instanceCount];
+                    desc.getInstanceList(out instances);
+                    for (int i = 0; i < instanceCount; i++)
+                    {
+                        if (warnedInvalidInstances.ContainsKey(instances[i].getRaw()))
+                        {
+                            continue;
+                        }
+
+                        FMOD.ATTRIBUTES_3D attributes = new FMOD.ATTRIBUTES_3D();
+                        instances[i].get3DAttributes(out attributes);
+                        if (attributes.position.x == 0 &&
+                            attributes.position.y == 0 &&
+                            attributes.position.z == 0)
+                        {
+                            warnedInvalidInstances.Add(instances[i].getRaw(), true);
+                            Debug.LogWarningFormat("FMOD Studio: Instance of Event {0} found playing at the origin. EventInstance.set3DAttributes() should be called on all 3D events", path);
+                        }
+                    }
+                }
+                #endif
             }
         }
 
