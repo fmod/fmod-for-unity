@@ -452,6 +452,7 @@ namespace FMODUnity
                         sourceInfo.LastWriteTime != targetInfo.LastWriteTime)
                     {
                         File.Copy(sourcePath, targetPath, true);
+                        File.SetLastWriteTime(targetPath, sourceInfo.LastWriteTime);
 
                         madeChanges = true;
                     }
