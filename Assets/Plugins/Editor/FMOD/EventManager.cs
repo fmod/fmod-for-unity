@@ -236,9 +236,15 @@ namespace FMODUnity
 
             foreach (string bankFileName in bankFileNames)
             {
-                string bankPath = Path.Combine(defaultBankFolder, bankFileName);
-                
-                EditorBankRef bankRef = eventCache.EditorBanks.Find((x) => bankPath == x.Path);
+                // Get the true file path, can't trust the character case we got from the string bank
+                var bankPath = Directory.GetFiles(defaultBankFolder, bankFileName);
+                if (bankPath.Length == 0)
+                {
+                    continue;
+                }
+
+                FileInfo bankFileInfo = new FileInfo(bankPath[0]);
+                EditorBankRef bankRef = eventCache.EditorBanks.Find((x) => bankFileInfo.FullName == x.Path);
 
                 // New bank we've never seen before
                 if (bankRef == null)
@@ -246,7 +252,7 @@ namespace FMODUnity
                     bankRef = ScriptableObject.CreateInstance<EditorBankRef>();
                     AssetDatabase.AddObjectToAsset(bankRef, eventCache);
                     AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(bankRef));
-                    bankRef.Path = bankPath;
+                    bankRef.Path = bankFileInfo.FullName;
                     bankRef.LastModified = DateTime.MinValue;
                     bankRef.FileSizes = new List<EditorBankRef.NameValuePair>();
                     eventCache.EditorBanks.Add(bankRef);
@@ -255,9 +261,9 @@ namespace FMODUnity
                 bankRef.Exists = true;
                 
                 // Timestamp check - if it doesn't match update events from that bank
-                if (bankRef.LastModified != File.GetLastWriteTime(bankPath))
+                if (bankRef.LastModified != bankFileInfo.LastWriteTime)
                 {
-                    bankRef.LastModified = File.GetLastWriteTime(bankPath);                    
+                    bankRef.LastModified = bankFileInfo.LastWriteTime;                    
                     UpdateCacheBank(bankRef);
                 }
 
@@ -285,7 +291,7 @@ namespace FMODUnity
                     }
                 }
 
-                if (bankFileName == masterBankFileName)
+                if (bankFileInfo.Name == masterBankFileName)
                 {
                     eventCache.MasterBankRef = bankRef;
                 }
@@ -431,7 +437,7 @@ namespace FMODUnity
                 foreach (var bankFileName in currentBankFiles)
                 {
                     string bankName = Path.GetFileNameWithoutExtension(bankFileName);
-                    if (!eventCache.EditorBanks.Exists((x) => (String.Equals(bankName, x.Name, StringComparison.CurrentCultureIgnoreCase))))
+                    if (!eventCache.EditorBanks.Exists((x) => bankName == x.Name))
                     {
                         File.Delete(bankFileName);
                         madeChanges = true;
