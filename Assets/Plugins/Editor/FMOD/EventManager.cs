@@ -164,6 +164,8 @@ namespace FMODUnity
 
                 if (!File.Exists(bankPath))
                 {
+                    // TODO: this is meant to catch the case where we're in the middle of a build and a bank is being built 
+                    // for the first time. But it also stops someone trying to import an incomplete set of banks without any error message.
                     countdownTimer = CountdownTimerReset;
                     return;
                 }                
@@ -189,7 +191,7 @@ namespace FMODUnity
                 }
             }
 
-            // Do one extra loop through the in-use check in case we catch studio exactly in-between updating two files.
+            // Count down the timer in case we catch studio in-between updating two files.
             if (countdownTimer-- > 0)
             {
                 return;
@@ -239,17 +241,14 @@ namespace FMODUnity
             eventCache.EditorBanks.ForEach((x) => x.Exists = false);
             eventCache.StringsBankRef.Exists = true;
 
+			string[] folderContents = Directory.GetFiles(defaultBankFolder);
+
             foreach (string bankFileName in bankFileNames)
             {
                 // Get the true file path, can't trust the character case we got from the string bank
-                var bankPath = Directory.GetFiles(defaultBankFolder, bankFileName);
-                if (bankPath.Length == 0)
-                {
-                    Debug.LogError(String.Format("FMOD Studio: Expected to find {0}, events may be missing from project", bankFileName));
-                    continue;
-                }
-
-                FileInfo bankFileInfo = new FileInfo(bankPath[0]);
+				string bankPath = ArrayUtility.Find(folderContents, x => (string.Equals(bankFileName, Path.GetFileName(x), StringComparison.CurrentCultureIgnoreCase)));
+                
+				FileInfo bankFileInfo = new FileInfo(bankPath);
                 EditorBankRef bankRef = eventCache.EditorBanks.Find((x) => bankFileInfo.FullName == x.Path);
 
                 // New bank we've never seen before
