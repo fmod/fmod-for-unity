@@ -174,6 +174,9 @@ namespace FMODUnity
             #endif
 
             int realChannels = fmodSettings.GetRealChannels(fmodPlatform);
+
+            realChannels = Math.Min(realChannels, 256); // Prior to 1.08.10 we didn't clamp this properly in the settings screen
+
             result = lowlevelSystem.setSoftwareChannels(realChannels);
             CheckInitResult(result, "Set software channels");
             result = lowlevelSystem.setSoftwareFormat(

@@ -300,8 +300,8 @@ namespace FMODUnity
                     }
                 }
 
-                DisplayChildInt("Virtual Channel Count", settings.VirtualChannelSettings, platform, 0, 2048);
-                DisplayChildInt("Real Channel Count", settings.RealChannelSettings, platform, 0, 2048);
+                DisplayChildInt("Virtual Channel Count", settings.VirtualChannelSettings, platform, 1, 2048);
+                DisplayChildInt("Real Channel Count", settings.RealChannelSettings, platform, 1, 256);
 
                 if (children != null)
                 {
@@ -555,8 +555,8 @@ namespace FMODUnity
             {
                 EditorGUILayout.HelpBox("Match the speaker mode to the setting inside FMOD Studio", MessageType.Info, false);
             }
-            DisplayParentInt("Virtual Channel Count", settings.VirtualChannelSettings, FMODPlatform.Default, 0, 2048);
-            DisplayParentInt("Real Channel Count", settings.RealChannelSettings, FMODPlatform.Default, 0, 2048);
+            DisplayParentInt("Virtual Channel Count", settings.VirtualChannelSettings, FMODPlatform.Default, 1, 2048);
+            DisplayParentInt("Real Channel Count", settings.RealChannelSettings, FMODPlatform.Default, 1, 256);
             EditorGUI.indentLevel--;
 
 
