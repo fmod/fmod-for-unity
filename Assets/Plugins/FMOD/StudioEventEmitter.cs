@@ -8,20 +8,20 @@ namespace FMODUnity
     public class StudioEventEmitter : MonoBehaviour
     {
         [EventRef]
-        public String Event;
-        public EmitterGameEvent PlayEvent;
-        public EmitterGameEvent StopEvent;
-        public String CollisionTag;
+        public String Event = "";
+        public EmitterGameEvent PlayEvent = EmitterGameEvent.None;
+        public EmitterGameEvent StopEvent = EmitterGameEvent.None;
+        public String CollisionTag = "";
         public bool AllowFadeout = true;
         public bool TriggerOnce = false;
         public bool Preload = false;
 
-        public ParamRef[] Params;
+        public ParamRef[] Params = new ParamRef[0];
         
-        private FMOD.Studio.EventDescription eventDescription;
-        private FMOD.Studio.EventInstance instance;
-        private bool hasTriggered;
-        private bool isQuitting;
+        private FMOD.Studio.EventDescription eventDescription = null;
+        private FMOD.Studio.EventInstance instance = null;
+        private bool hasTriggered = false;
+        private bool isQuitting = false;
 
         void Start() 
         {
