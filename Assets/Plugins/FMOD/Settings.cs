@@ -205,7 +205,6 @@ namespace FMODUnity
                 case FMODPlatform.Mobile:
                     return FMODPlatform.Default;
                 case FMODPlatform.PlayInEditor:
-                    return FMODPlatform.Default;
                 case FMODPlatform.Default:
                 default:
                     return FMODPlatform.None;
@@ -288,7 +287,16 @@ namespace FMODUnity
         // --------   Speaker Mode ----------------------
         public int GetSpeakerMode(FMODPlatform platform)
         {
-            return GetSetting(SpeakerModeSettings, platform, (int)FMOD.SPEAKERMODE.STEREO);
+            #if UNITY_EDITOR
+            if (platform == FMODPlatform.PlayInEditor)
+            { 
+                return GetSetting(SpeakerModeSettings, platform, GetSetting(SpeakerModeSettings, RuntimeUtils.GetEditorFMODPlatform(), (int)FMOD.SPEAKERMODE.STEREO));
+            }
+            else
+            #endif
+            {
+                return GetSetting(SpeakerModeSettings, platform, (int)FMOD.SPEAKERMODE.STEREO);
+            }
         }
         // --------   Sample Rate ----------------------
         public int GetSampleRate(FMODPlatform platform)
@@ -299,7 +307,20 @@ namespace FMODUnity
         // --------   Bank Platform ----------------------
         public string GetBankPlatform(FMODPlatform platform)
         {
-            return HasPlatforms ? GetSetting(BankDirectorySettings, platform, "Desktop") : "";
+            if (!HasPlatforms)
+            {
+                return "";
+            }
+            #if UNITY_EDITOR
+            if (platform == FMODPlatform.PlayInEditor)
+            {
+                return GetSetting(BankDirectorySettings, platform, GetSetting(BankDirectorySettings, RuntimeUtils.GetEditorFMODPlatform(), "Desktop"));
+            }
+            else
+            #endif
+            { 
+                return GetSetting(BankDirectorySettings, platform, "Desktop");
+            }
         }
  
         private Settings()
@@ -318,7 +339,6 @@ namespace FMODUnity
             SetSetting(LoggingSettings, FMODPlatform.PlayInEditor, TriStateBool.Enabled);
             SetSetting(LiveUpdateSettings, FMODPlatform.PlayInEditor, TriStateBool.Enabled);
             SetSetting(OverlaySettings, FMODPlatform.PlayInEditor, TriStateBool.Enabled);
-            SetSetting(SpeakerModeSettings, FMODPlatform.PlayInEditor, (int)FMOD.SPEAKERMODE.STEREO);
             // These are not editable, set them high
             SetSetting(RealChannelSettings, FMODPlatform.PlayInEditor, 256);
             SetSetting(VirtualChannelSettings, FMODPlatform.PlayInEditor, 1024);

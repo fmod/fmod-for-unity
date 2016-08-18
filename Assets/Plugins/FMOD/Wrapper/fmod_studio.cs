@@ -1388,9 +1388,17 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_EventInstance_Get3DAttributes(rawPtr, out attributes);
         }
-        public RESULT set3DAttributes               (ATTRIBUTES_3D attributes)
+        public RESULT set3DAttributes(ATTRIBUTES_3D attributes)
         {
             return FMOD_Studio_EventInstance_Set3DAttributes(rawPtr, ref attributes);
+        }
+        public RESULT getListenerMask(out uint mask)
+        {
+            return FMOD_Studio_EventInstance_GetListenerMask(rawPtr, out mask);
+        }
+        public RESULT setListenerMask(uint mask)
+        {
+            return FMOD_Studio_EventInstance_SetListenerMask(rawPtr, mask);
         }
         public RESULT getProperty(EVENT_PROPERTY index, out float value)
         {
@@ -1533,6 +1541,10 @@ namespace FMOD.Studio
         private static extern RESULT FMOD_Studio_EventInstance_Get3DAttributes      (IntPtr _event, out ATTRIBUTES_3D attributes);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_Set3DAttributes      (IntPtr _event, ref ATTRIBUTES_3D attributes);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventInstance_GetListenerMask      (IntPtr _event, out uint mask);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventInstance_SetListenerMask      (IntPtr _event, uint mask);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_GetProperty          (IntPtr _event, EVENT_PROPERTY index, out float value);
         [DllImport(STUDIO_VERSION.dll)]

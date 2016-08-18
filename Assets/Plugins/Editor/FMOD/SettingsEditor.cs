@@ -17,16 +17,12 @@ namespace FMODUnity
         int[] FrequencyValues = new int[] { 0, 22050, 24000, 32000, 44100, 48000 };
 
         string[] SpeakerModeDisplay = new string[] {
-            //"Auto Detect", 
             "Stereo",
-            //"Quad", 
             "5.1",
             "7.1" };
 
         int[] SpeakerModeValues = new int[] {
-            //(int)FMOD.SPEAKERMODE.DEFAULT, 
             (int)FMOD.SPEAKERMODE.STEREO,
-            //(int)FMOD.SPEAKERMODE.QUAD,
             (int)FMOD.SPEAKERMODE._5POINT1,
             (int)FMOD.SPEAKERMODE._7POINT1};
 
@@ -157,13 +153,15 @@ namespace FMODUnity
         {
             bool overriden = Settings.HasSetting(settings, platform);
             int current = Settings.GetSetting(settings, platform, 0);
-            int index = Array.IndexOf(FrequencyValues, current);
-            
+            int inherit = Settings.GetSetting(settings, Settings.GetParent(platform), 0);
+            int currentIndex = Array.IndexOf(FrequencyValues, current);
+            int inheritIndex = Array.IndexOf(FrequencyValues, inherit);
+
             string[] valuesChild = new string[FrequencyDisplay.Length + 1];
             Array.Copy(FrequencyDisplay, 0, valuesChild, 1, FrequencyDisplay.Length);
-            valuesChild[0] = String.Format("Inherit ({0})", FrequencyDisplay[index]);
+            valuesChild[0] = String.Format("Inherit ({0})", FrequencyDisplay[inheritIndex]);
 
-            int next = EditorGUILayout.Popup(label, overriden ? index + 1 : 0, valuesChild);
+            int next = EditorGUILayout.Popup(label, overriden ? currentIndex + 1 : 0, valuesChild);
             if (next == 0)
             {
                 Settings.RemoveSetting(settings, platform);
@@ -182,17 +180,43 @@ namespace FMODUnity
             Settings.SetSetting(settings, platform, SpeakerModeValues[next]);
         }
 
+        void DisplayPIESpeakerMode(string label, List<PlatformIntSetting> settings, FMODPlatform platform)
+        {
+            int buildTargetSetting = Settings.GetSetting(settings, RuntimeUtils.GetEditorFMODPlatform(), (int)FMOD.SPEAKERMODE.STEREO);
+            int buildTargetIndex = Array.IndexOf(SpeakerModeValues, buildTargetSetting);
+            string[] speakerModes = new string[SpeakerModeDisplay.Length + 1];
+            Array.Copy(SpeakerModeDisplay, 0, speakerModes, 1, SpeakerModeDisplay.Length);
+            speakerModes[0] = String.Format("Current Unity Platform ({0})", SpeakerModeDisplay[buildTargetIndex]);
+
+            bool useCurrentUnity = !Settings.HasSetting(settings, platform);
+            
+            int current = Settings.GetSetting(settings, platform, (int)FMOD.SPEAKERMODE.STEREO);
+            int index = Array.IndexOf(SpeakerModeValues, current) + 1;
+            if (useCurrentUnity || index < 0) index = 0;
+            int next = EditorGUILayout.Popup(label, index, speakerModes);
+            if (next != 0)
+            {
+                Settings.SetSetting(settings, platform, SpeakerModeValues[next - 1]);
+            }
+            else
+            {
+                Settings.RemoveSetting(settings, platform);
+            }
+        }
+
         void DisplayChildSpeakerMode(string label, List<PlatformIntSetting> settings, FMODPlatform platform)
         {
             bool overriden = Settings.HasSetting(settings, platform);
             int current = Settings.GetSetting(settings, platform, 0);
-            int index = Array.IndexOf(SpeakerModeValues, current);
+            int inherit = Settings.GetSetting(settings, Settings.GetParent(platform), 0);
+            int currentIndex = Array.IndexOf(SpeakerModeValues, current);
+            int inheritIndex = Array.IndexOf(SpeakerModeValues, inherit);
 
             string[] valuesChild = new string[SpeakerModeDisplay.Length + 1];
             Array.Copy(SpeakerModeDisplay, 0, valuesChild, 1, SpeakerModeDisplay.Length);
-            valuesChild[0] = String.Format("Inherit ({0})", SpeakerModeDisplay[index]);
+            valuesChild[0] = String.Format("Inherit ({0})", SpeakerModeDisplay[inheritIndex]);
 
-            int next = EditorGUILayout.Popup(label, overriden ? index + 1 : 0, valuesChild);
+            int next = EditorGUILayout.Popup(label, overriden ? currentIndex + 1 : 0, valuesChild);
             if (next == 0)
             {
                 Settings.RemoveSetting(settings, platform);
@@ -206,13 +230,37 @@ namespace FMODUnity
         void DisplayParentBuildDirectory(string label, List<PlatformStringSetting> settings, FMODPlatform platform)
         {
             string[] buildDirectories = EditorUtils.GetBankPlatforms();
-
+            
             String current = Settings.GetSetting(settings, platform, "Desktop");
             int index = Array.IndexOf(buildDirectories, current);
             if (index < 0) index = 0;
 
-            int next = EditorGUILayout.Popup(label, index, buildDirectories);
+            int next = EditorGUILayout.Popup(label, index, buildDirectories);            
             Settings.SetSetting(settings, platform, buildDirectories[next]);
+        }
+
+
+        void DisplayPIEBuildDirectory(string label, List<PlatformStringSetting> settings, FMODPlatform platform)
+        {
+            String buildTargetSetting = Settings.GetSetting(settings, RuntimeUtils.GetEditorFMODPlatform(), "Desktop");
+            string[] buildDirectories = new string[EditorUtils.GetBankPlatforms().Length + 1];
+            Array.Copy(EditorUtils.GetBankPlatforms(), 0, buildDirectories, 1, EditorUtils.GetBankPlatforms().Length);
+            buildDirectories[0] = String.Format("Current Unity Platform ({0})", buildTargetSetting);
+
+            bool useCurrentUnity = !Settings.HasSetting(settings, platform);
+            String current = Settings.GetSetting(settings, platform, "Desktop");
+            int index = Array.IndexOf(buildDirectories, current);
+            if (useCurrentUnity || index < 0) index = 0;
+
+            int next = EditorGUILayout.Popup(label, index, buildDirectories);
+            if (next != 0)
+            {
+                Settings.SetSetting(settings, platform, buildDirectories[next]);
+            }
+            else
+            {
+                Settings.RemoveSetting(settings, platform);
+            }
         }
 
         void DisplayChildBuildDirectories(string label, List<PlatformStringSetting> settings, FMODPlatform platform)
@@ -221,12 +269,13 @@ namespace FMODUnity
 
             bool overriden = Settings.HasSetting(settings, platform);
             string current = Settings.GetSetting(settings, platform, "Desktop");
+            string inherit = Settings.GetSetting(settings, Settings.GetParent(platform), "Desktop");
             int index = Array.IndexOf(buildDirectories, current);
             if (index < 0) index = 0;
 
             string[] valuesChild = new string[buildDirectories.Length + 1];
             Array.Copy(buildDirectories, 0, valuesChild, 1, buildDirectories.Length);
-            valuesChild[0] = String.Format("Inherit ({0})", buildDirectories[index]);
+            valuesChild[0] = String.Format("Inherit ({0})", inherit);
 
             int next = EditorGUILayout.Popup(label, overriden ? index + 1 : 0, valuesChild);
             if (next == 0)
@@ -509,10 +558,10 @@ namespace FMODUnity
             DisplayEditorBool("Debug Overlay", settings.OverlaySettings, FMODPlatform.PlayInEditor);
             if (settings.HasPlatforms)
             {
-                DisplayParentBuildDirectory("Bank Platform", settings.BankDirectorySettings, FMODPlatform.PlayInEditor);
+                DisplayPIEBuildDirectory("Bank Platform", settings.BankDirectorySettings, FMODPlatform.PlayInEditor);
             }
 
-            DisplayParentSpeakerMode("Speaker Mode", settings.SpeakerModeSettings, FMODPlatform.PlayInEditor);
+            DisplayPIESpeakerMode("Speaker Mode", settings.SpeakerModeSettings, FMODPlatform.PlayInEditor);
             if (settings.HasPlatforms)
             {
                 EditorGUILayout.HelpBox(String.Format("Match the speaker mode to the setting of the platform <b>{0}</b> inside FMOD Studio", settings.GetBankPlatform(FMODPlatform.PlayInEditor)), MessageType.Info, false);
