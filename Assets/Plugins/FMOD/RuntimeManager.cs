@@ -349,6 +349,11 @@ namespace FMODUnity
                     attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform, attachedInstances[i].rigidBody));
                 }
 
+                
+                #if UNITY_EDITOR
+                MuteAllEvents(UnityEditor.EditorUtility.audioMasterMute);
+                #endif
+
 
                 #if UNITY_EDITOR
                 // Catch any 3D events that are being played at the origin
@@ -813,7 +818,7 @@ namespace FMODUnity
         public static void MuteAllEvents(bool muted)
         {
             GetBus("bus:/").setMute(muted);
-            }
+        }
 
         public static bool IsInitialized
         {
