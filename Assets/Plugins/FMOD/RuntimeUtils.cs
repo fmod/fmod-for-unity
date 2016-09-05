@@ -114,6 +114,16 @@ namespace FMODUnity
             return temp;
         }
 
+        public static FMOD.VECTOR ToFMODVector(this Vector2 vec)
+        {
+            FMOD.VECTOR temp;
+            temp.x = vec.x;
+            temp.y = vec.y;
+            temp.z = 0f;
+
+            return temp;
+        }
+
         public static FMOD.ATTRIBUTES_3D To3DAttributes(this Vector3 pos)
         {
             FMOD.ATTRIBUTES_3D attributes = new FMOD.ATTRIBUTES_3D();
@@ -146,7 +156,31 @@ namespace FMODUnity
             return attributes;
         }
 
+        public static FMOD.ATTRIBUTES_3D To3DAttributes(Transform transform, Rigidbody2D rigidbody = null)
+        {
+            FMOD.ATTRIBUTES_3D attributes = transform.To3DAttributes();
+
+            if (rigidbody)
+            {
+                attributes.velocity = rigidbody.velocity.ToFMODVector();
+            }
+
+            return attributes;
+        }
+
         public static FMOD.ATTRIBUTES_3D To3DAttributes(GameObject go, Rigidbody rigidbody = null)
+        {
+            FMOD.ATTRIBUTES_3D attributes = go.transform.To3DAttributes();
+
+            if (rigidbody)
+            {
+                attributes.velocity = rigidbody.velocity.ToFMODVector();
+            }
+
+            return attributes;
+        }
+
+        public static FMOD.ATTRIBUTES_3D To3DAttributes(GameObject go, Rigidbody2D rigidbody = null)
         {
             FMOD.ATTRIBUTES_3D attributes = go.transform.To3DAttributes();
 
