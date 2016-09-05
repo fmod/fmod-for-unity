@@ -22,7 +22,7 @@ namespace FMOD
     */
     public class VERSION
     {
-        public const int    number = 0x00010810;
+        public const int    number = 0x00010811;
 #if (UNITY_IPHONE || UNITY_TVOS) && !UNITY_EDITOR
         public const string dll    = "__Internal";
 #elif (UNITY_PS4) && !UNITY_EDITOR
@@ -1491,6 +1491,7 @@ namespace FMOD
         {
             CREATESOUNDEXINFO_INTERNAL exinfoInt = new CREATESOUNDEXINFO_INTERNAL();
             exinfoInt.cbsize = Marshal.SizeOf(typeof(CREATESOUNDEXINFO_INTERNAL));
+            exinfoInt.length                = exinfoExt.length;
             exinfoInt.fileoffset            = exinfoExt.fileoffset;
             exinfoInt.numchannels           = exinfoExt.numchannels;
             exinfoInt.defaultfrequency      = exinfoExt.defaultfrequency;
@@ -1535,6 +1536,7 @@ namespace FMOD
             CREATESOUNDEXINFO exinfo = new CREATESOUNDEXINFO();
             exinfo.cbsize = Marshal.SizeOf(typeof(CREATESOUNDEXINFO_INTERNAL));
             
+            exinfo.length                = exinfoInt.length;
             exinfo.fileoffset            = exinfoInt.fileoffset;
             exinfo.numchannels           = exinfoInt.numchannels;
             exinfo.defaultfrequency      = exinfoInt.defaultfrequency;
