@@ -15,8 +15,11 @@ namespace FMODUnity
         public bool AllowFadeout = true;
         public bool TriggerOnce = false;
         public bool Preload = false;
-
         public ParamRef[] Params = new ParamRef[0];
+        public bool OverrideAttenuation = false;
+        public float OverrideMinDistance = -1.0f;
+        public float OverrideMaxDistance = -1.0f;
+
         
         private FMOD.Studio.EventDescription eventDescription = null;
         private FMOD.Studio.EventInstance instance = null;
@@ -161,6 +164,12 @@ namespace FMODUnity
             foreach(var param in Params)
             {
                 instance.setParameterValue(param.Name, param.Value);
+            }
+
+            if (is3D && OverrideAttenuation)
+            {
+                instance.setProperty(FMOD.Studio.EVENT_PROPERTY.MINIMUM_DISTANCE, OverrideMinDistance);
+                instance.setProperty(FMOD.Studio.EVENT_PROPERTY.MAXIMUM_DISTANCE, OverrideMaxDistance);
             }
 
             instance.start();
