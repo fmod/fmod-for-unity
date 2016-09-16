@@ -327,7 +327,31 @@ namespace FMODUnity
             if (studioSystem != null)
             {
                 studioSystem.update();
-                if (!hasListener && !listenerWarningIssued)
+
+                bool foundListener = false;
+                bool hasAllListeners = false;
+                int numListeners = 0;
+                for (int i = FMOD.CONSTANTS.MAX_LISTENERS - 1; i >=0 ; i--)
+                {
+                    if (!foundListener && HasListener[i])
+                    {
+                        numListeners = i + 1;
+                        foundListener = true;
+                        hasAllListeners = true;
+                    }
+
+                    if (!HasListener[i] && foundListener)
+                    {
+                        hasAllListeners = false;
+                    }
+                }
+
+                if (foundListener)
+                {
+                    studioSystem.setNumListeners(numListeners);
+                }
+
+                if (!hasAllListeners && !listenerWarningIssued)
                 {
                     listenerWarningIssued = true;
                     UnityEngine.Debug.LogWarning("FMOD Studio Integration: Please add an 'FMOD Studio Listener' component to your a camera in the scene for correct 3D positioning of sounds");
@@ -769,12 +793,7 @@ namespace FMODUnity
             return eventDesc;
         }
 
-        static bool hasListener;
-        public static bool HasListener
-        {
-            set { hasListener = value; }
-            get { return hasListener;  }
-        }
+        public static bool[] HasListener = new bool[FMOD.CONSTANTS.MAX_LISTENERS];
 
         public static void SetListenerLocation(GameObject gameObject, Rigidbody rigidBody = null)
         {
@@ -784,6 +803,16 @@ namespace FMODUnity
         public static void SetListenerLocation(Transform transform)
         {
             Instance.studioSystem.setListenerAttributes(0, transform.To3DAttributes());
+        }
+
+        public static void SetListenerLocation(int listenerIndex, GameObject gameObject, Rigidbody rigidBody = null)
+        {
+            Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject, rigidBody));
+        }
+
+        public static void SetListenerLocation(int listenerIndex, Transform transform)
+        {
+            Instance.studioSystem.setListenerAttributes(listenerIndex, transform.To3DAttributes());
         }
 
         public static FMOD.Studio.Bus GetBus(String path)

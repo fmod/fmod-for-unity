@@ -9,22 +9,24 @@ namespace FMODUnity
     {
         Rigidbody rigidBody;
 
+        public int ListenerNumber = 0;
+
         void OnEnable()
         {
             RuntimeUtils.EnforceLibraryOrder();
             rigidBody = gameObject.GetComponent<Rigidbody>();
-            RuntimeManager.HasListener = true;
-            RuntimeManager.SetListenerLocation(gameObject, rigidBody);
+            RuntimeManager.HasListener[ListenerNumber] = true;
+            RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, rigidBody);
         }
 
         void OnDisable()
         {
-            RuntimeManager.HasListener = false;
+            RuntimeManager.HasListener[ListenerNumber] = false;
         }
 
         void Update()
         {
-            RuntimeManager.SetListenerLocation(gameObject, rigidBody);
+            RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, rigidBody);
         }
     }
 }
