@@ -401,7 +401,7 @@ namespace FMODUnity
                     desc.getInstanceCount(out instanceCount);
                     FMOD.Studio.EventInstance[] instances = new FMOD.Studio.EventInstance[instanceCount];
                     desc.getInstanceList(out instances);
-                    for (int i = 0; i < instanceCount; i++)
+                    for (int i = 0; i < instances.Length; i++)
                     {
                         if (warnedInvalidInstances.ContainsKey(instances[i].getRaw()))
                         {
