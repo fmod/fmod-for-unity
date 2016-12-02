@@ -155,9 +155,18 @@ namespace FMODUnity
                 if (is3D)
                 {
                     var rigidBody = GetComponent<Rigidbody>();
+                    var rigidBody2D = GetComponent<Rigidbody2D>();
                     var transform = GetComponent<Transform>();
-                    instance.set3DAttributes(RuntimeUtils.To3DAttributes(gameObject, rigidBody));
-                    RuntimeManager.AttachInstanceToGameObject(instance, transform, rigidBody);
+                    if (rigidBody)
+                    {
+                        instance.set3DAttributes(RuntimeUtils.To3DAttributes(gameObject, rigidBody));
+                        RuntimeManager.AttachInstanceToGameObject(instance, transform, rigidBody);
+                    }
+                    else
+                    {
+                        instance.set3DAttributes(RuntimeUtils.To3DAttributes(gameObject, rigidBody2D));
+                        RuntimeManager.AttachInstanceToGameObject(instance, transform, rigidBody2D);
+                    }
                 }
             }
 

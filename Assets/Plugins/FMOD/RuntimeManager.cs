@@ -313,6 +313,7 @@ namespace FMODUnity
             public FMOD.Studio.EventInstance instance;
             public Transform transform;
             public Rigidbody rigidBody;
+            public Rigidbody2D rigidBody2D;
         }
 
         List<AttachedInstance> attachedInstances = new List<AttachedInstance>(128);
@@ -370,7 +371,15 @@ namespace FMODUnity
                         i--;
                         continue;
                     }
-                    attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform, attachedInstances[i].rigidBody));
+
+                    if (attachedInstances[i].rigidBody)
+                    {
+                        attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform, attachedInstances[i].rigidBody));
+                    }
+                    else
+                    {
+                        attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform, attachedInstances[i].rigidBody2D));
+                    }
                 }
 
                 
@@ -429,6 +438,16 @@ namespace FMODUnity
             attachedInstance.transform = transform;
             attachedInstance.instance = instance;
             attachedInstance.rigidBody = rigidBody;
+            Instance.attachedInstances.Add(attachedInstance);
+        }
+        
+        public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, Transform transform, Rigidbody2D rigidBody2D)
+        {
+            var attachedInstance = new AttachedInstance();
+            attachedInstance.transform = transform;
+            attachedInstance.instance = instance;
+            attachedInstance.rigidBody2D = rigidBody2D;
+            attachedInstance.rigidBody = null;
             Instance.attachedInstances.Add(attachedInstance);
         }
 
@@ -799,6 +818,11 @@ namespace FMODUnity
         {
             Instance.studioSystem.setListenerAttributes(0, RuntimeUtils.To3DAttributes(gameObject, rigidBody));
         }
+        
+        public static void SetListenerLocation(GameObject gameObject, Rigidbody2D rigidBody2D = null)
+        {
+            Instance.studioSystem.setListenerAttributes(0, RuntimeUtils.To3DAttributes(gameObject, rigidBody2D));
+        }
 
         public static void SetListenerLocation(Transform transform)
         {
@@ -808,6 +832,11 @@ namespace FMODUnity
         public static void SetListenerLocation(int listenerIndex, GameObject gameObject, Rigidbody rigidBody = null)
         {
             Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject, rigidBody));
+        }
+        
+        public static void SetListenerLocation(int listenerIndex, GameObject gameObject, Rigidbody2D rigidBody2D = null)
+        {
+            Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject, rigidBody2D));
         }
 
         public static void SetListenerLocation(int listenerIndex, Transform transform)

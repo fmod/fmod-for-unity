@@ -8,6 +8,7 @@ namespace FMODUnity
     public class StudioListener : MonoBehaviour
     {
         Rigidbody rigidBody;
+        Rigidbody2D rigidBody2D;
 
         public int ListenerNumber = 0;
 
@@ -15,8 +16,9 @@ namespace FMODUnity
         {
             RuntimeUtils.EnforceLibraryOrder();
             rigidBody = gameObject.GetComponent<Rigidbody>();
+            rigidBody2D = gameObject.GetComponent<Rigidbody2D>();
             RuntimeManager.HasListener[ListenerNumber] = true;
-            RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, rigidBody);
+            SetListenerLocation();
         }
 
         void OnDisable()
@@ -26,7 +28,19 @@ namespace FMODUnity
 
         void Update()
         {
-            RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, rigidBody);
+            SetListenerLocation();
+        }
+
+        void SetListenerLocation()
+        {
+            if (rigidBody)
+            {
+                RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, rigidBody);
+            }
+            else
+            {
+                RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, rigidBody2D);
+            }
         }
     }
 }

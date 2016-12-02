@@ -158,6 +158,38 @@ namespace FMODUnity
             return attributes;
         }
 
+        public static FMOD.ATTRIBUTES_3D To3DAttributes(Transform transform, Rigidbody2D rigidbody = null)
+        {
+            FMOD.ATTRIBUTES_3D attributes = transform.To3DAttributes();
+
+            if (rigidbody)
+            {
+                FMOD.VECTOR vel;
+                vel.x = rigidbody.velocity.x;
+                vel.y = rigidbody.velocity.y;
+                vel.z = 0;
+                attributes.velocity = vel;
+            }
+
+            return attributes;
+        }
+
+        public static FMOD.ATTRIBUTES_3D To3DAttributes(GameObject go, Rigidbody2D rigidbody = null)
+        {
+            FMOD.ATTRIBUTES_3D attributes = go.transform.To3DAttributes();
+
+            if (rigidbody)
+            {
+                FMOD.VECTOR vel;
+                vel.x = rigidbody.velocity.x;
+                vel.y = rigidbody.velocity.y;
+                vel.z = 0;
+                attributes.velocity = vel;
+            }
+
+            return attributes;
+        }
+
         // Internal Helper Functions
         internal static FMODPlatform GetCurrentPlatform()
         {
@@ -325,6 +357,7 @@ namespace FMODUnity
 					string packageName = dirInfo.Parent.Name;
 	                string pluginFolder = "/data/data/" + packageName + "/lib/";
 	            #else
+                    string pluginFileName = "";
 	                string pluginFolder = "";
 	            #endif
 
@@ -384,6 +417,8 @@ namespace FMODUnity
                     return FMODPlatform.Windows;
                 case BuildTarget.XboxOne:
                     return FMODPlatform.XboxOne;
+                case BuildTarget.WiiU:
+                    return FMODPlatform.WiiU;
 				#if UNITY_4_6 || UNITY_4_7
                 case BuildTarget.MetroPlayer:
                 #else
