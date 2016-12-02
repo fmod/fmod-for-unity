@@ -165,7 +165,11 @@ namespace FMODUnity
                 result = FMOD.Debug.Initialize(FMOD.DEBUG_FLAGS.LOG, FMOD.DEBUG_MODE.FILE, null, RuntimeUtils.LogFileName);
                 if (result == FMOD.RESULT.ERR_FILE_NOTFOUND)
                 {
-                    UnityEngine.Debug.LogWarningFormat("FMOD Studio: Cannot open FMOD debug log file '{0}', logs will be missing for this session.", System.IO.Path.Combine(Application.dataPath, RuntimeUtils.LogFileName));
+#if UNITY_5_X
+                    Debug.LogWarningFormat("FMOD Studio: Cannot open FMOD debug log file '{0}', logs will be missing for this session.", System.IO.Path.Combine(Application.dataPath, RuntimeUtils.LogFileName));
+#else
+                    Debug.LogWarning(string.Format("FMOD Studio: Cannot open FMOD debug log file '{0}', logs will be missing for this session.", System.IO.Path.Combine(Application.dataPath, RuntimeUtils.LogFileName)));
+#endif
                 }
                 else
                 {
@@ -424,7 +428,11 @@ namespace FMODUnity
                             attributes.position.z == 0)
                         {
                             warnedInvalidInstances.Add(instances[i].getRaw(), true);
+#if UNITY_5_X
                             Debug.LogWarningFormat("FMOD Studio: Instance of Event {0} found playing at the origin. EventInstance.set3DAttributes() should be called on all 3D events", path);
+#else
+                            Debug.LogWarning(string.Format("FMOD Studio: Instance of Event {0} found playing at the origin. EventInstance.set3DAttributes() should be called on all 3D events", path));
+#endif
                         }
                     }
                 }
@@ -490,7 +498,7 @@ namespace FMODUnity
 
                     FMOD.Studio.CPU_USAGE cpuUsage;
                     studioSystem.getCPUUsage(out cpuUsage);
-                    debug.AppendFormat("CPU: dsp = {0:F1}%, studio = {1:F1}%\n", cpuUsage.dspUsage, cpuUsage.studioUsage);
+                    debug.AppendFormat("CPU: dsp = {0:F1}%, studio = {1:F1}%\n", cpuUsage.dspusage, cpuUsage.studiousage);
 
                     int currentAlloc, maxAlloc;
                     FMOD.Memory.GetStats(out currentAlloc, out maxAlloc);
