@@ -63,6 +63,22 @@ namespace FMODUnity
             }
         }
 
+        void OnTrigger2DEnter(Collider other)
+        {
+            if (String.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
+            {
+                HandleGameEvent(LoaderGameEvent.Trigger2DEnter);
+            }
+        }
+
+        void OnTrigger2DExit(Collider other)
+        {
+            if (String.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
+            {
+                HandleGameEvent(LoaderGameEvent.Trigger2DExit);
+            }
+        }
+
         public void Load()
         {
             foreach (var bankRef in Banks)
