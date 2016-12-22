@@ -62,16 +62,6 @@ namespace FMODUnity
         {
             HandleGameEvent(EmitterGameEvent.CollisionExit);
         }
-		
-		void OnEnable()
-		{
-			HandleGameEvent(EmitterGameEvent.ObjectEnable);
-		}
-		
-		void OnDisable()
-		{
-			HandleGameEvent(EmitterGameEvent.ObjectDisable);
-		}
 
         void HandleGameEvent(EmitterGameEvent gameEvent)
         {
