@@ -89,6 +89,8 @@ namespace FMODUnity
         TriggerExit,
         CollisionEnter,
         CollisionExit,
+		ObjectEnable,
+		ObjectDisable
     }
 
     public enum LoaderGameEvent
