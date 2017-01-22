@@ -63,19 +63,19 @@ namespace FMODUnity
             }
         }
 
-        void OnTrigger2DEnter(Collider other)
+        void OnTriggerEnter2D(Collider2D other)
         {
             if (String.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
             {
-                HandleGameEvent(LoaderGameEvent.Trigger2DEnter);
+                HandleGameEvent(LoaderGameEvent.TriggerEnter2D);
             }
         }
 
-        void OnTrigger2DExit(Collider other)
+        void OnTriggerExit2D(Collider2D other)
         {
             if (String.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
             {
-                HandleGameEvent(LoaderGameEvent.Trigger2DExit);
+                HandleGameEvent(LoaderGameEvent.TriggerExit2D);
             }
         }
 

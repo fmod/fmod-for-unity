@@ -83,19 +83,19 @@ namespace FMODUnity
             }
         }
 
-        void OnTrigger2DEnter(Collider other)
+        void OnTriggerEnter2D(Collider2D other)
         {
             if (String.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
             {
-                HandleGameEvent(EmitterGameEvent.Trigger2DEnter);
+                HandleGameEvent(EmitterGameEvent.TriggerEnter2D);
             }
         }
 
-        void OnTrigger2DExit(Collider other)
+        void OnTriggerExit2D(Collider2D other)
         {
             if (String.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
             {
-                HandleGameEvent(EmitterGameEvent.Trigger2DExit);
+                HandleGameEvent(EmitterGameEvent.TriggerExit2D);
             }
         }
 
@@ -109,14 +109,14 @@ namespace FMODUnity
             HandleGameEvent(EmitterGameEvent.CollisionExit);
         }
 
-        void OnCollision2DEnter()
+        void OnCollisionEnter2D()
         {
-            HandleGameEvent(EmitterGameEvent.Collision2DEnter);
+            HandleGameEvent(EmitterGameEvent.CollisionEnter2D);
         }
 
-        void OnCollision2DExit()
+        void OnCollisionExit2D()
         {
-            HandleGameEvent(EmitterGameEvent.Collision2DExit);
+            HandleGameEvent(EmitterGameEvent.CollisionExit2D);
         }
 
         void HandleGameEvent(EmitterGameEvent gameEvent)
