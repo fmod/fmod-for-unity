@@ -87,8 +87,12 @@ namespace FMODUnity
         ObjectDestroy,
         TriggerEnter,
         TriggerExit,
+        TriggerEnter2D,
+        TriggerExit2D,
         CollisionEnter,
         CollisionExit,
+        CollisionEnter2D,
+        CollisionExit2D,
     }
 
     public enum LoaderGameEvent
@@ -98,6 +102,8 @@ namespace FMODUnity
         ObjectDestroy,
         TriggerEnter,
         TriggerExit,
+        TriggerEnter2D,
+        TriggerExit2D,
     }
     
     public static class RuntimeUtils
