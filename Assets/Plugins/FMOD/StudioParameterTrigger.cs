@@ -26,6 +26,16 @@ namespace FMODUnity
         {
             HandleGameEvent(EmitterGameEvent.ObjectDestroy);
         }
+		
+		void OnEnable()
+		{
+			HandleGameEvent(EmitterGameEvent.ObjectEnable);
+		}
+		
+		void OnDisable()
+		{
+			HandleGameEvent(EmitterGameEvent.ObjectDisable);
+		}
 
         void OnTriggerEnter(Collider other)
         {

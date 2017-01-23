@@ -93,6 +93,8 @@ namespace FMODUnity
         CollisionExit,
         CollisionEnter2D,
         CollisionExit2D,
+      	ObjectEnable,
+		    ObjectDisable
     }
 
     public enum LoaderGameEvent
