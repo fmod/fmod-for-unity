@@ -66,7 +66,7 @@ namespace FMODUnity
 
             EditorGUILayout.PropertyField(trigger, new GUIContent("Trigger"));
 
-            if (trigger.enumValueIndex == 3 || trigger.enumValueIndex == 4)
+            if (trigger.enumValueIndex >= 3 && trigger.enumValueIndex <= 6)
             {
                 tag.stringValue = EditorGUILayout.TagField("Collision Tag", tag.stringValue);
             }

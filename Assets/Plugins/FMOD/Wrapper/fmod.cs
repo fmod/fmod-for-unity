@@ -22,7 +22,7 @@ namespace FMOD
     */
     public class VERSION
     {
-        public const int    number = 0x00010815;
+        public const int    number = 0x00010816;
 #if (UNITY_IPHONE || UNITY_TVOS) && !UNITY_EDITOR
         public const string dll    = "__Internal";
 #elif (UNITY_PS4) && !UNITY_EDITOR
@@ -36,9 +36,11 @@ namespace FMOD
 #elif (UNITY_STANDALONE_WIN)
         public const string dll    = "fmodstudio";
 #elif (UNITY_EDITOR_OSX) || (UNITY_STANDALONE_OSX && DEVELOPMENT_BUILD)
-        public const string dll    = "fmodstudiol";
+        public const string dll    = "fmodstudioL";
 #elif (UNITY_STANDALONE_OSX)
         public const string dll    = "fmodstudio";
+#elif (UNITY_EDITOR_LINUX) || (UNITY_STANDALONE_LINUX && DEVELOPMENT_BUILD)
+		public const string dll    = "fmodL";
 #else
         public const string dll    = "fmod";
 #endif

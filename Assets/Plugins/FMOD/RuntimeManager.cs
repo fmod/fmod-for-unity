@@ -498,7 +498,7 @@ namespace FMODUnity
 
                     FMOD.Studio.CPU_USAGE cpuUsage;
                     studioSystem.getCPUUsage(out cpuUsage);
-                    debug.AppendFormat("CPU: dsp = {0:F1}%, studio = {1:F1}%\n", cpuUsage.dspusage, cpuUsage.studiousage);
+                    debug.AppendFormat("CPU: dsp = {0:F1}%, studio = {1:F1}%\n", cpuUsage.dspUsage, cpuUsage.studioUsage);
 
                     int currentAlloc, maxAlloc;
                     FMOD.Memory.GetStats(out currentAlloc, out maxAlloc);
@@ -782,6 +782,7 @@ namespace FMODUnity
             var instance = CreateInstance(guid);
             AttachInstanceToGameObject(instance, gameObject.transform, gameObject.GetComponent<Rigidbody>());
             instance.start();
+            instance.release();
         }
 
         public static FMOD.Studio.EventDescription GetEventDescription(string path)
@@ -827,7 +828,7 @@ namespace FMODUnity
             Instance.studioSystem.setListenerAttributes(0, RuntimeUtils.To3DAttributes(gameObject, rigidBody));
         }
         
-        public static void SetListenerLocation(GameObject gameObject, Rigidbody2D rigidBody2D = null)
+        public static void SetListenerLocation(GameObject gameObject, Rigidbody2D rigidBody2D)
         {
             Instance.studioSystem.setListenerAttributes(0, RuntimeUtils.To3DAttributes(gameObject, rigidBody2D));
         }
@@ -842,7 +843,7 @@ namespace FMODUnity
             Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject, rigidBody));
         }
         
-        public static void SetListenerLocation(int listenerIndex, GameObject gameObject, Rigidbody2D rigidBody2D = null)
+        public static void SetListenerLocation(int listenerIndex, GameObject gameObject, Rigidbody2D rigidBody2D)
         {
             Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject, rigidBody2D));
         }

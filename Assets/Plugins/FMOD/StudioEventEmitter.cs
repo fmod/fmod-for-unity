@@ -66,16 +66,16 @@ namespace FMODUnity
                 }
             }
         }
-		
-		void OnEnable()
-		{
-			HandleGameEvent(EmitterGameEvent.ObjectEnable);
-		}
-		
-		void OnDisable()
-		{
-			HandleGameEvent(EmitterGameEvent.ObjectDisable);
-		}
+
+        void OnEnable()
+        {
+            HandleGameEvent(EmitterGameEvent.ObjectEnable);
+        }
+
+        void OnDisable()
+        {
+            HandleGameEvent(EmitterGameEvent.ObjectDisable);
+        }
 
         void OnTriggerEnter(Collider other)
         {

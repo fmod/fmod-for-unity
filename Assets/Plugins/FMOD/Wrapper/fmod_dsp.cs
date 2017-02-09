@@ -135,7 +135,8 @@ namespace FMOD
     public delegate RESULT DSP_PAN_SUM_MONO_TO_SURROUND_MATRIX  (ref DSP_STATE dsp_state, int targetSpeakerMode, float direction, float extent, float lowFrequencyGain, float overallGain, int matrixHop, IntPtr matrix);
     public delegate RESULT DSP_PAN_SUM_STEREO_TO_SURROUND_MATRIX(ref DSP_STATE dsp_state, int targetSpeakerMode, float direction, float extent, float rotation, float lowFrequencyGain, float overallGain, int matrixHop, IntPtr matrix);
     public delegate RESULT DSP_PAN_3D_GET_ROLLOFF_GAIN          (ref DSP_STATE dsp_state, DSP_PAN_3D_ROLLOFF_TYPE rolloff, float distance, float mindistance, float maxdistance, out float gain);
-    public delegate RESULT FMOD_DSP_STATE_GETCLOCK              (ref DSP_STATE dsp_state, out ulong clock, out uint offset, out uint length);
+    public delegate RESULT DSP_STATE_GETCLOCK                   (ref DSP_STATE dsp_state, out ulong clock, out uint offset, out uint length);
+    public delegate RESULT DSP_STATE_GETLISTENERATTRIBUTES      (ref DSP_STATE dsp_state, ref int numlisteners, IntPtr attributes);
 
 
     /*
@@ -493,6 +494,8 @@ namespace FMOD
         The system will set this parameter automatically if a sound's position changes.
     
         [REMARKS]
+        FMOD will convert passed in co-ordinates to left-handed for the plugin if the System was initialized with the FMOD_INIT_3D_RIGHTHANDED flag.
+
         Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
         Members marked with [w] mean the variable can be written to.  The user can set the value.
     
@@ -517,6 +520,8 @@ namespace FMOD
         The system will set this parameter automatically if a sound's position changes.
     
         [REMARKS]
+        FMOD will convert passed in co-ordinates to left-handed for the plugin if the System was initialized with the FMOD_INIT_3D_RIGHTHANDED flag.
+
         Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
         Members marked with [w] mean the variable can be written to.  The user can set the value.
     
@@ -748,15 +753,16 @@ namespace FMOD
     [StructLayout(LayoutKind.Sequential)]
     public struct DSP_STATE_SYSTEMCALLBACKS
     {
-        MEMORY_ALLOC_CALLBACK              alloc;          /* [r] Memory allocation callback. Use this for all dynamic memory allocation within the plugin. */
-        MEMORY_REALLOC_CALLBACK            realloc;        /* [r] Memory reallocation callback. */
-        MEMORY_FREE_CALLBACK               free;           /* [r] Memory free callback. */
-        DSP_SYSTEM_GETSAMPLERATE           getsamplerate;  /* [r] Callback for getting the system samplerate. */
-        DSP_SYSTEM_GETBLOCKSIZE            getblocksize;   /* [r] Callback for getting the system's block size.  DSPs will be requested to process blocks of varying length up to this size.*/
-        IntPtr                             dft;            /* [r] Struct containing callbacks for performing FFTs and inverse FFTs. */
-        IntPtr                             pancallbacks;   /* [r] Pointer to a structure of callbacks for calculating pan, up-mix and down-mix matrices. */
-        DSP_SYSTEM_GETSPEAKERMODE          getspeakermode; /* [r] Callback for getting the system's speaker modes.  One is the mixer's default speaker mode, the other is the output mode the system is downmixing or upmixing to.*/
-        FMOD_DSP_STATE_GETCLOCK            getclock;       /* [r] Callback for getting the clock of the current DSP, as well as the subset of the input buffer that contains the signal */
+        MEMORY_ALLOC_CALLBACK              alloc;                   /* [r] Memory allocation callback. Use this for all dynamic memory allocation within the plugin. */
+        MEMORY_REALLOC_CALLBACK            realloc;                 /* [r] Memory reallocation callback. */
+        MEMORY_FREE_CALLBACK               free;                    /* [r] Memory free callback. */
+        DSP_SYSTEM_GETSAMPLERATE           getsamplerate;           /* [r] Callback for getting the system samplerate. */
+        DSP_SYSTEM_GETBLOCKSIZE            getblocksize;            /* [r] Callback for getting the system's block size.  DSPs will be requested to process blocks of varying length up to this size.*/
+        IntPtr                             dft;                     /* [r] Struct containing callbacks for performing FFTs and inverse FFTs. */
+        IntPtr                             pancallbacks;            /* [r] Pointer to a structure of callbacks for calculating pan, up-mix and down-mix matrices. */
+        DSP_SYSTEM_GETSPEAKERMODE          getspeakermode;          /* [r] Callback for getting the system's speaker modes.  One is the mixer's default speaker mode, the other is the output mode the system is downmixing or upmixing to.*/
+        DSP_STATE_GETCLOCK                 getclock;                /* [r] Callback for getting the clock of the current DSP, as well as the subset of the input buffer that contains the signal */
+        DSP_STATE_GETLISTENERATTRIBUTES    getlistenerattributes;   /* [r] Callback for getting the absolute listener attributes set via the API (returned as left-handed co-ordinates). */
     }
 
     /*

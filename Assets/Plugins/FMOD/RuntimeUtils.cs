@@ -93,8 +93,8 @@ namespace FMODUnity
         CollisionExit,
         CollisionEnter2D,
         CollisionExit2D,
-      	ObjectEnable,
-		    ObjectDisable
+        ObjectEnable,
+        ObjectDisable
     }
 
     public enum LoaderGameEvent
@@ -166,7 +166,7 @@ namespace FMODUnity
             return attributes;
         }
 
-        public static FMOD.ATTRIBUTES_3D To3DAttributes(Transform transform, Rigidbody2D rigidbody = null)
+        public static FMOD.ATTRIBUTES_3D To3DAttributes(Transform transform, Rigidbody2D rigidbody)
         {
             FMOD.ATTRIBUTES_3D attributes = transform.To3DAttributes();
 
@@ -182,7 +182,7 @@ namespace FMODUnity
             return attributes;
         }
 
-        public static FMOD.ATTRIBUTES_3D To3DAttributes(GameObject go, Rigidbody2D rigidbody = null)
+        public static FMOD.ATTRIBUTES_3D To3DAttributes(GameObject go, Rigidbody2D rigidbody)
         {
             FMOD.ATTRIBUTES_3D attributes = go.transform.To3DAttributes();
 
@@ -292,7 +292,7 @@ namespace FMODUnity
             return FMODPlatform.XboxOne;
             #elif UNITY_PSP2
             return FMODPlatform.PSVita;
-            #elif UNITY_WIIU
+            #elif (!UNITY_4_6 && !UNITY_4_7 && !UNITY_5_0 && !UNITY_5_1) && UNITY_WIIU
             return FMODPlatform.WiiU;
             #elif UNITY_WSA_10_0
             return FMODPlatform.UWP;
@@ -425,8 +425,10 @@ namespace FMODUnity
                     return FMODPlatform.Windows;
                 case BuildTarget.XboxOne:
                     return FMODPlatform.XboxOne;
+                #if !UNITY_4_6 && !UNITY_4_7 && !UNITY_5_0 && !UNITY_5_1
                 case BuildTarget.WiiU:
                     return FMODPlatform.WiiU;
+                #endif
 				#if UNITY_4_6 || UNITY_4_7
                 case BuildTarget.MetroPlayer:
                 #else
@@ -437,12 +439,13 @@ namespace FMODUnity
                     {
                         return FMODPlatform.UWP;
                     }
-                #endif
+                #else
                     if (EditorUserBuildSettings.metroSDK == MetroSDK.PhoneSDK81)
                     { 
                         return FMODPlatform.WindowsPhone;
                     }
-                    return FMODPlatform.None;
+                #endif
+                return FMODPlatform.None;
                 #if !UNITY_4_6 && !UNITY_4_7 && !UNITY_5_0 && !UNITY_5_1 && !UNITY_5_2
 			    case BuildTarget.tvOS:
 					return FMODPlatform.AppleTV;

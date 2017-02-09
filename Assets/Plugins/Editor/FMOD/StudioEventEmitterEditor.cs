@@ -49,8 +49,8 @@ namespace FMODUnity
             EditorGUILayout.PropertyField(begin, new GUIContent("Play Event"));
             EditorGUILayout.PropertyField(end, new GUIContent("Stop Event"));
 
-            if (begin.enumValueIndex == 3 || begin.enumValueIndex == 4 ||
-                end.enumValueIndex == 3 || end.enumValueIndex == 4)
+            if ((begin.enumValueIndex >= 3 && begin.enumValueIndex <= 6) ||
+            (end.enumValueIndex >= 3 && end.enumValueIndex <= 6))
             {
                 tag.stringValue = EditorGUILayout.TagField("Collision Tag", tag.stringValue);
             }

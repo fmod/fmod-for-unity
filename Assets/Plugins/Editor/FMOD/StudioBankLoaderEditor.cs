@@ -22,8 +22,8 @@ namespace FMODUnity
             EditorGUILayout.PropertyField(load, new GUIContent("Load"));
             EditorGUILayout.PropertyField(unload, new GUIContent("Unload"));
 
-            if (load.enumValueIndex == 3 || load.enumValueIndex == 4 ||
-                unload.enumValueIndex == 3 || unload.enumValueIndex == 4)
+            if ((load.enumValueIndex >= 3 && load.enumValueIndex <= 6) ||
+                (unload.enumValueIndex >= 3 && unload.enumValueIndex <= 6))
             {
                 tag.stringValue = EditorGUILayout.TagField("Collision Tag", tag.stringValue);
             }
