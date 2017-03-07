@@ -55,7 +55,7 @@ namespace FMODUnity
             Result = result;
         }
         public BankLoadException(string path, string error)
-            : base(String.Format("FMOD Studio could not load bank '{0}' : ", path, error))
+            : base(String.Format("FMOD Studio could not load bank '{0}' : {1}", path, error))
         {
             Path = path;
             Result = FMOD.RESULT.ERR_INTERNAL;
