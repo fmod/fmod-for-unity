@@ -194,7 +194,7 @@ namespace FMODUnity
             FMOD.ADVANCEDSETTINGS advancedsettings = new FMOD.ADVANCEDSETTINGS();
             #if UNITY_EDITOR || UNITY_STANDALONE
             advancedsettings.maxVorbisCodecs = realChannels;
-            #elif UNITY_IOS || UNITY_ANDROID || UNITY_WP8_1 || UNITY_PSP2 || UNITY_WII
+            #elif UNITY_IOS || UNITY_ANDROID || UNITY_WP8_1 || UNITY_PSP2 || UNITY_WII || UNITY_SWITCH
             advancedsettings.maxFADPCMCodecs = realChannels;
             #elif UNITY_XBOXONE
             advancedsettings.maxXMACodecs = realChannels;
@@ -220,8 +220,8 @@ namespace FMODUnity
             if (fmodSettings.IsLiveUpdateEnabled(fmodPlatform) && !forceNoNetwork)
             {
                 studioInitFlags |= FMOD.Studio.INITFLAGS.LIVEUPDATE;
-            }                       
-
+            }
+            
             FMOD.RESULT initResult = studioSystem.initialize(
                 fmodSettings.GetVirtualChannels(fmodPlatform),
                 studioInitFlags,
@@ -265,7 +265,7 @@ namespace FMODUnity
                     loadedPlugins.Add(pluginName, handle);
                 }
                 #endif
-
+                
                 if (fmodSettings.ImportType == ImportType.StreamingAssets)
                 {
                     // Always load strings bank
@@ -498,7 +498,7 @@ namespace FMODUnity
 
                     FMOD.Studio.CPU_USAGE cpuUsage;
                     studioSystem.getCPUUsage(out cpuUsage);
-                    debug.AppendFormat("CPU: dsp = {0:F1}%, studio = {1:F1}%\n", cpuUsage.dspUsage, cpuUsage.studioUsage);
+                    debug.AppendFormat("CPU: dsp = {0:F1}%, studio = {1:F1}%\n", cpuUsage.dspusage, cpuUsage.studiousage);
 
                     int currentAlloc, maxAlloc;
                     FMOD.Memory.GetStats(out currentAlloc, out maxAlloc);
@@ -895,9 +895,9 @@ namespace FMODUnity
             }
         }
 
-	    #if (UNITY_IOS || UNITY_TVOS) && !UNITY_EDITOR
+        #if (UNITY_IOS || UNITY_TVOS) && !UNITY_EDITOR
 	    [DllImport("__Internal")]
 	    private static extern FMOD.RESULT FmodUnityNativePluginInit(IntPtr system);
-	    #endif
+        #endif
     }
 }

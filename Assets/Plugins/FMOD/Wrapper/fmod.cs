@@ -1,6 +1,6 @@
 /* ========================================================================================== */
 /*                                                                                            */
-/* FMOD Studio - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2016.          */
+/* FMOD Studio - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2017.          */
 /*                                                                                            */
 /* ========================================================================================== */
 
@@ -22,8 +22,8 @@ namespace FMOD
     */
     public class VERSION
     {
-        public const int    number = 0x00010816;
-#if (UNITY_IPHONE || UNITY_TVOS) && !UNITY_EDITOR
+        public const int    number = 0x00010901;
+#if (UNITY_IPHONE || UNITY_TVOS || UNITY_SWITCH) && !UNITY_EDITOR
         public const string dll    = "__Internal";
 #elif (UNITY_PS4) && !UNITY_EDITOR
         public const string dll    = "libfmod";
@@ -50,6 +50,7 @@ namespace FMOD
     {
         public const int MAX_CHANNEL_WIDTH = 32;
         public const int MAX_LISTENERS = 8;
+        public const int REVERB_MAXINSTANCES = 4;
     }
 
     /*
@@ -330,6 +331,8 @@ namespace FMOD
         AUDIOOUT,        /* PS4/PSVita           - Audio Out.                           (Default on PS4 and PS Vita) */
         AUDIO3D,         /* PS4                  - Audio3D. */
         ATMOS,           /* Win                  - Dolby Atmos (WASAPI). */
+        WEBAUDIO,        /* Web Browser          - JavaScript webaudio output.          (Default on JavaScript) */
+        NNAUDIO,         /* NX                   - NX nn::audio.                        (Default on NX)*/
 
         MAX,             /* Maximum number of output types supported. */
     }
@@ -945,18 +948,20 @@ namespace FMOD
         These enums denote special types of node within a DSP chain.
 
         [REMARKS]
+        By default there is 1 fader for a ChannelGroup or Channel, and it is the head.
 
         [SEE_ALSO]
         Channel::getDSP
         ChannelGroup::getDSP
+        ChannelControl::getNumDSPs
+        ChannelControl::setDSPIndex
     ]
     */
     public struct CHANNELCONTROL_DSP_INDEX
     {
-        public const int HEAD    = -1;         /* Head of the DSP chain. */
+        public const int HEAD    = -1;         /* Head of the DSP chain.   Equivalent of index 0. */
         public const int FADER   = -2;         /* Built in fader DSP. */
-        public const int PANNER  = -3;         /* Built in panner DSP. */
-        public const int TAIL    = -4;         /* Tail of the DSP chain. */
+        public const int TAIL    = -3;         /* Tail of the DSP chain.  Equivalent of the number of dsps minus 1. */
     }
 
     /*
@@ -3200,10 +3205,6 @@ namespace FMOD
         {
             return FMOD5_ChannelGroup_GetDSPIndex(rawPtr, dsp.getRaw(), out index);
         }
-        public RESULT overridePanDSP(DSP pan)
-        {
-            return FMOD5_ChannelGroup_OverridePanDSP(rawPtr, pan.getRaw());
-        }
 
         // 3D functionality.
         public RESULT set3DAttributes(ref VECTOR pos, ref VECTOR vel, ref VECTOR alt_pan_pos)
@@ -3417,8 +3418,6 @@ namespace FMOD
         private static extern RESULT FMOD5_ChannelGroup_SetDSPIndex(IntPtr channelgroup, IntPtr dsp, int index);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_ChannelGroup_GetDSPIndex(IntPtr channelgroup, IntPtr dsp, out int index);
-        [DllImport(VERSION.dll)]
-        private static extern RESULT FMOD5_ChannelGroup_OverridePanDSP(IntPtr channelgroup, IntPtr pan);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_ChannelGroup_SetUserData(IntPtr channelgroup, IntPtr userdata);
         [DllImport(VERSION.dll)]

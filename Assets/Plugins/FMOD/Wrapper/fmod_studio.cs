@@ -1,5 +1,5 @@
 /* ========================================================================================== */
-/* FMOD System - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2016.      */
+/* FMOD System - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2017.      */
 /*                                                                                            */
 /*                                                                                            */
 /* ========================================================================================== */
@@ -12,7 +12,7 @@ namespace FMOD.Studio
 {
     public class STUDIO_VERSION
     {
-#if (UNITY_IPHONE || UNITY_TVOS) && !UNITY_EDITOR
+#if (UNITY_IPHONE || UNITY_TVOS || UNITY_SWITCH) && !UNITY_EDITOR
         public const string dll    = "__Internal";
 #elif (UNITY_PS4 || UNITY_WIIU || UNITY_PSP2) && !UNITY_EDITOR
 		public const string dll    = "libfmodstudio";
@@ -60,57 +60,57 @@ namespace FMOD.Studio
         public int beat;
         public int position;
         public float tempo;
-        public int timeSignatureUpper;
-        public int timeSignatureLower;
+        public int timesignatureupper;
+        public int timesignaturelower;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct ADVANCEDSETTINGS
     {
-        public int cbSize;               /* [w]   Size of this structure.  NOTE: For C# wrapper, users can leave this at 0. ! */
-        public int commandQueueSize;     /* [r/w] Optional. Specify 0 to ignore. Specify the command queue size for studio async processing.  Default 4096 (4kb) */
-        public int handleInitialSize;    /* [r/w] Optional. Specify 0 to ignore. Specify the initial size to allocate for handles.  Memory for handles will grow as needed in pages. */
-        public int studioUpdatePeriod;   /* [r/w] Optional. Specify 0 to ignore. Specify the update period of Studio when in async mode, in milliseconds.  Will be quantised to the nearest multiple of mixer duration.  Default is 20ms. */
-        public int idleSampleDataPoolSize; /* [r/w] Optional. Specify 0 to ignore. Specify the amount of sample data to keep in memory when no longer used, to avoid repeated disk IO.  Use -1 to disable.  Default is 256kB. */
+        public int cbsize;               /* [w]   Size of this structure.  NOTE: For C# wrapper, users can leave this at 0. ! */
+        public int commandqueuesize;     /* [r/w] Optional. Specify 0 to ignore. Specify the command queue size for studio async processing.  Default 4096 (4kb) */
+        public int handleinitialsize;    /* [r/w] Optional. Specify 0 to ignore. Specify the initial size to allocate for handles.  Memory for handles will grow as needed in pages. */
+        public int studioupdateperiod;   /* [r/w] Optional. Specify 0 to ignore. Specify the update period of Studio when in async mode, in milliseconds.  Will be quantised to the nearest multiple of mixer duration.  Default is 20ms. */
+        public int idlesampledatapoolsize; /* [r/w] Optional. Specify 0 to ignore. Specify the amount of sample data to keep in memory when no longer used, to avoid repeated disk IO.  Use -1 to disable.  Default is 256kB. */
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct CPU_USAGE
     {
-        public float dspUsage;            /* Returns the % CPU time taken by DSP processing on the low level mixer thread. */
-        public float streamUsage;         /* Returns the % CPU time taken by stream processing on the low level stream thread. */
-        public float geometryUsage;       /* Returns the % CPU time taken by geometry processing on the low level geometry thread. */
-        public float updateUsage;         /* Returns the % CPU time taken by low level update, called as part of the studio update. */
-        public float studioUsage;         /* Returns the % CPU time taken by studio update, called from the studio thread. Does not include low level update time. */
+        public float dspusage;            /* Returns the % CPU time taken by DSP processing on the low level mixer thread. */
+        public float streamusage;         /* Returns the % CPU time taken by stream processing on the low level stream thread. */
+        public float geometryusage;       /* Returns the % CPU time taken by geometry processing on the low level geometry thread. */
+        public float updateusage;         /* Returns the % CPU time taken by low level update, called as part of the studio update. */
+        public float studiousage;         /* Returns the % CPU time taken by studio update, called from the studio thread. Does not include low level update time. */
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct BUFFER_INFO
     {
-        public int currentUsage;                    /* Current buffer usage in bytes. */
-        public int peakUsage;                       /* Peak buffer usage in bytes. */
+        public int currentusage;                    /* Current buffer usage in bytes. */
+        public int peakusage;                       /* Peak buffer usage in bytes. */
         public int capacity;                        /* Buffer capacity in bytes. */
-        public int stallCount;                      /* Number of stalls due to buffer overflow. */
-        public float stallTime;                     /* Amount of time stalled due to buffer overflow, in seconds. */
+        public int stallcount;                      /* Number of stalls due to buffer overflow. */
+        public float stalltime;                     /* Amount of time stalled due to buffer overflow, in seconds. */
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct BUFFER_USAGE
     {
-        public BUFFER_INFO studioCommandQueue;      /* Information for the Studio Async Command buffer, controlled by FMOD_STUDIO_ADVANCEDSETTINGS commandQueueSize. */
-        public BUFFER_INFO studioHandle;            /* Information for the Studio handle table, controlled by FMOD_STUDIO_ADVANCEDSETTINGS handleInitialSize. */
+        public BUFFER_INFO studiocommandqueue;      /* Information for the Studio Async Command buffer, controlled by FMOD_STUDIO_ADVANCEDSETTINGS commandqueuesize. */
+        public BUFFER_INFO studiohandle;            /* Information for the Studio handle table, controlled by FMOD_STUDIO_ADVANCEDSETTINGS handleinitialsize. */
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct BANK_INFO
     {
         public int size;                            /* The size of this struct (for binary compatibility) */
-        public IntPtr userData;                     /* User data to be passed to the file callbacks */
-        public int userDataLength;                  /* If this is non-zero, userData will be copied internally */
-        public FILE_OPENCALLBACK openCallback;      /* Callback for opening this file. */
-        public FILE_CLOSECALLBACK closeCallback;    /* Callback for closing this file. */
-        public FILE_READCALLBACK readCallback;      /* Callback for reading from this file. */
-        public FILE_SEEKCALLBACK seekCallback;      /* Callback for seeking within this file. */
+        public IntPtr userdata;                     /* User data to be passed to the file callbacks */
+        public int userdatalength;                  /* If this is non-zero, userdata will be copied internally */
+        public FILE_OPENCALLBACK opencallback;      /* Callback for opening this file. */
+        public FILE_CLOSECALLBACK closecallback;    /* Callback for closing this file. */
+        public FILE_READCALLBACK readcallback;      /* Callback for reading from this file. */
+        public FILE_SEEKCALLBACK seekcallback;      /* Callback for seeking within this file. */
     }
 
     [Flags]
@@ -141,7 +141,7 @@ namespace FMOD.Studio
         public int index;                                  /* Index of the parameter */
         public float minimum;                              /* Minimum parameter value. */
         public float maximum;                              /* Maximum parameter value. */
-        public float defaultValue;                         /* Default parameter value. */
+        public float defaultvalue;                         /* Default parameter value. */
         public PARAMETER_TYPE type;                        /* Type of the parameter */
     }
 
@@ -155,7 +155,7 @@ namespace FMOD.Studio
         public int index;                                  /* Index of the parameter */
         public float minimum;                              /* Minimum parameter value. */
         public float maximum;                              /* Maximum parameter value. */
-        public float defaultValue;                         /* Default parameter value. */
+        public float defaultvalue;                         /* Default parameter value. */
         public PARAMETER_TYPE type;                        /* Type of the parameter */
 
         // Helper functions
@@ -165,15 +165,21 @@ namespace FMOD.Studio
             publicDesc.index = index;
             publicDesc.minimum = minimum;
             publicDesc.maximum = maximum;
-            publicDesc.defaultValue = defaultValue;
+            publicDesc.defaultvalue = defaultvalue;
             publicDesc.type = type;
         }
     }
+
     // This is only need for loading memory and given our C# wrapper LOAD_MEMORY_POINT isn't feasible anyway
     enum LOAD_MEMORY_MODE
     {
         LOAD_MEMORY,
         LOAD_MEMORY_POINT,
+    }
+
+    enum LOAD_MEMORY_ALIGNMENT
+    {
+        VALUE = 32
     }
 
     #endregion
@@ -183,7 +189,7 @@ namespace FMOD.Studio
         public byte[] name_or_data;         /* The filename or memory buffer that contains the sound. */
         public MODE mode;                   /* Mode flags required for loading the sound. */
         public CREATESOUNDEXINFO exinfo;    /* Extra information required for loading the sound. */
-        public int subsoundIndex;           /* Subsound index for loading the sound. */
+        public int subsoundindex;           /* Subsound index for loading the sound. */
 
         // For informational purposes - returns null if the sound will be loaded from memory
         public string name
@@ -232,7 +238,7 @@ namespace FMOD.Studio
         IntPtr name_or_data;
         MODE mode;
         CREATESOUNDEXINFO_INTERNAL exinfo;
-        int subsoundIndex;
+        int subsoundindex;
 
         // Helper functions
         public void assign(out SOUND_INFO publicInfo)
@@ -242,16 +248,16 @@ namespace FMOD.Studio
             publicInfo.mode = mode;
             publicInfo.exinfo = CREATESOUNDEXINFO_INTERNAL.CreateFromInternal(ref exinfo);
 
-            // Somewhat hacky: we know the inclusion list always points to subsoundIndex, so recreate it here
+            // Somewhat hacky: we know the inclusion list always points to subsoundindex, so recreate it here
             #if NETFX_CORE
             publicInfo.exinfo.inclusionlist = Marshal.AllocHGlobal(Marshal.SizeOf<Int32>());
             #else
             publicInfo.exinfo.inclusionlist = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(Int32)));
             #endif
-            Marshal.WriteInt32(publicInfo.exinfo.inclusionlist, subsoundIndex);
+            Marshal.WriteInt32(publicInfo.exinfo.inclusionlist, subsoundindex);
             publicInfo.exinfo.inclusionlistnum = 1;
 
-            publicInfo.subsoundIndex = subsoundIndex;
+            publicInfo.subsoundindex = subsoundindex;
 
             if (name_or_data != IntPtr.Zero)
             {
@@ -302,10 +308,10 @@ namespace FMOD.Studio
         public string name;                /* Name of the user property. */
         public USER_PROPERTY_TYPE type;    /* Type of the user property. Use this to select one of the following values. */
 
-        public int intValue;               /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.INTEGER. */
-        public bool boolValue;             /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.BOOLEAN. */
-        public float floatValue;           /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.FLOAT. */
-        public string stringValue;         /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.STRING. */
+        public int intvalue;               /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.INTEGER. */
+        public bool boolvalue;             /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.BOOLEAN. */
+        public float floatvalue;           /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.FLOAT. */
+        public string stringvalue;         /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.STRING. */
     };
 
     #region wrapperinternal
@@ -329,16 +335,16 @@ namespace FMOD.Studio
             switch (type)
             {
                 case USER_PROPERTY_TYPE.INTEGER:
-                    publicProperty.intValue = value.intValue;
+                    publicProperty.intvalue = value.intvalue;
                     break;
                 case USER_PROPERTY_TYPE.BOOLEAN:
-                    publicProperty.boolValue = value.boolValue;
+                    publicProperty.boolvalue = value.boolvalue;
                     break;
                 case USER_PROPERTY_TYPE.FLOAT:
-                    publicProperty.floatValue = value.floatValue;
+                    publicProperty.floatvalue = value.floatvalue;
                     break;
                 case USER_PROPERTY_TYPE.STRING:
-                    publicProperty.stringValue = MarshallingHelper.stringFromNativeUtf8(value.stringValue);
+                    publicProperty.stringvalue = MarshallingHelper.stringFromNativeUtf8(value.stringvalue);
                     break;
             }
 
@@ -349,27 +355,27 @@ namespace FMOD.Studio
     [StructLayout(LayoutKind.Sequential)]
     struct COMMAND_INFO_INTERNAL
     {
-        public IntPtr commandName;                                         /* The full name of the API function for this command. */
-        public int parentCommandIndex;                                     /* For commands that operate on an instance, this is the command that created the instance */
-        public int frameNumber;                                            /* The frame the command belongs to */
-        public float frameTime;                                            /* The playback time at which this command will be executed */
-        public INSTANCETYPE instanceType;                                  /* The type of object that this command uses as an instance */
-        public INSTANCETYPE outputType;                                    /* The type of object that this command outputs, if any */
-        public UInt32 instanceHandle;                                      /* The original handle value of the instance.  This will no longer correspond to any actual object in playback. */
-        public UInt32 outputHandle;                                        /* The original handle value of the command output.  This will no longer correspond to any actual object in playback. */
+        public IntPtr commandname;                                         /* The full name of the API function for this command. */
+        public int parentcommandindex;                                     /* For commands that operate on an instance, this is the command that created the instance */
+        public int framenumber;                                            /* The frame the command belongs to */
+        public float frametime;                                            /* The playback time at which this command will be executed */
+        public INSTANCETYPE instancetype;                                  /* The type of object that this command uses as an instance */
+        public INSTANCETYPE outputtype;                                    /* The type of object that this command outputs, if any */
+        public UInt32 instancehandle;                                      /* The original handle value of the instance.  This will no longer correspond to any actual object in playback. */
+        public UInt32 outputhandle;                                        /* The original handle value of the command output.  This will no longer correspond to any actual object in playback. */
 
         // Helper functions
         public COMMAND_INFO createPublic()
         {
             COMMAND_INFO publicInfo = new COMMAND_INFO();
-            publicInfo.commandName = MarshallingHelper.stringFromNativeUtf8(commandName);
-            publicInfo.parentCommandIndex = parentCommandIndex;
-            publicInfo.frameNumber = frameNumber;
-            publicInfo.frameTime = frameTime;
-            publicInfo.instanceType = instanceType;
-            publicInfo.outputType = outputType;
-            publicInfo.instanceHandle = instanceHandle;
-            publicInfo.outputHandle = outputHandle;
+            publicInfo.commandname = MarshallingHelper.stringFromNativeUtf8(commandname);
+            publicInfo.parentcommandindex = parentcommandindex;
+            publicInfo.framenumber = framenumber;
+            publicInfo.frametime = frametime;
+            publicInfo.instancetype = instancetype;
+            publicInfo.outputtype = outputtype;
+            publicInfo.instancehandle = instancehandle;
+            publicInfo.outputhandle = outputhandle;
             return publicInfo;
         }
     }
@@ -378,13 +384,13 @@ namespace FMOD.Studio
     struct Union_IntBoolFloatString
     {
         [FieldOffset(0)]
-        public int intValue;
+        public int intvalue;
         [FieldOffset(0)]
-        public bool boolValue;
+        public bool boolvalue;
         [FieldOffset(0)]
-        public float floatValue;
+        public float floatvalue;
         [FieldOffset(0)]
-        public IntPtr stringValue;
+        public IntPtr stringvalue;
     }
 
     #endregion
@@ -397,6 +403,7 @@ namespace FMOD.Studio
         ALLOW_MISSING_PLUGINS   = 0x00000002,   /* Load banks even if they reference plugins that have not been loaded. */
         SYNCHRONOUS_UPDATE      = 0x00000004,   /* Disable asynchronous processing and perform all processing on the calling thread instead. */
         DEFERRED_CALLBACKS      = 0x00000008,   /* Defer timeline callbacks until the main update. See Studio::EventInstance::setCallback for more information. */
+        LOAD_FROM_UPDATE        = 0x00000010,   /* No additional threads are created for bank and resource loading.  Loading is driven from Studio::System::update.  Mainly used in non-realtime situations. */
     }
 
     [Flags]
@@ -420,6 +427,7 @@ namespace FMOD.Studio
     {
         NORMAL                  = 0x00000000,   /* Standard behaviour. */
         SKIP_CLEANUP            = 0x00000001,   /* Normally the playback will release any created resources when it stops, unless this flag is set. */
+        FAST_FORWARD            = 0x00000002,   /* Play back at maximum speed, ignoring the timing of the original replay. */
     }
 
     public enum PLAYBACK_STATE
@@ -491,14 +499,14 @@ namespace FMOD.Studio
     [StructLayout(LayoutKind.Sequential)]
     public struct COMMAND_INFO
     {
-        public string commandName;                                         /* The full name of the API function for this command. */
-        public int parentCommandIndex;                                     /* For commands that operate on an instance, this is the command that created the instance */
-        public int frameNumber;                                            /* The frame the command belongs to */
-        public float frameTime;                                            /* The playback time at which this command will be executed */
-        public INSTANCETYPE instanceType;                                  /* The type of object that this command uses as an instance */
-        public INSTANCETYPE outputType;                                    /* The type of object that this command outputs, if any */
-        public UInt32 instanceHandle;                                      /* The original handle value of the instance.  This will no longer correspond to any actual object in playback. */
-        public UInt32 outputHandle;                                        /* The original handle value of the command output.  This will no longer correspond to any actual object in playback. */
+        public string commandname;                                         /* The full name of the API function for this command. */
+        public int parentcommandindex;                                     /* For commands that operate on an instance, this is the command that created the instance */
+        public int framenumber;                                            /* The frame the command belongs to */
+        public float frametime;                                            /* The playback time at which this command will be executed */
+        public INSTANCETYPE instancetype;                                  /* The type of object that this command uses as an instance */
+        public INSTANCETYPE outputtype;                                    /* The type of object that this command outputs, if any */
+        public UInt32 instancehandle;                                      /* The original handle value of the instance.  This will no longer correspond to any actual object in playback. */
+        public UInt32 outputhandle;                                        /* The original handle value of the command output.  This will no longer correspond to any actual object in playback. */
     }
 
     public class Util
@@ -598,18 +606,18 @@ namespace FMOD.Studio
         public RESULT setAdvancedSettings(ADVANCEDSETTINGS settings)
         {
             #if NETFX_CORE
-            settings.cbSize = Marshal.SizeOf<ADVANCEDSETTINGS>();
+            settings.cbsize = Marshal.SizeOf<ADVANCEDSETTINGS>();
             #else
-            settings.cbSize = Marshal.SizeOf(typeof(ADVANCEDSETTINGS));
+            settings.cbsize = Marshal.SizeOf(typeof(ADVANCEDSETTINGS));
             #endif
             return FMOD_Studio_System_SetAdvancedSettings(rawPtr, ref settings);
         }
         public RESULT getAdvancedSettings(out ADVANCEDSETTINGS settings)
         {
             #if NETFX_CORE
-            settings.cbSize = Marshal.SizeOf<ADVANCEDSETTINGS>();
+            settings.cbsize = Marshal.SizeOf<ADVANCEDSETTINGS>();
             #else
-            settings.cbSize = Marshal.SizeOf(typeof(ADVANCEDSETTINGS));
+            settings.cbsize = Marshal.SizeOf(typeof(ADVANCEDSETTINGS));
             #endif
             return FMOD_Studio_System_GetAdvancedSettings(rawPtr, out settings);
         }
@@ -815,6 +823,14 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_System_SetListenerAttributes(rawPtr, listener, ref attributes);
         }
+        public RESULT getListenerWeight(int listener, out float weight)
+        {
+            return FMOD_Studio_System_GetListenerWeight(rawPtr, listener, out weight);
+        }
+        public RESULT setListenerWeight(int listener, float weight)
+        {
+            return FMOD_Studio_System_SetListenerWeight(rawPtr, listener, weight);
+        }
         public RESULT loadBankFile(string name, LOAD_BANK_FLAGS flags, out Bank bank)
         {
             bank = null;
@@ -952,14 +968,14 @@ namespace FMOD.Studio
             return FMOD_Studio_System_SetCallback(rawPtr, callback, callbackmask);
         }
 
-        public RESULT getUserData(out IntPtr userData)
+        public RESULT getUserData(out IntPtr userdata)
         {
-            return FMOD_Studio_System_GetUserData(rawPtr, out userData);
+            return FMOD_Studio_System_GetUserData(rawPtr, out userdata);
         }
 
-        public RESULT setUserData(IntPtr userData)
+        public RESULT setUserData(IntPtr userdata)
         {
-            return FMOD_Studio_System_SetUserData(rawPtr, userData);
+            return FMOD_Studio_System_SetUserData(rawPtr, userdata);
         }
 
         #region importfunctions
@@ -1010,6 +1026,10 @@ namespace FMOD.Studio
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_SetListenerAttributes   (IntPtr studiosystem, int listener, ref ATTRIBUTES_3D attributes);
         [DllImport (STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetListenerWeight       (IntPtr studiosystem, int listener, out float weight);
+        [DllImport (STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_SetListenerWeight       (IntPtr studiosystem, int listener, float weight);
+        [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_LoadBankFile            (IntPtr studiosystem, byte[] filename, LOAD_BANK_FLAGS flags, out IntPtr bank);
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_LoadBankMemory(IntPtr studiosystem, IntPtr buffer, int length, LOAD_MEMORY_MODE mode, LOAD_BANK_FLAGS flags, out IntPtr bank);
@@ -1040,9 +1060,9 @@ namespace FMOD.Studio
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_SetCallback             (IntPtr studiosystem, SYSTEM_CALLBACK callback, SYSTEM_CALLBACK_TYPE callbackmask);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetUserData             (IntPtr studiosystem, out IntPtr userData);
+        private static extern RESULT FMOD_Studio_System_GetUserData             (IntPtr studiosystem, out IntPtr userdata);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_SetUserData             (IntPtr studiosystem, IntPtr userData);
+        private static extern RESULT FMOD_Studio_System_SetUserData             (IntPtr studiosystem, IntPtr userdata);
         #endregion
 
         #region wrapperinternal
@@ -1270,14 +1290,14 @@ namespace FMOD.Studio
             return FMOD_Studio_EventDescription_SetCallback(rawPtr, callback, callbackmask);
         }
 
-        public RESULT getUserData(out IntPtr userData)
+        public RESULT getUserData(out IntPtr userdata)
         {
-            return FMOD_Studio_EventDescription_GetUserData(rawPtr, out userData);
+            return FMOD_Studio_EventDescription_GetUserData(rawPtr, out userdata);
         }
 
-        public RESULT setUserData(IntPtr userData)
+        public RESULT setUserData(IntPtr userdata)
         {
-            return FMOD_Studio_EventDescription_SetUserData(rawPtr, userData);
+            return FMOD_Studio_EventDescription_SetUserData(rawPtr, userdata);
         }
 
         #region importfunctions
@@ -1334,9 +1354,9 @@ namespace FMOD.Studio
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventDescription_SetCallback(IntPtr eventdescription, EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetUserData(IntPtr eventdescription, out IntPtr userData);
+        private static extern RESULT FMOD_Studio_EventDescription_GetUserData(IntPtr eventdescription, out IntPtr userdata);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_SetUserData(IntPtr eventdescription, IntPtr userData);
+        private static extern RESULT FMOD_Studio_EventDescription_SetUserData(IntPtr eventdescription, IntPtr userdata);
         #endregion
         #region wrapperinternal
 
@@ -1368,17 +1388,17 @@ namespace FMOD.Studio
             description = new EventDescription(newPtr);
             return result;
         }
-        public RESULT getVolume(out float volume)
+        public RESULT getVolume(out float volume, out float finalvolume)
         {
-            return FMOD_Studio_EventInstance_GetVolume(rawPtr, out volume);
+            return FMOD_Studio_EventInstance_GetVolume(rawPtr, out volume, out finalvolume);
         }
         public RESULT setVolume(float volume)
         {
             return FMOD_Studio_EventInstance_SetVolume(rawPtr, volume);
         }
-        public RESULT getPitch(out float pitch)
+        public RESULT getPitch(out float pitch, out float finalpitch)
         {
-            return FMOD_Studio_EventInstance_GetPitch(rawPtr, out pitch);
+            return FMOD_Studio_EventInstance_GetPitch(rawPtr, out pitch, out finalpitch);
         }
         public RESULT setPitch(float pitch)
         {
@@ -1407,6 +1427,14 @@ namespace FMOD.Studio
         public RESULT setProperty(EVENT_PROPERTY index, float value)
         {
             return FMOD_Studio_EventInstance_SetProperty(rawPtr, index, value);
+        }
+        public RESULT getReverbLevel(int index, out float level)
+        {
+            return FMOD_Studio_EventInstance_GetReverbLevel(rawPtr, index, out level);
+        }
+        public RESULT setReverbLevel(int index, float level)
+        {
+            return FMOD_Studio_EventInstance_SetReverbLevel(rawPtr, index, level);
         }
         public RESULT getPaused(out bool paused)
         {
@@ -1491,17 +1519,17 @@ namespace FMOD.Studio
 
             return result;
         }
-        public RESULT getParameterValue(string name, out float value)
+        public RESULT getParameterValue(string name, out float value, out float finalvalue)
         {
-            return FMOD_Studio_EventInstance_GetParameterValue(rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), out value);
+            return FMOD_Studio_EventInstance_GetParameterValue(rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), out value, out finalvalue);
         }
         public RESULT setParameterValue(string name, float value)
         {
             return FMOD_Studio_EventInstance_SetParameterValue(rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), value);
         }
-        public RESULT getParameterValueByIndex(int index, out float value)
+        public RESULT getParameterValueByIndex(int index, out float value, out float finalvalue)
         {
-            return FMOD_Studio_EventInstance_GetParameterValueByIndex(rawPtr, index, out value);
+            return FMOD_Studio_EventInstance_GetParameterValueByIndex(rawPtr, index, out value, out finalvalue);
         }
         public RESULT setParameterValueByIndex(int index, float value)
         {
@@ -1515,13 +1543,13 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_EventInstance_SetCallback(rawPtr, callback, callbackmask);
         }
-        public RESULT getUserData(out IntPtr userData)
+        public RESULT getUserData(out IntPtr userdata)
         {
-            return FMOD_Studio_EventInstance_GetUserData(rawPtr, out userData);
+            return FMOD_Studio_EventInstance_GetUserData(rawPtr, out userdata);
         }
-        public RESULT setUserData(IntPtr userData)
+        public RESULT setUserData(IntPtr userdata)
         {
-            return FMOD_Studio_EventInstance_SetUserData(rawPtr, userData);
+            return FMOD_Studio_EventInstance_SetUserData(rawPtr, userdata);
         }
 
         #region importfunctions
@@ -1530,11 +1558,11 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_GetDescription       (IntPtr _event, out IntPtr description);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetVolume            (IntPtr _event, out float volume);
+        private static extern RESULT FMOD_Studio_EventInstance_GetVolume            (IntPtr _event, out float volume, out float finalvolume);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_SetVolume            (IntPtr _event, float volume);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetPitch             (IntPtr _event, out float pitch);
+        private static extern RESULT FMOD_Studio_EventInstance_GetPitch             (IntPtr _event, out float pitch, out float finalpitch);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_SetPitch             (IntPtr _event, float pitch);
         [DllImport(STUDIO_VERSION.dll)]
@@ -1549,6 +1577,10 @@ namespace FMOD.Studio
         private static extern RESULT FMOD_Studio_EventInstance_GetProperty          (IntPtr _event, EVENT_PROPERTY index, out float value);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_SetProperty          (IntPtr _event, EVENT_PROPERTY index, float value);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventInstance_GetReverbLevel       (IntPtr _event, int index, out float level);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventInstance_SetReverbLevel       (IntPtr _event, int index, float level);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_GetPaused            (IntPtr _event, out bool paused);
         [DllImport(STUDIO_VERSION.dll)]
@@ -1576,11 +1608,11 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_GetParameterCount    (IntPtr _event, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValue    (IntPtr _event, byte[] name, out float value);
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValue    (IntPtr _event, byte[] name, out float value, out float finalvalue);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_SetParameterValue    (IntPtr _event, byte[] name, float value);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValueByIndex (IntPtr _event, int index, out float value);
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValueByIndex (IntPtr _event, int index, out float value, out float finalvalue);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_SetParameterValueByIndex (IntPtr _event, int index, float value);
         [DllImport(STUDIO_VERSION.dll)]
@@ -1588,9 +1620,9 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_SetCallback          (IntPtr _event, EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetUserData          (IntPtr _event, out IntPtr userData);
+        private static extern RESULT FMOD_Studio_EventInstance_GetUserData          (IntPtr _event, out IntPtr userdata);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetUserData          (IntPtr _event, IntPtr userData);
+        private static extern RESULT FMOD_Studio_EventInstance_SetUserData          (IntPtr _event, IntPtr userdata);
         #endregion
 
         #region wrapperinternal
@@ -1689,13 +1721,13 @@ namespace FMOD.Studio
 
             return result;
         }
-        public RESULT getFaderLevel(out float volume)
+        public RESULT getVolume(out float volume, out float finalvolume)
         {
-            return FMOD_Studio_Bus_GetFaderLevel(rawPtr, out volume);
+            return FMOD_Studio_Bus_GetVolume(rawPtr, out volume, out finalvolume);
         }
-        public RESULT setFaderLevel(float volume)
+        public RESULT setVolume(float volume)
         {
-            return FMOD_Studio_Bus_SetFaderLevel(rawPtr, volume);
+            return FMOD_Studio_Bus_SetVolume(rawPtr, volume);
         }
         public RESULT getPaused(out bool paused)
         {
@@ -1749,9 +1781,9 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_Bus_GetPath(IntPtr bus, [Out] byte[] path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_GetFaderLevel(IntPtr bus, out float value);
+        private static extern RESULT FMOD_Studio_Bus_GetVolume(IntPtr bus, out float volume, out float finalvolume);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_SetFaderLevel(IntPtr bus, float value);
+        private static extern RESULT FMOD_Studio_Bus_SetVolume(IntPtr bus, float value);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_Bus_GetPaused(IntPtr bus, out bool paused);
         [DllImport(STUDIO_VERSION.dll)]
@@ -1815,13 +1847,13 @@ namespace FMOD.Studio
 
             return result;
         }
-        public RESULT getFaderLevel(out float volume)
+        public RESULT getVolume(out float volume, out float finalvolume)
         {
-            return FMOD_Studio_VCA_GetFaderLevel(rawPtr, out volume);
+            return FMOD_Studio_VCA_GetVolume(rawPtr, out volume, out finalvolume);
         }
-        public RESULT setFaderLevel(float volume)
+        public RESULT setVolume(float volume)
         {
-            return FMOD_Studio_VCA_SetFaderLevel(rawPtr, volume);
+            return FMOD_Studio_VCA_SetVolume(rawPtr, volume);
         }
 
         #region importfunctions
@@ -1832,9 +1864,9 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_VCA_GetPath(IntPtr vca, [Out] byte[] path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_VCA_GetFaderLevel(IntPtr vca, out float value);
+        private static extern RESULT FMOD_Studio_VCA_GetVolume(IntPtr vca, out float volume, out float finalvolume);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_VCA_SetFaderLevel(IntPtr vca, float value);
+        private static extern RESULT FMOD_Studio_VCA_SetVolume(IntPtr vca, float value);
         #endregion
 
         #region wrapperinternal
@@ -2062,14 +2094,14 @@ namespace FMOD.Studio
             return RESULT.OK;
         }
 
-        public RESULT getUserData(out IntPtr userData)
+        public RESULT getUserData(out IntPtr userdata)
         {
-            return FMOD_Studio_Bank_GetUserData(rawPtr, out userData);
+            return FMOD_Studio_Bank_GetUserData(rawPtr, out userdata);
         }
 
-        public RESULT setUserData(IntPtr userData)
+        public RESULT setUserData(IntPtr userdata)
         {
-            return FMOD_Studio_Bank_SetUserData(rawPtr, userData);
+            return FMOD_Studio_Bank_SetUserData(rawPtr, userdata);
         }
 
         #region importfunctions
@@ -2106,9 +2138,9 @@ namespace FMOD.Studio
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_Bank_GetVCAList(IntPtr bank, IntPtr[] array, int capacity, out int count);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetUserData(IntPtr studiosystem, out IntPtr userData);
+        private static extern RESULT FMOD_Studio_Bank_GetUserData(IntPtr studiosystem, out IntPtr userdata);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_SetUserData(IntPtr studiosystem, IntPtr userData);
+        private static extern RESULT FMOD_Studio_Bank_SetUserData(IntPtr studiosystem, IntPtr userdata);
         #endregion
 
         #region wrapperinternal
@@ -2248,13 +2280,13 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_CommandReplay_SetCreateInstanceCallback(rawPtr, callback);
         }
-        public RESULT getUserData(out IntPtr userData)
+        public RESULT getUserData(out IntPtr userdata)
         {
-            return FMOD_Studio_CommandReplay_GetUserData(rawPtr, out userData);
+            return FMOD_Studio_CommandReplay_GetUserData(rawPtr, out userdata);
         }
-        public RESULT setUserData(IntPtr userData)
+        public RESULT setUserData(IntPtr userdata)
         {
-            return FMOD_Studio_CommandReplay_SetUserData(rawPtr, userData);
+            return FMOD_Studio_CommandReplay_SetUserData(rawPtr, userdata);
         }
 
         #region importfunctions

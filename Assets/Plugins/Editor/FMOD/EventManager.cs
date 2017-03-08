@@ -378,7 +378,7 @@ namespace FMODUnity
                             paramRef.Name = param.name;
                             paramRef.Min = param.minimum;
                             paramRef.Max = param.maximum;
-                            paramRef.Default = param.defaultValue;
+                            paramRef.Default = param.defaultvalue;
                             eventRef.Parameters.Add(paramRef);
                         }
                     }

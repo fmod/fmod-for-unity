@@ -296,8 +296,10 @@ namespace FMODUnity
             return FMODPlatform.WiiU;
             #elif UNITY_WSA_10_0
             return FMODPlatform.UWP;
-            #endif
-        }        
+            #elif UNITY_SWITCH
+            return FMODPlatform.Switch;
+#endif
+        }
 
         const string BankExtension = ".bank";
         internal static string GetBankPath(string bankName)
@@ -325,6 +327,12 @@ namespace FMODUnity
             string bankFolder = Application.streamingAssetsPath;
             #endif
 
+            // Special case for Switch, remove / at start if needed.
+            #if UNITY_5 && UNITY_SWITCH
+            if (bankFolder[0] == '/')
+                bankFolder = bankFolder.Substring(1);
+            #endif
+
             if (System.IO.Path.GetExtension(bankName) != BankExtension)
             {
                 return String.Format("{0}/{1}.bank", bankFolder, bankName);
@@ -337,8 +345,8 @@ namespace FMODUnity
 
         internal static string GetPluginPath(string pluginName)
         {
-			#if (UNITY_IOS || UNITY_TVOS || UNITY_PSP2)
-				return "";
+            #if (UNITY_IOS || UNITY_TVOS || UNITY_PSP2 || UNITY_SWITCH)
+                return "";
 			#else
 	            #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_XBOXONE || UNITY_WINRT_8_1 || UNITY_WSA_10_0
 	                string pluginFileName = pluginName + ".dll";
@@ -383,7 +391,7 @@ namespace FMODUnity
             
             #endif
 
-			#if !UNITY_IPHONE || UNITY_EDITOR // iOS is statically linked
+            #if !(UNITY_IPHONE && UNITY_SWITCH) || UNITY_EDITOR // iOS is statically linked
 
             // Call a function in fmod.dll to make sure it's loaded before fmodstudio.dll
             int temp1, temp2;
@@ -449,6 +457,10 @@ namespace FMODUnity
                 #if !UNITY_4_6 && !UNITY_4_7 && !UNITY_5_0 && !UNITY_5_1 && !UNITY_5_2
 			    case BuildTarget.tvOS:
 					return FMODPlatform.AppleTV;
+                #endif
+                #if UNITY_SWITCH
+                case BuildTarget.Switch:
+                    return FMODPlatform.Switch;
                 #endif
                 default:
                     return FMODPlatform.None;

@@ -33,6 +33,7 @@ namespace FMODUnity
         PSVita,
 		AppleTV,
         UWP,
+        Switch,
         Count,
     }
 
@@ -195,6 +196,7 @@ namespace FMODUnity
                 case FMODPlatform.WindowsPhone:
 				case FMODPlatform.PSVita:
 			    case FMODPlatform.AppleTV:
+                case FMODPlatform.Switch:
                     return FMODPlatform.Mobile;
                 case FMODPlatform.XboxOne:
                 case FMODPlatform.PS4:
