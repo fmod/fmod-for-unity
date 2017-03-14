@@ -391,16 +391,12 @@ namespace FMODUnity
             
             #endif
 
-            #if !(UNITY_IPHONE && UNITY_SWITCH) || UNITY_EDITOR // iOS is statically linked
-
             // Call a function in fmod.dll to make sure it's loaded before fmodstudio.dll
             int temp1, temp2;
             FMOD.Memory.GetStats(out temp1, out temp2);
 
             Guid temp3;
-            FMOD.Studio.Util.ParseID("", out temp3);           
-
-            #endif
+            FMOD.Studio.Util.ParseID("", out temp3);
         }
 
         #if UNITY_EDITOR
