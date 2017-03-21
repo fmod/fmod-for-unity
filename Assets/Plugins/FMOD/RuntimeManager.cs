@@ -250,6 +250,8 @@ namespace FMODUnity
 				#else
                 foreach (var pluginName in fmodSettings.Plugins)
                 {
+                    if (string.IsNullOrEmpty(pluginName))
+                        continue;
                     string pluginPath = RuntimeUtils.GetPluginPath(pluginName);
                     uint handle;
                     result = lowlevelSystem.loadPlugin(pluginPath, out handle);

@@ -298,7 +298,7 @@ namespace FMODUnity
             return FMODPlatform.UWP;
             #elif UNITY_SWITCH
             return FMODPlatform.Switch;
-#endif
+            #endif
         }
 
         const string BankExtension = ".bank";

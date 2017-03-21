@@ -22,24 +22,22 @@ namespace FMOD
     */
     public class VERSION
     {
-        public const int    number = 0x00010901;
+        public const int    number = 0x00010903;
 #if (UNITY_IPHONE || UNITY_TVOS || UNITY_SWITCH) && !UNITY_EDITOR
         public const string dll    = "__Internal";
 #elif (UNITY_PS4) && !UNITY_EDITOR
         public const string dll    = "libfmod";
-#elif (UNITY_PSP2) && !UNITY_EDITOR
-        public const string dll    = "libfmodstudio";
-#elif (UNITY_WIIU) && !UNITY_EDITOR
+#elif (UNITY_PS4) && DEVELOPMENT_BUILD
+        public const string dll    = "libfmodL";
+#elif (UNITY_PSP2 || UNITY_WIIU) && !UNITY_EDITOR
         public const string dll    = "libfmodstudio";
 #elif (UNITY_EDITOR_WIN) || (UNITY_STANDALONE_WIN && DEVELOPMENT_BUILD)
         public const string dll    = "fmodstudiol";
-#elif (UNITY_STANDALONE_WIN)
-        public const string dll    = "fmodstudio";
 #elif (UNITY_EDITOR_OSX) || (UNITY_STANDALONE_OSX && DEVELOPMENT_BUILD)
         public const string dll    = "fmodstudioL";
-#elif (UNITY_STANDALONE_OSX)
+#elif (UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN)
         public const string dll    = "fmodstudio";
-#elif (UNITY_EDITOR_LINUX) || (UNITY_STANDALONE_LINUX && DEVELOPMENT_BUILD)
+#elif (UNITY_EDITOR_LINUX) || ((UNITY_STANDALONE_LINUX || UNITY_ANDROID || UNITY_XBOXONE) && DEVELOPMENT_BUILD)
 		public const string dll    = "fmodL";
 #else
         public const string dll    = "fmod";
