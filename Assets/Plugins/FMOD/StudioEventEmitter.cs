@@ -240,7 +240,30 @@ namespace FMODUnity
                 instance.setParameterValue(name, value);
             }
         }
-        
+
+        public void SetParameterByIndex(int index, float value)
+        {
+            if (instance != null)
+            {
+                instance.setParameterValueByIndex(index, value);
+            }
+        }
+
+        public bool GetParameterIndex(string name, out int index)
+        {
+            index = -1;
+            if (instance == null)
+                return false;
+            FMOD.Studio.ParameterInstance param;
+            if (instance.getParameter(name, out param) != FMOD.RESULT.OK)
+                return false;
+            FMOD.Studio.PARAMETER_DESCRIPTION desc;
+            if (param.getDescription(out desc) != FMOD.RESULT.OK)
+                return false;
+            index = desc.index;
+            return true;
+        }
+
         public bool IsPlaying()
         {
             if (instance != null && instance.isValid())
