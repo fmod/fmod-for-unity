@@ -1,3 +1,6 @@
+## About
+This is a fork from the fmod studio plugin 1.09.04. It removes garbage by disabling OnGUI events and fixes annoying version control problems when using different operating systems.
+
 FMOD Studio Unity Integration
 ---------------------------
 Source for the the FMOD Studio Unity Integration.  It contains the source code but does
