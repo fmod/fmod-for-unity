@@ -474,6 +474,8 @@ namespace FMODUnity
             }
         }
 
+        // Only allowed in the editor due to garbage allocation
+        #if UNITY_EDITOR
         Rect windowRect = new Rect(10, 10, 300, 100);
         void OnGUI()
         {
@@ -482,6 +484,7 @@ namespace FMODUnity
                 windowRect = GUI.Window(0, windowRect, DrawDebugOverlay, "FMOD Studio Debug");
             }
         }
+        #endif
 
         string lastDebugText;
         float lastDebugUpdate = 0;
