@@ -72,7 +72,6 @@ namespace FMODUnity
             return "Unknown";
         }
 
-
         void DisplayEditorBool(string label, List<PlatformBoolSetting> settings, FMODPlatform platform)
         {
             int current = Settings.GetSetting(settings, platform, TriStateBool.Disabled) != TriStateBool.Disabled ? 0 : 1;            
@@ -414,39 +413,51 @@ namespace FMODUnity
             if (sourceType == 0)
             {
                 EditorGUILayout.BeginHorizontal();
-                string oldPath = settings.SourceProjectPath;
+                string oldPath = settings.SourceProjectPathUnformatted;
                 EditorGUILayout.PrefixLabel("Studio Project Path", GUI.skin.textField, style);
-                settings.SourceProjectPath = EditorGUILayout.TextField(GUIContent.none, settings.SourceProjectPath);
+                settings.SourceProjectPathUnformatted = EditorGUILayout.TextField(GUIContent.none, settings.SourceProjectPathUnformatted);
                 if (GUILayout.Button("Browse", GUILayout.ExpandWidth(false)))
                 {
                     GUI.FocusControl(null);
                     string path = EditorUtility.OpenFilePanel("Locate Studio Project", oldPath, "fspro");
                     if (!String.IsNullOrEmpty(path))
                     {
-                        settings.SourceProjectPath = MakePathRelativeToProject(path);
+						path = MakePathRelativeToProject(path);
+						settings.SourceProjectPathUnformatted = path;
+	                    settings.SourceProjectPath = path;
                         this.Repaint();
                     }
                 }
                 EditorGUILayout.EndHorizontal();
 
-                // Cache in settings for runtime access in play-in-editor mode
-                settings.SourceBankPath = EditorUtils.GetBankDirectory();
+				if (settings.SourceBankPathUnformatted != null && !settings.SourceProjectPathUnformatted.Equals(settings.SourceProjectPath))
+	            {
+					EditorGUI.BeginDisabledGroup(true);
+					EditorGUILayout.TextField("Platform specific path", settings.SourceProjectPath);
+					EditorGUI.EndDisabledGroup();
+				}
+				
+
+				// Cache in settings for runtime access in play-in-editor mode
+				var bankPath = EditorUtils.GetBankDirectoryUnformatted();
+				settings.SourceBankPathUnformatted = bankPath;
+				settings.SourceBankPath = bankPath;
                 settings.HasPlatforms = true;
                 settings.HasSourceProject = true;
 
                 // First time project path is set or changes, copy to streaming assets
-                if (settings.SourceProjectPath != oldPath)
+                if (settings.SourceProjectPathUnformatted != oldPath)
                 {
                     hasBankSourceChanged = true;
                 }
             }
 
-            if (sourceType == 1)
+            if (sourceType == 1 || sourceType == 2)
             {
                 EditorGUILayout.BeginHorizontal();
-                string oldPath = settings.SourceBankPath;
+                string oldPath = settings.SourceBankPathUnformatted;
                 EditorGUILayout.PrefixLabel("Build Path", GUI.skin.textField, style);
-                settings.SourceBankPath = EditorGUILayout.TextField(GUIContent.none, settings.SourceBankPath);
+                settings.SourceBankPathUnformatted = EditorGUILayout.TextField(GUIContent.none, settings.SourceBankPathUnformatted);
                 if (GUILayout.Button("Browse", GUILayout.ExpandWidth(false)))
                 {
                     GUI.FocusControl(null);
@@ -454,44 +465,23 @@ namespace FMODUnity
                     if (!String.IsNullOrEmpty(path))
                     {
                         path = MakePathRelativeToProject(path);
-                        settings.SourceBankPath = path;
+                        settings.SourceBankPathUnformatted = path;
+	                    settings.SourceBankPath = path;
                     }
                 }
                 EditorGUILayout.EndHorizontal();
+				if (settings.SourceBankPathUnformatted != null && !settings.SourceBankPathUnformatted.Equals(settings.SourceBankPath))
+				{
+					EditorGUI.BeginDisabledGroup(true);
+					EditorGUILayout.TextField("Platform specific path", settings.SourceBankPath);
+					EditorGUI.EndDisabledGroup();
+				}
 
-                settings.HasPlatforms = false;
+				settings.HasPlatforms = (sourceType == 2);
                 settings.HasSourceProject = false;
 
                 // First time project path is set or changes, copy to streaming assets
-                if (settings.SourceBankPath != oldPath)
-                {
-                    hasBankSourceChanged = true;
-                }
-            }
-
-            if (sourceType == 2)
-            {
-                EditorGUILayout.BeginHorizontal();
-                string oldPath = settings.SourceBankPath;
-                EditorGUILayout.PrefixLabel("Build Path", GUI.skin.textField, style);
-                settings.SourceBankPath = EditorGUILayout.TextField(GUIContent.none, settings.SourceBankPath);
-                if (GUILayout.Button("Browse", GUILayout.ExpandWidth(false)))
-                {
-                    GUI.FocusControl(null);
-                    var path = EditorUtility.OpenFolderPanel("Locate Build Folder", oldPath, null);
-                    if (!String.IsNullOrEmpty(path))
-                    {
-                        path = MakePathRelativeToProject(path);
-                        settings.SourceBankPath = path;
-                    }
-                }
-                EditorGUILayout.EndHorizontal();
-
-                settings.HasPlatforms = true;
-                settings.HasSourceProject = false;
-
-                // First time project path is set or changes, copy to streaming assets
-                if (settings.SourceBankPath != oldPath)
+                if (settings.SourceBankPathUnformatted != oldPath)
                 {
                     hasBankSourceChanged = true;
                 }

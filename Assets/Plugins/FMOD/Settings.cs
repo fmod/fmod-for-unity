@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
-
+using System.IO;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -128,14 +128,50 @@ namespace FMODUnity
 
         [SerializeField]
         public bool HasPlatforms = true;
-        
-        [SerializeField]
-        public string SourceProjectPath;
 
-        [SerializeField]
-        public string SourceBankPath;
+	    private string sourceProjectPath;
+
+	    public string SourceProjectPath
+	    {
+		    get
+		    {
+			    if (String.IsNullOrEmpty(sourceProjectPath) && !String.IsNullOrEmpty(SourceProjectPathUnformatted))
+			    {
+				    sourceProjectPath = GetPlatformSpecificPath(SourceProjectPathUnformatted);
+			    }
+			    return sourceProjectPath;
+		    }
+		    set
+		    {
+			    sourceProjectPath = GetPlatformSpecificPath(value);
+		    }
+	    }
+
+		[SerializeField]
+		public string SourceProjectPathUnformatted;
+
         
-        [SerializeField]
+        private string sourceBankPath;
+        public string SourceBankPath
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(sourceBankPath) && !String.IsNullOrEmpty(SourceBankPathUnformatted))
+				{
+					sourceBankPath = GetPlatformSpecificPath(SourceBankPathUnformatted);
+				}
+				return sourceBankPath;
+			}
+			set
+			{
+				sourceBankPath = GetPlatformSpecificPath(value);
+			}
+		}
+
+		[SerializeField]
+		public string SourceBankPathUnformatted;
+
+		[SerializeField]
         public bool AutomaticEventLoading;
 
         [SerializeField]
@@ -360,6 +396,20 @@ namespace FMODUnity
             AutomaticSampleLoading = false;
             TargetAssetPath = "";
         }
-    }
+
+		private string GetPlatformSpecificPath(string path)
+		{
+			if (String.IsNullOrEmpty(path))
+			{
+				return path;
+			}
+
+			if (Path.DirectorySeparatorChar == '/')
+			{
+				return path.Replace('\\', '/');
+			}
+			return path.Replace('/', '\\');
+		}
+	}
 
 }

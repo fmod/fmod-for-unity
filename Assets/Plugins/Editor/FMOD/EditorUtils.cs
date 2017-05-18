@@ -45,7 +45,33 @@ namespace FMODUnity
             return null;
         }
 
-        public static void ValidateSource(out bool valid, out string reason)
+		public static string GetBankDirectoryUnformatted()
+		{
+			if (Settings.Instance.HasSourceProject && !String.IsNullOrEmpty(Settings.Instance.SourceProjectPathUnformatted))
+			{
+				string projectPath = Settings.Instance.SourceProjectPathUnformatted;
+				char directorySeparator = '\\';
+				var folderIndex = projectPath.LastIndexOf(directorySeparator);
+				if (folderIndex < 0)
+				{
+					directorySeparator = '/';
+					folderIndex = projectPath.LastIndexOf(directorySeparator);
+				}
+				string projectFolder = "";
+				if (folderIndex > 0)
+				{
+					projectFolder = projectPath.Substring(0, folderIndex);
+				}
+				return projectFolder + directorySeparator + BuildFolder;
+			}
+			else if (!String.IsNullOrEmpty(Settings.Instance.SourceBankPathUnformatted))
+			{
+				return Settings.Instance.SourceBankPathUnformatted;
+			}
+			return null;
+		}
+
+		public static void ValidateSource(out bool valid, out string reason)
         {
             valid = true;
             reason = "";
