@@ -1,6 +1,6 @@
 /* ========================================================================================== */
-/* FMOD System - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2017.      */
 /*                                                                                            */
+/* FMOD System - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2017.      */
 /*                                                                                            */
 /* ========================================================================================== */
 
@@ -13,25 +13,25 @@ namespace FMOD.Studio
     public class STUDIO_VERSION
     {
 #if (UNITY_IPHONE || UNITY_TVOS || UNITY_SWITCH) && !UNITY_EDITOR
-        public const string dll    = "__Internal";
+        public const string dll     = "__Internal";
 #elif (UNITY_PS4 || UNITY_WIIU || UNITY_PSP2) && !UNITY_EDITOR
-		public const string dll    = "libfmodstudio";
+        public const string dll     = "libfmodstudio";
 #elif (UNITY_PS4) && DEVELOPMENT_BUILD
-		public const string dll    = "libfmodstudioL";
-#elif UNITY_EDITOR || ((UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX || UNITY_ANDROID || UNITY_XBOXONE) && DEVELOPMENT_BUILD)
-        public const string dll    = "fmodstudioL";
+        public const string dll     = "libfmodstudioL";
+#elif UNITY_EDITOR || ((UNITY_STANDALONE || UNITY_ANDROID || UNITY_XBOXONE) && DEVELOPMENT_BUILD)
+        public const string dll     = "fmodstudioL";
 #else
-		public const string dll    = "fmodstudio";
+        public const string dll     = "fmodstudio";
 #endif
     }
 
-    public enum STOP_MODE
+    public enum STOP_MODE : int
     {
         ALLOWFADEOUT,              /* Allows AHDSR modulators to complete their release, and DSP effect tails to play out. */
         IMMEDIATE,                 /* Stops the event instance immediately. */
     }
 
-    public enum LOADING_STATE
+    public enum LOADING_STATE : int
     {
         UNLOADING,        /* Currently unloading. */
         UNLOADED,         /* Not loaded. */
@@ -69,11 +69,11 @@ namespace FMOD.Studio
     [StructLayout(LayoutKind.Sequential)]
     public struct ADVANCEDSETTINGS
     {
-        public int cbsize;               /* [w]   Size of this structure.  NOTE: For C# wrapper, users can leave this at 0. ! */
-        public int commandqueuesize;     /* [r/w] Optional. Specify 0 to ignore. Specify the command queue size for studio async processing.  Default 4096 (4kb) */
-        public int handleinitialsize;    /* [r/w] Optional. Specify 0 to ignore. Specify the initial size to allocate for handles.  Memory for handles will grow as needed in pages. */
-        public int studioupdateperiod;   /* [r/w] Optional. Specify 0 to ignore. Specify the update period of Studio when in async mode, in milliseconds.  Will be quantised to the nearest multiple of mixer duration.  Default is 20ms. */
-        public int idlesampledatapoolsize; /* [r/w] Optional. Specify 0 to ignore. Specify the amount of sample data to keep in memory when no longer used, to avoid repeated disk IO.  Use -1 to disable.  Default is 256kB. */
+        public int cbsize;                  /* [w]   Size of this structure.  NOTE: For C# wrapper, users can leave this at 0. ! */
+        public int commandqueuesize;        /* [r/w] Optional. Specify 0 to ignore. Specify the command queue size for studio async processing.  Default 4096 (4kb) */
+        public int handleinitialsize;       /* [r/w] Optional. Specify 0 to ignore. Specify the initial size to allocate for handles.  Memory for handles will grow as needed in pages. */
+        public int studioupdateperiod;      /* [r/w] Optional. Specify 0 to ignore. Specify the update period of Studio when in async mode, in milliseconds.  Will be quantised to the nearest multiple of mixer duration.  Default is 20ms. */
+        public int idlesampledatapoolsize;  /* [r/w] Optional. Specify 0 to ignore. Specify the amount of sample data to keep in memory when no longer used, to avoid repeated disk IO.  Use -1 to disable.  Default is 256kB. */
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -118,186 +118,69 @@ namespace FMOD.Studio
     [Flags]
     public enum SYSTEM_CALLBACK_TYPE : uint
     {
-        PREUPDATE       = 0x00000001,  /* Called at the start of the main Studio update.  For async mode this will be on its own thread. */
-        POSTUPDATE      = 0x00000002,  /* Called at the end of the main Studio update.  For async mode this will be on its own thread. */
-        BANK_UNLOAD     = 0x00000004,  /* Called when bank has just been unloaded, after all resources are freed. CommandData will be the bank handle.*/
-        ALL             = 0xFFFFFFFF,  /* Pass this mask to Studio::System::setCallback to receive all callback types. */
+        PREUPDATE = 0x00000001,             /* Called at the start of the main Studio update.  For async mode this will be on its own thread. */
+        POSTUPDATE = 0x00000002,            /* Called at the end of the main Studio update.  For async mode this will be on its own thread. */
+        BANK_UNLOAD = 0x00000004,           /* Called when bank has just been unloaded, after all resources are freed. CommandData will be the bank handle.*/
+        ALL = 0xFFFFFFFF,                   /* Pass this mask to Studio::System::setCallback to receive all callback types. */
     }
 
     public delegate RESULT SYSTEM_CALLBACK(IntPtr systemraw, SYSTEM_CALLBACK_TYPE type, IntPtr parameters, IntPtr userdata);
 
-    public enum PARAMETER_TYPE
+    public enum PARAMETER_TYPE : int
     {
-        GAME_CONTROLLED,                  /* Controlled via the API using Studio::ParameterInstance::setValue. */
-        AUTOMATIC_DISTANCE,               /* Distance between the event and the listener. */
-        AUTOMATIC_EVENT_CONE_ANGLE,       /* Angle between the event's forward vector and the vector pointing from the event to the listener (0 to 180 degrees). */
-        AUTOMATIC_EVENT_ORIENTATION,      /* Horizontal angle between the event's forward vector and listener's forward vector (-180 to 180 degrees). */
-        AUTOMATIC_DIRECTION,              /* Horizontal angle between the listener's forward vector and the vector pointing from the listener to the event (-180 to 180 degrees). */
-        AUTOMATIC_ELEVATION,              /* Angle between the listener's XZ plane and the vector pointing from the listener to the event (-90 to 90 degrees). */
-        AUTOMATIC_LISTENER_ORIENTATION,   /* Horizontal angle between the listener's forward vector and the global positive Z axis (-180 to 180 degrees). */
+        GAME_CONTROLLED,                    /* Controlled via the API using Studio::ParameterInstance::setValue. */
+        AUTOMATIC_DISTANCE,                 /* Distance between the event and the listener. */
+        AUTOMATIC_EVENT_CONE_ANGLE,         /* Angle between the event's forward vector and the vector pointing from the event to the listener (0 to 180 degrees). */
+        AUTOMATIC_EVENT_ORIENTATION,        /* Horizontal angle between the event's forward vector and listener's forward vector (-180 to 180 degrees). */
+        AUTOMATIC_DIRECTION,                /* Horizontal angle between the listener's forward vector and the vector pointing from the listener to the event (-180 to 180 degrees). */
+        AUTOMATIC_ELEVATION,                /* Angle between the listener's XZ plane and the vector pointing from the listener to the event (-90 to 90 degrees). */
+        AUTOMATIC_LISTENER_ORIENTATION,     /* Horizontal angle between the listener's forward vector and the global positive Z axis (-180 to 180 degrees). */
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     public struct PARAMETER_DESCRIPTION
     {
-        public string name;                                /* Name of the parameter. */
-        public int index;                                  /* Index of the parameter */
-        public float minimum;                              /* Minimum parameter value. */
-        public float maximum;                              /* Maximum parameter value. */
-        public float defaultvalue;                         /* Default parameter value. */
-        public PARAMETER_TYPE type;                        /* Type of the parameter */
-    }
-
-    #region wrapperinternal
-
-    // The above structure has an issue with getting a const char* back from game code so we use this special marshalling struct instead
-    [StructLayout(LayoutKind.Sequential)]
-    struct PARAMETER_DESCRIPTION_INTERNAL
-    {
-        public IntPtr name;                                /* Name of the parameter. */
-        public int index;                                  /* Index of the parameter */
-        public float minimum;                              /* Minimum parameter value. */
-        public float maximum;                              /* Maximum parameter value. */
-        public float defaultvalue;                         /* Default parameter value. */
-        public PARAMETER_TYPE type;                        /* Type of the parameter */
-
-        // Helper functions
-        public void assign(out PARAMETER_DESCRIPTION publicDesc)
-        {
-            publicDesc.name = MarshallingHelper.stringFromNativeUtf8(name);
-            publicDesc.index = index;
-            publicDesc.minimum = minimum;
-            publicDesc.maximum = maximum;
-            publicDesc.defaultvalue = defaultvalue;
-            publicDesc.type = type;
-        }
+        public StringWrapper name;          /* Name of the parameter. */
+        public int index;                   /* Index of the parameter */
+        public float minimum;               /* Minimum parameter value. */
+        public float maximum;               /* Maximum parameter value. */
+        public float defaultvalue;          /* Default parameter value. */
+        public PARAMETER_TYPE type;         /* Type of the parameter */
     }
 
     // This is only need for loading memory and given our C# wrapper LOAD_MEMORY_POINT isn't feasible anyway
-    enum LOAD_MEMORY_MODE
+    enum LOAD_MEMORY_MODE : int
     {
         LOAD_MEMORY,
         LOAD_MEMORY_POINT,
     }
 
-    enum LOAD_MEMORY_ALIGNMENT
+    enum LOAD_MEMORY_ALIGNMENT : int
     {
         VALUE = 32
     }
 
-    #endregion
-
-    public class SOUND_INFO
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SOUND_INFO
     {
-        public byte[] name_or_data;         /* The filename or memory buffer that contains the sound. */
+        public IntPtr name_or_data;         /* The filename or memory buffer that contains the sound. */
         public MODE mode;                   /* Mode flags required for loading the sound. */
         public CREATESOUNDEXINFO exinfo;    /* Extra information required for loading the sound. */
         public int subsoundindex;           /* Subsound index for loading the sound. */
 
-        // For informational purposes - returns null if the sound will be loaded from memory
         public string name
         {
             get
             {
-                if (((mode & (MODE.OPENMEMORY | MODE.OPENMEMORY_POINT)) == 0) && (name_or_data != null))
+                using (StringHelper.ThreadSafeEncoding encoding = StringHelper.GetFreeHelper())
                 {
-                    int strlen = Array.IndexOf(name_or_data, (byte)0);
-                    if (strlen > 0)
-                    {
-                        return Encoding.UTF8.GetString(name_or_data, 0, strlen);
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return ((mode & (MODE.OPENMEMORY | MODE.OPENMEMORY_POINT)) == 0) ? encoding.stringFromNative(name_or_data) : String.Empty;
                 }
-                else
-                {
-                    return null;
-                }
-            }
-        }
-
-        #region wrapperinternal
-
-        ~SOUND_INFO()
-        {
-            if (exinfo.inclusionlist != IntPtr.Zero)
-            {
-                // Allocated in SOUND_INFO_INTERNAL::assign()
-                Marshal.FreeHGlobal(exinfo.inclusionlist);
-            }
-        }
-
-        #endregion
-    }
-
-    #region wrapperinternal
-
-    // The SOUND_INFO class has issues with getting pointers back from game code so we use this special marshalling struct instead
-    [StructLayout(LayoutKind.Sequential)]
-    public struct SOUND_INFO_INTERNAL
-    {
-        IntPtr name_or_data;
-        MODE mode;
-        CREATESOUNDEXINFO_INTERNAL exinfo;
-        int subsoundindex;
-
-        // Helper functions
-        public void assign(out SOUND_INFO publicInfo)
-        {
-            publicInfo = new SOUND_INFO();
-
-            publicInfo.mode = mode;
-            publicInfo.exinfo = CREATESOUNDEXINFO_INTERNAL.CreateFromInternal(ref exinfo);
-
-            // Somewhat hacky: we know the inclusion list always points to subsoundindex, so recreate it here
-            #if NETFX_CORE
-            publicInfo.exinfo.inclusionlist = Marshal.AllocHGlobal(Marshal.SizeOf<Int32>());
-            #else
-            publicInfo.exinfo.inclusionlist = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(Int32)));
-            #endif
-            Marshal.WriteInt32(publicInfo.exinfo.inclusionlist, subsoundindex);
-            publicInfo.exinfo.inclusionlistnum = 1;
-
-            publicInfo.subsoundindex = subsoundindex;
-
-            if (name_or_data != IntPtr.Zero)
-            {
-                int offset;
-                int length;
-
-                if ((mode & (MODE.OPENMEMORY | MODE.OPENMEMORY_POINT)) != 0)
-                {
-                    // OPENMEMORY_POINT won't work, so force it to OPENMEMORY
-                    publicInfo.mode = (publicInfo.mode & ~MODE.OPENMEMORY_POINT) | MODE.OPENMEMORY;
-
-                    // We want the data from (name_or_data + offset) to (name_or_data + offset + length)
-                    offset = (int)exinfo.fileoffset;
-
-                    // We'll copy the data taking fileoffset into account, so reset it to 0
-                    publicInfo.exinfo.fileoffset = 0;
-
-                    length = (int)exinfo.length;
-                }
-                else
-                {
-                    offset = 0;
-                    length = MarshallingHelper.stringLengthUtf8(name_or_data) + 1;
-                }
-
-                publicInfo.name_or_data = new byte[length];
-                Marshal.Copy(new IntPtr(name_or_data.ToInt64() + offset), publicInfo.name_or_data, 0, length);
-            }
-            else
-            {
-                publicInfo.name_or_data = null;
             }
         }
     }
 
-    #endregion
-
-    public enum USER_PROPERTY_TYPE
+    public enum USER_PROPERTY_TYPE : int
     {
         INTEGER,         /* Integer property */
         BOOLEAN,         /* Boolean property */
@@ -305,82 +188,18 @@ namespace FMOD.Studio
         STRING,          /* String property */
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     public struct USER_PROPERTY
     {
-        public string name;                /* Name of the user property. */
-        public USER_PROPERTY_TYPE type;    /* Type of the user property. Use this to select one of the following values. */
+        public StringWrapper name;                     /* Name of the user property. */
+        public USER_PROPERTY_TYPE type;                /* Type of the user property. Use this to select one of the following values. */
+        private Union_IntBoolFloatString value;
 
-        public int intvalue;               /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.INTEGER. */
-        public bool boolvalue;             /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.BOOLEAN. */
-        public float floatvalue;           /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.FLOAT. */
-        public string stringvalue;         /* Value of the user property. Only valid when type is USER_PROPERTY_TYPE.STRING. */
+        public int intValue()       {   return (type == USER_PROPERTY_TYPE.INTEGER) ? value.intvalue : -1;      }
+        public bool boolValue()     {   return (type == USER_PROPERTY_TYPE.BOOLEAN) ? value.boolvalue : false;  }
+        public float floatValue()   {   return (type == USER_PROPERTY_TYPE.FLOAT)   ? value.floatvalue : -1;    }
+        public string stringValue() {   return (type == USER_PROPERTY_TYPE.STRING)  ? value.stringvalue : "";   }
     };
-
-    #region wrapperinternal
-
-    // The above structure has issues with strings and unions so we use this special marshalling struct instead
-    [StructLayout(LayoutKind.Sequential)]
-    struct USER_PROPERTY_INTERNAL
-    {
-        IntPtr name;                /* Name of the user property. */
-        USER_PROPERTY_TYPE type;    /* Type of the user property. Use this to select one of the following values. */
-
-        Union_IntBoolFloatString value;
-
-        // Helper functions
-        public USER_PROPERTY createPublic()
-        {
-            USER_PROPERTY publicProperty = new USER_PROPERTY();
-            publicProperty.name = MarshallingHelper.stringFromNativeUtf8(name);
-            publicProperty.type = type;
-
-            switch (type)
-            {
-                case USER_PROPERTY_TYPE.INTEGER:
-                    publicProperty.intvalue = value.intvalue;
-                    break;
-                case USER_PROPERTY_TYPE.BOOLEAN:
-                    publicProperty.boolvalue = value.boolvalue;
-                    break;
-                case USER_PROPERTY_TYPE.FLOAT:
-                    publicProperty.floatvalue = value.floatvalue;
-                    break;
-                case USER_PROPERTY_TYPE.STRING:
-                    publicProperty.stringvalue = MarshallingHelper.stringFromNativeUtf8(value.stringvalue);
-                    break;
-            }
-
-            return publicProperty;
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct COMMAND_INFO_INTERNAL
-    {
-        public IntPtr commandname;                                         /* The full name of the API function for this command. */
-        public int parentcommandindex;                                     /* For commands that operate on an instance, this is the command that created the instance */
-        public int framenumber;                                            /* The frame the command belongs to */
-        public float frametime;                                            /* The playback time at which this command will be executed */
-        public INSTANCETYPE instancetype;                                  /* The type of object that this command uses as an instance */
-        public INSTANCETYPE outputtype;                                    /* The type of object that this command outputs, if any */
-        public UInt32 instancehandle;                                      /* The original handle value of the instance.  This will no longer correspond to any actual object in playback. */
-        public UInt32 outputhandle;                                        /* The original handle value of the command output.  This will no longer correspond to any actual object in playback. */
-
-        // Helper functions
-        public COMMAND_INFO createPublic()
-        {
-            COMMAND_INFO publicInfo = new COMMAND_INFO();
-            publicInfo.commandname = MarshallingHelper.stringFromNativeUtf8(commandname);
-            publicInfo.parentcommandindex = parentcommandindex;
-            publicInfo.framenumber = framenumber;
-            publicInfo.frametime = frametime;
-            publicInfo.instancetype = instancetype;
-            publicInfo.outputtype = outputtype;
-            publicInfo.instancehandle = instancehandle;
-            publicInfo.outputhandle = outputhandle;
-            return publicInfo;
-        }
-    }
 
     [StructLayout(LayoutKind.Explicit)]
     struct Union_IntBoolFloatString
@@ -392,10 +211,8 @@ namespace FMOD.Studio
         [FieldOffset(0)]
         public float floatvalue;
         [FieldOffset(0)]
-        public IntPtr stringvalue;
+        public StringWrapper stringvalue;
     }
-
-    #endregion
 
     [Flags]
     public enum INITFLAGS : uint
@@ -432,7 +249,7 @@ namespace FMOD.Studio
         FAST_FORWARD            = 0x00000002,   /* Play back at maximum speed, ignoring the timing of the original replay. */
     }
 
-    public enum PLAYBACK_STATE
+    public enum PLAYBACK_STATE : int
     {
         PLAYING,               /* Currently playing. */
         SUSTAINING,            /* The timeline cursor is paused on a sustain point. */
@@ -441,7 +258,7 @@ namespace FMOD.Studio
         STOPPING,              /* Stop has been called but the instance is not fully stopped yet. */
     }
 
-    public enum EVENT_PROPERTY
+    public enum EVENT_PROPERTY : int
     {
         CHANNELPRIORITY,        /* Priority to set on low-level channels created by this event instance (-1 to 256). */
         SCHEDULE_DELAY,         /* Schedule delay to synchronized playback for multiple tracks in DS clocks, or -1 for default. */
@@ -479,13 +296,13 @@ namespace FMOD.Studio
         ALL                      = 0xFFFFFFFF,  /* Pass this mask to Studio::EventDescription::setCallback or Studio::EventInstance::setCallback to receive all callback types. */
     }
 
-    public delegate RESULT EVENT_CALLBACK(EVENT_CALLBACK_TYPE type, IntPtr eventInstance, IntPtr parameters);
+    public delegate RESULT EVENT_CALLBACK(EVENT_CALLBACK_TYPE type, EventInstance eventInstance, IntPtr parameters);
 
-    public delegate RESULT COMMANDREPLAY_FRAME_CALLBACK(IntPtr replay, int commandIndex, float currentTime, IntPtr userdata);
-	public delegate RESULT COMMANDREPLAY_LOAD_BANK_CALLBACK(IntPtr replay, IntPtr guid, StringWrapper bankFilename, LOAD_BANK_FLAGS flags, out IntPtr bank, IntPtr userdata);
-    public delegate RESULT COMMANDREPLAY_CREATE_INSTANCE_CALLBACK(IntPtr replay, IntPtr eventDescription, IntPtr originalHandle, out IntPtr instance, IntPtr userdata);
+    public delegate RESULT COMMANDREPLAY_FRAME_CALLBACK(CommandReplay replay, int commandIndex, float currentTime, IntPtr userdata);
+    public delegate RESULT COMMANDREPLAY_LOAD_BANK_CALLBACK(CommandReplay replay, Guid guid, StringWrapper bankFilename, LOAD_BANK_FLAGS flags, out Bank bank, IntPtr userdata);
+    public delegate RESULT COMMANDREPLAY_CREATE_INSTANCE_CALLBACK(CommandReplay replay, EventDescription eventDescription, IntPtr originalHandle, out EventInstance instance, IntPtr userdata);
 
-    public enum INSTANCETYPE
+    public enum INSTANCETYPE : int
     {
         NONE,
         SYSTEM,
@@ -501,7 +318,7 @@ namespace FMOD.Studio
     [StructLayout(LayoutKind.Sequential)]
     public struct COMMAND_INFO
     {
-        public string commandname;                                         /* The full name of the API function for this command. */
+        private StringWrapper commandname;                                 /* The full name of the API function for this command. */
         public int parentcommandindex;                                     /* For commands that operate on an instance, this is the command that created the instance */
         public int framenumber;                                            /* The frame the command belongs to */
         public float frametime;                                            /* The playback time at which this command will be executed */
@@ -511,411 +328,217 @@ namespace FMOD.Studio
         public UInt32 outputhandle;                                        /* The original handle value of the command output.  This will no longer correspond to any actual object in playback. */
     }
 
-    public class Util
+    public struct Util
     {
         public static RESULT ParseID(string idString, out Guid id)
         {
-			byte[] rawguid = new byte[16];
-			RESULT result = FMOD_Studio_ParseID(Encoding.UTF8.GetBytes(idString + Char.MinValue), rawguid);
-			id = new Guid(rawguid);
-			return result;
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
+            {
+                return FMOD_Studio_ParseID(encoder.byteFromStringUTF8(idString), out id);
+            }
         }
 
         #region importfunctions
-        [DllImport (STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_ParseID                      (byte[] idString, byte[] id);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_ParseID(byte[] idString, out Guid id);
         #endregion
     }
 
-    public abstract class HandleBase
-    {
-        public HandleBase(IntPtr newPtr)
-        {
-            rawPtr = newPtr;
-        }
-
-        public bool isValid()
-        {
-            return (rawPtr != IntPtr.Zero) && isValidInternal();
-        }
-
-        protected abstract bool isValidInternal();
-
-        public IntPtr getRaw()
-        {
-            return rawPtr;
-        }
-
-        protected IntPtr rawPtr;
-
-        #region equality
-
-        public override bool Equals(Object obj)
-        {
-            return Equals(obj as HandleBase);
-        }
-        public bool Equals(HandleBase p)
-        {
-            // Equals if p not null and handle is the same
-            return ((object)p != null && rawPtr == p.rawPtr);
-        }
-        public override int GetHashCode()
-        {
-            return rawPtr.ToInt32();
-        }
-        public static bool operator ==(HandleBase a, HandleBase b)
-        {
-            // If both are null, or both are same instance, return true.
-            if (Object.ReferenceEquals(a, b))
-            {
-                return true;
-            }
-            // If one is null, but not both, return false.
-            if (((object)a == null) || ((object)b == null))
-            {
-                return false;
-            }
-            // Return true if the handle matches
-            return (a.rawPtr == b.rawPtr);
-        }
-        public static bool operator !=(HandleBase a, HandleBase b)
-        {
-            return !(a == b);
-        }
-        #endregion
-
-    }
-
-    public class System : HandleBase
+    public struct System
     {
         // Initialization / system functions.
         public static RESULT create(out System studiosystem)
         {
-            RESULT      result           = RESULT.OK;
-            IntPtr      rawPtr;
-            studiosystem                 = null;
-
-            result = FMOD_Studio_System_Create(out rawPtr, VERSION.number);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-
-            studiosystem = new System(rawPtr);
-
-            return result;
+            return FMOD_Studio_System_Create(out studiosystem.handle, VERSION.number);
         }
         public RESULT setAdvancedSettings(ADVANCEDSETTINGS settings)
         {
-            #if NETFX_CORE
-            settings.cbsize = Marshal.SizeOf<ADVANCEDSETTINGS>();
-            #else
             settings.cbsize = Marshal.SizeOf(typeof(ADVANCEDSETTINGS));
-            #endif
-            return FMOD_Studio_System_SetAdvancedSettings(rawPtr, ref settings);
+            return FMOD_Studio_System_SetAdvancedSettings(this.handle, ref settings);
         }
         public RESULT getAdvancedSettings(out ADVANCEDSETTINGS settings)
         {
-            #if NETFX_CORE
-            settings.cbsize = Marshal.SizeOf<ADVANCEDSETTINGS>();
-            #else
             settings.cbsize = Marshal.SizeOf(typeof(ADVANCEDSETTINGS));
-            #endif
-            return FMOD_Studio_System_GetAdvancedSettings(rawPtr, out settings);
+            return FMOD_Studio_System_GetAdvancedSettings(this.handle, out settings);
         }
         public RESULT initialize(int maxchannels, INITFLAGS studioFlags, FMOD.INITFLAGS flags, IntPtr extradriverdata)
         {
-            return FMOD_Studio_System_Initialize(rawPtr, maxchannels, studioFlags, flags, extradriverdata);
+            return FMOD_Studio_System_Initialize(this.handle, maxchannels, studioFlags, flags, extradriverdata);
         }
         public RESULT release()
         {
-            return FMOD_Studio_System_Release(rawPtr);
+            return FMOD_Studio_System_Release(this.handle);
         }
         public RESULT update()
         {
-            return FMOD_Studio_System_Update(rawPtr);
+            return FMOD_Studio_System_Update(this.handle);
         }
         public RESULT getLowLevelSystem(out FMOD.System system)
         {
-            system = null;
-
-            IntPtr systemraw = new IntPtr();
-            RESULT result = FMOD_Studio_System_GetLowLevelSystem(rawPtr, out systemraw);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-
-            system = new FMOD.System(systemraw);
-
-            return result;
+            return FMOD_Studio_System_GetLowLevelSystem(this.handle, out system.handle);
         }
         public RESULT getEvent(string path, out EventDescription _event)
         {
-            _event = null;
-
-            IntPtr eventraw = new IntPtr();
-            RESULT result = FMOD_Studio_System_GetEvent(rawPtr, Encoding.UTF8.GetBytes(path + Char.MinValue), out eventraw);
-            if (result != RESULT.OK)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                return result;
+                return FMOD_Studio_System_GetEvent(this.handle, encoder.byteFromStringUTF8(path), out _event.handle);
             }
-
-            _event = new EventDescription(eventraw);
-            return result;
         }
         public RESULT getBus(string path, out Bus bus)
         {
-            bus = null;
-
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_System_GetBus(rawPtr, Encoding.UTF8.GetBytes(path + Char.MinValue), out newPtr);
-            if (result != RESULT.OK)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                return result;
+                return FMOD_Studio_System_GetBus(this.handle, encoder.byteFromStringUTF8(path), out bus.handle);
             }
-
-            bus = new Bus(newPtr);
-            return result;
         }
         public RESULT getVCA(string path, out VCA vca)
         {
-            vca = null;
-
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_System_GetVCA(rawPtr, Encoding.UTF8.GetBytes(path + Char.MinValue), out newPtr);
-            if (result != RESULT.OK)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                return result;
+                return FMOD_Studio_System_GetVCA(this.handle, encoder.byteFromStringUTF8(path), out vca.handle);
             }
-
-            vca = new VCA(newPtr);
-            return result;
         }
         public RESULT getBank(string path, out Bank bank)
         {
-            bank = null;
-
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_System_GetBank(rawPtr, Encoding.UTF8.GetBytes(path + Char.MinValue), out newPtr);
-            if (result != RESULT.OK)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                return result;
+                return FMOD_Studio_System_GetBank(this.handle, encoder.byteFromStringUTF8(path), out bank.handle);
             }
-
-            bank = new Bank(newPtr);
-            return result;
         }
 
         public RESULT getEventByID(Guid guid, out EventDescription _event)
         {
-            _event = null;
-
-            IntPtr eventraw = new IntPtr();
-			RESULT result = FMOD_Studio_System_GetEventByID(rawPtr, guid.ToByteArray(), out eventraw);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-
-            _event = new EventDescription(eventraw);
-            return result;
+            return FMOD_Studio_System_GetEventByID(this.handle, ref guid, out _event.handle);
         }
         public RESULT getBusByID(Guid guid, out Bus bus)
         {
-            bus = null;
-
-            IntPtr newPtr = new IntPtr();
-			RESULT result = FMOD_Studio_System_GetBusByID(rawPtr, guid.ToByteArray(), out newPtr);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-
-            bus = new Bus(newPtr);
-            return result;
+            return FMOD_Studio_System_GetBusByID(this.handle, ref guid, out bus.handle);
         }
         public RESULT getVCAByID(Guid guid, out VCA vca)
         {
-            vca = null;
-
-            IntPtr newPtr = new IntPtr();
-			RESULT result = FMOD_Studio_System_GetVCAByID(rawPtr, guid.ToByteArray(), out newPtr);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-
-            vca = new VCA(newPtr);
-            return result;
+            return FMOD_Studio_System_GetVCAByID(this.handle, ref guid, out vca.handle);
         }
         public RESULT getBankByID(Guid guid, out Bank bank)
         {
-            bank = null;
-
-            IntPtr newPtr = new IntPtr();
-			RESULT result = FMOD_Studio_System_GetBankByID(rawPtr, guid.ToByteArray(), out newPtr);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-
-            bank = new Bank(newPtr);
-            return result;
+            return FMOD_Studio_System_GetBankByID(this.handle, ref guid, out bank.handle);
         }
         public RESULT getSoundInfo(string key, out SOUND_INFO info)
         {
-            var size = Marshal.SizeOf(typeof(SOUND_INFO_INTERNAL));
-            IntPtr infoPtr = Marshal.AllocHGlobal(size);
-            
-            RESULT result = FMOD_Studio_System_GetSoundInfo(rawPtr, Encoding.UTF8.GetBytes(key + Char.MinValue), infoPtr);
-            if (result != RESULT.OK)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                Marshal.FreeHGlobal(infoPtr);
-                info = new SOUND_INFO();
-                return result;
+                return FMOD_Studio_System_GetSoundInfo(this.handle, encoder.byteFromStringUTF8(key), out info);
             }
-            SOUND_INFO_INTERNAL internalInfo = (SOUND_INFO_INTERNAL)Marshal.PtrToStructure(infoPtr, typeof(SOUND_INFO_INTERNAL));
-            internalInfo.assign(out info);
-            Marshal.FreeHGlobal(infoPtr);
-
-            return result;
         }
         public RESULT lookupID(string path, out Guid guid)
         {
-			byte[] rawguid = new byte[16];
-			RESULT result =  FMOD_Studio_System_LookupID(rawPtr, Encoding.UTF8.GetBytes(path + Char.MinValue), rawguid);
-			guid = new Guid(rawguid);
-			return result;
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
+            {
+                return FMOD_Studio_System_LookupID(this.handle, encoder.byteFromStringUTF8(path), out guid);
+            }
         }
         public RESULT lookupPath(Guid guid, out string path)
         {
             path = null;
 
-            byte[] buffer = new byte[256];
-            int retrieved = 0;
-			RESULT result = FMOD_Studio_System_LookupPath(rawPtr, guid.ToByteArray(), buffer, buffer.Length, out retrieved);
-
-            if (result == RESULT.ERR_TRUNCATED)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                buffer = new byte[retrieved];
-				result = FMOD_Studio_System_LookupPath(rawPtr, guid.ToByteArray(), buffer, buffer.Length, out retrieved);
-            }
+                IntPtr stringMem = Marshal.AllocHGlobal(256);
+                int retrieved = 0;
+                RESULT result = FMOD_Studio_System_LookupPath(this.handle, ref guid, stringMem, 256, out retrieved);
 
-            if (result == RESULT.OK)
-            {
-                path = Encoding.UTF8.GetString(buffer, 0, retrieved - 1);
-            }
+                if (result == RESULT.ERR_TRUNCATED)
+                {
+                    Marshal.FreeHGlobal(stringMem);
+                    stringMem = Marshal.AllocHGlobal(retrieved);
+                    result = FMOD_Studio_System_LookupPath(this.handle, ref guid, stringMem, retrieved, out retrieved);
+                }
 
-            return result;
+                if (result == RESULT.OK)
+                {
+                    path = encoder.stringFromNative(stringMem);
+                }
+                Marshal.FreeHGlobal(stringMem);
+                return result;
+            }
         }
         public RESULT getNumListeners(out int numlisteners)
         {
-            return FMOD_Studio_System_GetNumListeners(rawPtr, out numlisteners);
+            return FMOD_Studio_System_GetNumListeners(this.handle, out numlisteners);
         }
         public RESULT setNumListeners(int numlisteners)
         {
-            return FMOD_Studio_System_SetNumListeners(rawPtr, numlisteners);
+            return FMOD_Studio_System_SetNumListeners(this.handle, numlisteners);
         }
         public RESULT getListenerAttributes(int listener, out ATTRIBUTES_3D attributes)
         {
-            return FMOD_Studio_System_GetListenerAttributes(rawPtr, listener, out attributes);
+            return FMOD_Studio_System_GetListenerAttributes(this.handle, listener, out attributes);
         }
         public RESULT setListenerAttributes(int listener, ATTRIBUTES_3D attributes)
         {
-            return FMOD_Studio_System_SetListenerAttributes(rawPtr, listener, ref attributes);
+            return FMOD_Studio_System_SetListenerAttributes(this.handle, listener, ref attributes);
         }
         public RESULT getListenerWeight(int listener, out float weight)
         {
-            return FMOD_Studio_System_GetListenerWeight(rawPtr, listener, out weight);
+            return FMOD_Studio_System_GetListenerWeight(this.handle, listener, out weight);
         }
         public RESULT setListenerWeight(int listener, float weight)
         {
-            return FMOD_Studio_System_SetListenerWeight(rawPtr, listener, weight);
+            return FMOD_Studio_System_SetListenerWeight(this.handle, listener, weight);
         }
         public RESULT loadBankFile(string name, LOAD_BANK_FLAGS flags, out Bank bank)
         {
-            bank = null;
-
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_System_LoadBankFile(rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), flags, out newPtr);
-            if (result != RESULT.OK)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                return result;
+                return FMOD_Studio_System_LoadBankFile(this.handle, encoder.byteFromStringUTF8(name), flags, out bank.handle);
             }
-
-            bank = new Bank(newPtr);
-            return result;
         }
         public RESULT loadBankMemory(byte[] buffer, LOAD_BANK_FLAGS flags, out Bank bank)
         {
-            bank = null;
-
-            IntPtr newPtr = new IntPtr();
-
             // Manually pin the byte array. It's what the marshaller should do anyway but don't leave it to chance.
             GCHandle pinnedArray = GCHandle.Alloc(buffer, GCHandleType.Pinned);
             IntPtr pointer = pinnedArray.AddrOfPinnedObject();
-            RESULT result = FMOD_Studio_System_LoadBankMemory(rawPtr, pointer, buffer.Length, LOAD_MEMORY_MODE.LOAD_MEMORY, flags, out newPtr);
+            RESULT result = FMOD_Studio_System_LoadBankMemory(this.handle, pointer, buffer.Length, LOAD_MEMORY_MODE.LOAD_MEMORY, flags, out bank.handle);
             pinnedArray.Free();
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-
-            bank = new Bank(newPtr);
             return result;
         }
         public RESULT loadBankCustom(BANK_INFO info, LOAD_BANK_FLAGS flags, out Bank bank)
         {
-            bank = null;
-
             info.size = Marshal.SizeOf(info);
-
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_System_LoadBankCustom(rawPtr, ref info, flags, out newPtr);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-
-            bank = new Bank(newPtr);
-            return result;
+            return FMOD_Studio_System_LoadBankCustom(this.handle, ref info, flags, out bank.handle);
         }
         public RESULT unloadAll()
         {
-            return FMOD_Studio_System_UnloadAll(rawPtr);
+            return FMOD_Studio_System_UnloadAll(this.handle);
         }
         public RESULT flushCommands()
         {
-            return FMOD_Studio_System_FlushCommands(rawPtr);
+            return FMOD_Studio_System_FlushCommands(this.handle);
         }
         public RESULT flushSampleLoading()
         {
-            return FMOD_Studio_System_FlushSampleLoading(rawPtr);
+            return FMOD_Studio_System_FlushSampleLoading(this.handle);
         }
         public RESULT startCommandCapture(string path, COMMANDCAPTURE_FLAGS flags)
         {
-            return FMOD_Studio_System_StartCommandCapture(rawPtr, Encoding.UTF8.GetBytes(path + Char.MinValue), flags);
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
+            {
+                return FMOD_Studio_System_StartCommandCapture(this.handle, encoder.byteFromStringUTF8(path), flags);
+            }
         }
         public RESULT stopCommandCapture()
         {
-            return FMOD_Studio_System_StopCommandCapture(rawPtr);
+            return FMOD_Studio_System_StopCommandCapture(this.handle);
         }
         public RESULT loadCommandReplay(string path, COMMANDREPLAY_FLAGS flags, out CommandReplay replay)
         {
-            replay = null;
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_System_LoadCommandReplay(rawPtr, Encoding.UTF8.GetBytes(path + Char.MinValue), flags, out newPtr);
-            if (result == RESULT.OK)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                replay = new CommandReplay(newPtr);
+                return FMOD_Studio_System_LoadCommandReplay(this.handle, encoder.byteFromStringUTF8(path), flags, out replay.handle);
             }
-            return result;
         }
         public RESULT getBankCount(out int count)
         {
-            return FMOD_Studio_System_GetBankCount(rawPtr, out count);
+            return FMOD_Studio_System_GetBankCount(this.handle, out count);
         }
         public RESULT getBankList(out Bank[] array)
         {
@@ -923,7 +546,7 @@ namespace FMOD.Studio
 
             RESULT result;
             int capacity;
-            result = FMOD_Studio_System_GetBankCount(rawPtr, out capacity);
+            result = FMOD_Studio_System_GetBankCount(this.handle, out capacity);
             if (result != RESULT.OK)
             {
                 return result;
@@ -936,7 +559,7 @@ namespace FMOD.Studio
 
             IntPtr[] rawArray = new IntPtr[capacity];
             int actualCount;
-            result = FMOD_Studio_System_GetBankList(rawPtr, rawArray, capacity, out actualCount);
+            result = FMOD_Studio_System_GetBankList(this.handle, rawArray, capacity, out actualCount);
             if (result != RESULT.OK)
             {
                 return result;
@@ -946,38 +569,38 @@ namespace FMOD.Studio
                 actualCount = capacity;
             }
             array = new Bank[actualCount];
-            for (int i=0; i<actualCount; ++i)
+            for (int i = 0; i < actualCount; ++i)
             {
-                array[i] = new Bank(rawArray[i]);
+                array[i].handle = rawArray[i];
             }
             return RESULT.OK;
         }
         public RESULT getCPUUsage(out CPU_USAGE usage)
         {
-            return FMOD_Studio_System_GetCPUUsage(rawPtr, out usage);
+            return FMOD_Studio_System_GetCPUUsage(this.handle, out usage);
         }
         public RESULT getBufferUsage(out BUFFER_USAGE usage)
         {
-            return FMOD_Studio_System_GetBufferUsage(rawPtr, out usage);
+            return FMOD_Studio_System_GetBufferUsage(this.handle, out usage);
         }
         public RESULT resetBufferUsage()
         {
-            return FMOD_Studio_System_ResetBufferUsage(rawPtr);
+            return FMOD_Studio_System_ResetBufferUsage(this.handle);
         }
 
         public RESULT setCallback(SYSTEM_CALLBACK callback, SYSTEM_CALLBACK_TYPE callbackmask = SYSTEM_CALLBACK_TYPE.ALL)
         {
-            return FMOD_Studio_System_SetCallback(rawPtr, callback, callbackmask);
+            return FMOD_Studio_System_SetCallback(this.handle, callback, callbackmask);
         }
 
         public RESULT getUserData(out IntPtr userdata)
         {
-            return FMOD_Studio_System_GetUserData(rawPtr, out userdata);
+            return FMOD_Studio_System_GetUserData(this.handle, out userdata);
         }
 
         public RESULT setUserData(IntPtr userdata)
         {
-            return FMOD_Studio_System_SetUserData(rawPtr, userdata);
+            return FMOD_Studio_System_SetUserData(this.handle, userdata);
         }
 
         #region importfunctions
@@ -987,250 +610,207 @@ namespace FMOD.Studio
         private static extern bool   FMOD_Studio_System_IsValid                 (IntPtr studiosystem);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_SetAdvancedSettings     (IntPtr studiosystem, ref ADVANCEDSETTINGS settings);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetAdvancedSettings     (IntPtr studiosystem, out ADVANCEDSETTINGS settings);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_Initialize              (IntPtr studiosystem, int maxchannels, INITFLAGS studioFlags, FMOD.INITFLAGS flags, IntPtr extradriverdata);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_Release                 (IntPtr studiosystem);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_Update                  (IntPtr studiosystem);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetLowLevelSystem       (IntPtr studiosystem, out IntPtr system);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetEvent                (IntPtr studiosystem, byte[] path, out IntPtr description);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetBus                  (IntPtr studiosystem, byte[] path, out IntPtr bus);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetVCA                  (IntPtr studiosystem, byte[] path, out IntPtr vca);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetBank                 (IntPtr studiosystem, byte[] path, out IntPtr bank);
-        [DllImport (STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_System_GetEventByID            (IntPtr studiosystem, byte[] guid, out IntPtr description);
-        [DllImport (STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_System_GetBusByID              (IntPtr studiosystem, byte[] guid, out IntPtr bus);
-        [DllImport (STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_System_GetVCAByID              (IntPtr studiosystem, byte[] guid, out IntPtr vca);
-        [DllImport (STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_System_GetBankByID             (IntPtr studiosystem, byte[] guid, out IntPtr bank);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_GetSoundInfo            (IntPtr studiosystem, byte[] key, IntPtr info);
-        [DllImport (STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_System_LookupID                (IntPtr studiosystem, byte[] path, [Out] byte[] guid);
         [DllImport(STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_System_LookupPath              (IntPtr studiosystem, byte[] guid, [Out] byte[] path, int size, out int retrieved);
+        private static extern RESULT FMOD_Studio_System_GetAdvancedSettings     (IntPtr studiosystem, out ADVANCEDSETTINGS settings);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_Initialize              (IntPtr studiosystem, int maxchannels, INITFLAGS studioFlags, FMOD.INITFLAGS flags, IntPtr extradriverdata);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_Release                 (IntPtr studiosystem);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_Update                  (IntPtr studiosystem);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetLowLevelSystem       (IntPtr studiosystem, out IntPtr system);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetEvent                (IntPtr studiosystem, byte[] path, out IntPtr description);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetBus                  (IntPtr studiosystem, byte[] path, out IntPtr bus);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetVCA                  (IntPtr studiosystem, byte[] path, out IntPtr vca);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetBank                 (IntPtr studiosystem, byte[] path, out IntPtr bank);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetEventByID            (IntPtr studiosystem, ref Guid guid, out IntPtr description);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetBusByID              (IntPtr studiosystem, ref Guid guid, out IntPtr bus);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetVCAByID              (IntPtr studiosystem, ref Guid guid, out IntPtr vca);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetBankByID             (IntPtr studiosystem, ref Guid guid, out IntPtr bank);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetSoundInfo            (IntPtr studiosystem, byte[] key, out SOUND_INFO info);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_LookupID                (IntPtr studiosystem, byte[] path, out Guid guid);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_LookupPath              (IntPtr studiosystem, ref Guid guid, IntPtr path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_GetNumListeners         (IntPtr studiosystem, out int numlisteners);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_SetNumListeners         (IntPtr studiosystem, int numlisteners);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_GetListenerAttributes   (IntPtr studiosystem, int listener, out ATTRIBUTES_3D attributes);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_SetListenerAttributes   (IntPtr studiosystem, int listener, ref ATTRIBUTES_3D attributes);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_GetListenerWeight       (IntPtr studiosystem, int listener, out float weight);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_SetListenerWeight       (IntPtr studiosystem, int listener, float weight);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_LoadBankFile            (IntPtr studiosystem, byte[] filename, LOAD_BANK_FLAGS flags, out IntPtr bank);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_System_LoadBankMemory(IntPtr studiosystem, IntPtr buffer, int length, LOAD_MEMORY_MODE mode, LOAD_BANK_FLAGS flags, out IntPtr bank);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_LoadBankMemory          (IntPtr studiosystem, IntPtr buffer, int length, LOAD_MEMORY_MODE mode, LOAD_BANK_FLAGS flags, out IntPtr bank);
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_LoadBankCustom          (IntPtr studiosystem, ref BANK_INFO info, LOAD_BANK_FLAGS flags, out IntPtr bank);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_UnloadAll               (IntPtr studiosystem);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_FlushCommands           (IntPtr studiosystem);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_FlushSampleLoading      (IntPtr studiosystem);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_StartCommandCapture     (IntPtr studiosystem, byte[] path, COMMANDCAPTURE_FLAGS flags);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_StopCommandCapture      (IntPtr studiosystem);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_LoadCommandReplay       (IntPtr studiosystem, byte[] path, COMMANDREPLAY_FLAGS flags, out IntPtr commandReplay);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_GetBankCount            (IntPtr studiosystem, out int count);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_GetBankList             (IntPtr studiosystem, IntPtr[] array, int capacity, out int count);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_GetCPUUsage             (IntPtr studiosystem, out CPU_USAGE usage);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_GetBufferUsage          (IntPtr studiosystem, out BUFFER_USAGE usage);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_ResetBufferUsage        (IntPtr studiosystem);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_SetCallback             (IntPtr studiosystem, SYSTEM_CALLBACK callback, SYSTEM_CALLBACK_TYPE callbackmask);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_GetUserData             (IntPtr studiosystem, out IntPtr userdata);
-        [DllImport (STUDIO_VERSION.dll)]
+        [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_SetUserData             (IntPtr studiosystem, IntPtr userdata);
         #endregion
 
         #region wrapperinternal
 
-        public System(IntPtr raw)
-        : base(raw)
-        {
-        }
+        public IntPtr handle;
 
-        protected override bool isValidInternal()
+        public bool hasHandle()     { return this.handle != IntPtr.Zero; }
+        public void clearHandle()   { this.handle = IntPtr.Zero; }
+
+        public bool isValid()
         {
-            return FMOD_Studio_System_IsValid(rawPtr);
+            return hasHandle() && FMOD_Studio_System_IsValid(this.handle);
         }
 
         #endregion
     }
 
-    public class EventDescription : HandleBase
+    public struct EventDescription
     {
         public RESULT getID(out Guid id)
         {
-			byte[] rawguid = new byte[16];
-			RESULT result = FMOD_Studio_EventDescription_GetID(rawPtr, rawguid);
-			id = new Guid(rawguid);
-			return result;
+            return FMOD_Studio_EventDescription_GetID(this.handle, out id);
         }
         public RESULT getPath(out string path)
         {
             path = null;
 
-            byte[] buffer = new byte[256];
-            int retrieved = 0;
-            RESULT result = FMOD_Studio_EventDescription_GetPath(rawPtr, buffer, buffer.Length, out retrieved);
-
-            if (result == RESULT.ERR_TRUNCATED)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                buffer = new byte[retrieved];
-                result = FMOD_Studio_EventDescription_GetPath(rawPtr, buffer, buffer.Length, out retrieved);
-            }
+                IntPtr stringMem = Marshal.AllocHGlobal(256);
+                int retrieved = 0;
+                RESULT result = FMOD_Studio_EventDescription_GetPath(this.handle, stringMem, 256, out retrieved);
 
-            if (result == RESULT.OK)
-            {
-                path = Encoding.UTF8.GetString(buffer, 0, retrieved - 1);
-            }
+                if (result == RESULT.ERR_TRUNCATED)
+                {
+                    Marshal.FreeHGlobal(stringMem);
+                    stringMem = Marshal.AllocHGlobal(retrieved);
+                    result = FMOD_Studio_EventDescription_GetPath(this.handle, stringMem, retrieved, out retrieved);
+                }
 
-            return result;
+                if (result == RESULT.OK)
+                {
+                    path = encoder.stringFromNative(stringMem);
+                }
+                Marshal.FreeHGlobal(stringMem);
+                return result;
+            }
         }
         public RESULT getParameterCount(out int count)
         {
-            return FMOD_Studio_EventDescription_GetParameterCount(rawPtr, out count);
+            return FMOD_Studio_EventDescription_GetParameterCount(this.handle, out count);
         }
         public RESULT getParameterByIndex(int index, out PARAMETER_DESCRIPTION parameter)
         {
-            parameter = new PARAMETER_DESCRIPTION();
-
-            PARAMETER_DESCRIPTION_INTERNAL paramInternal;
-            RESULT result = FMOD_Studio_EventDescription_GetParameterByIndex(rawPtr, index, out paramInternal);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-            paramInternal.assign(out parameter);
-            return result;
+            return FMOD_Studio_EventDescription_GetParameterByIndex(this.handle, index, out parameter);
         }
         public RESULT getParameter(string name, out PARAMETER_DESCRIPTION parameter)
         {
-            parameter = new PARAMETER_DESCRIPTION();
-
-            PARAMETER_DESCRIPTION_INTERNAL paramInternal;
-            RESULT result = FMOD_Studio_EventDescription_GetParameter(rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), out paramInternal);
-            if (result != RESULT.OK)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                return result;
+                return FMOD_Studio_EventDescription_GetParameter(this.handle, encoder.byteFromStringUTF8(name), out parameter);
             }
-            paramInternal.assign(out parameter);
-            return result;
         }
         public RESULT getUserPropertyCount(out int count)
         {
-            return FMOD_Studio_EventDescription_GetUserPropertyCount(rawPtr, out count);
+            return FMOD_Studio_EventDescription_GetUserPropertyCount(this.handle, out count);
         }
         public RESULT getUserPropertyByIndex(int index, out USER_PROPERTY property)
         {
-            USER_PROPERTY_INTERNAL propertyInternal;
-
-            RESULT result = FMOD_Studio_EventDescription_GetUserPropertyByIndex(rawPtr, index, out propertyInternal);
-            if (result != RESULT.OK)
-            {
-                property = new USER_PROPERTY();
-                return result;
-            }
-
-            property = propertyInternal.createPublic();
-
-            return RESULT.OK;
+            return FMOD_Studio_EventDescription_GetUserPropertyByIndex(this.handle, index, out property);
         }
         public RESULT getUserProperty(string name, out USER_PROPERTY property)
         {
-            USER_PROPERTY_INTERNAL propertyInternal;
-
-            RESULT result = FMOD_Studio_EventDescription_GetUserProperty(
-                rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), out propertyInternal);
-            if (result != RESULT.OK)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                property = new USER_PROPERTY();
-                return result;
+                return FMOD_Studio_EventDescription_GetUserProperty(this.handle, encoder.byteFromStringUTF8(name), out property);
             }
-
-            property = propertyInternal.createPublic();
-
-            return RESULT.OK;
         }
         public RESULT getLength(out int length)
         {
-            return FMOD_Studio_EventDescription_GetLength(rawPtr, out length);
+            return FMOD_Studio_EventDescription_GetLength(this.handle, out length);
         }
         public RESULT getMinimumDistance(out float distance)
         {
-            return FMOD_Studio_EventDescription_GetMinimumDistance(rawPtr, out distance);
+            return FMOD_Studio_EventDescription_GetMinimumDistance(this.handle, out distance);
         }
         public RESULT getMaximumDistance(out float distance)
         {
-            return FMOD_Studio_EventDescription_GetMaximumDistance(rawPtr, out distance);
+            return FMOD_Studio_EventDescription_GetMaximumDistance(this.handle, out distance);
         }
         public RESULT getSoundSize(out float size)
         {
-            return FMOD_Studio_EventDescription_GetSoundSize(rawPtr, out size);
+            return FMOD_Studio_EventDescription_GetSoundSize(this.handle, out size);
         }
         public RESULT isSnapshot(out bool snapshot)
         {
-            return FMOD_Studio_EventDescription_IsSnapshot(rawPtr, out snapshot);
+            return FMOD_Studio_EventDescription_IsSnapshot(this.handle, out snapshot);
         }
         public RESULT isOneshot(out bool oneshot)
         {
-            return FMOD_Studio_EventDescription_IsOneshot(rawPtr, out oneshot);
+            return FMOD_Studio_EventDescription_IsOneshot(this.handle, out oneshot);
         }
         public RESULT isStream(out bool isStream)
         {
-            return FMOD_Studio_EventDescription_IsStream(rawPtr, out isStream);
+            return FMOD_Studio_EventDescription_IsStream(this.handle, out isStream);
         }
         public RESULT is3D(out bool is3D)
         {
-            return FMOD_Studio_EventDescription_Is3D(rawPtr, out is3D);
+            return FMOD_Studio_EventDescription_Is3D(this.handle, out is3D);
         }
         public RESULT hasCue(out bool cue)
         {
-            return FMOD_Studio_EventDescription_HasCue(rawPtr, out cue);
+            return FMOD_Studio_EventDescription_HasCue(this.handle, out cue);
         }
 
         public RESULT createInstance(out EventInstance instance)
         {
-            instance = null;
-
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_EventDescription_CreateInstance(rawPtr, out newPtr);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-            instance = new EventInstance(newPtr);
-            return result;
+            return FMOD_Studio_EventDescription_CreateInstance(this.handle, out instance.handle);
         }
 
         public RESULT getInstanceCount(out int count)
         {
-            return FMOD_Studio_EventDescription_GetInstanceCount(rawPtr, out count);
+            return FMOD_Studio_EventDescription_GetInstanceCount(this.handle, out count);
         }
         public RESULT getInstanceList(out EventInstance[] array)
         {
@@ -1238,7 +818,7 @@ namespace FMOD.Studio
 
             RESULT result;
             int capacity;
-            result = FMOD_Studio_EventDescription_GetInstanceCount(rawPtr, out capacity);
+            result = FMOD_Studio_EventDescription_GetInstanceCount(this.handle, out capacity);
             if (result != RESULT.OK)
             {
                 return result;
@@ -1251,7 +831,7 @@ namespace FMOD.Studio
 
             IntPtr[] rawArray = new IntPtr[capacity];
             int actualCount;
-            result = FMOD_Studio_EventDescription_GetInstanceList(rawPtr, rawArray, capacity, out actualCount);
+            result = FMOD_Studio_EventDescription_GetInstanceList(this.handle, rawArray, capacity, out actualCount);
             if (result != RESULT.OK)
             {
                 return result;
@@ -1261,726 +841,671 @@ namespace FMOD.Studio
                 actualCount = capacity;
             }
             array = new EventInstance[actualCount];
-            for (int i=0; i<actualCount; ++i)
+            for (int i = 0; i < actualCount; ++i)
             {
-                array[i] = new EventInstance(rawArray[i]);
+                array[i].handle = rawArray[i];
             }
             return RESULT.OK;
         }
 
         public RESULT loadSampleData()
         {
-            return FMOD_Studio_EventDescription_LoadSampleData(rawPtr);
+            return FMOD_Studio_EventDescription_LoadSampleData(this.handle);
         }
 
         public RESULT unloadSampleData()
         {
-            return FMOD_Studio_EventDescription_UnloadSampleData(rawPtr);
+            return FMOD_Studio_EventDescription_UnloadSampleData(this.handle);
         }
 
         public RESULT getSampleLoadingState(out LOADING_STATE state)
         {
-            return FMOD_Studio_EventDescription_GetSampleLoadingState(rawPtr, out state);
+            return FMOD_Studio_EventDescription_GetSampleLoadingState(this.handle, out state);
         }
 
         public RESULT releaseAllInstances()
         {
-            return FMOD_Studio_EventDescription_ReleaseAllInstances(rawPtr);
+            return FMOD_Studio_EventDescription_ReleaseAllInstances(this.handle);
         }
         public RESULT setCallback(EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask = EVENT_CALLBACK_TYPE.ALL)
         {
-            return FMOD_Studio_EventDescription_SetCallback(rawPtr, callback, callbackmask);
+            return FMOD_Studio_EventDescription_SetCallback(this.handle, callback, callbackmask);
         }
 
         public RESULT getUserData(out IntPtr userdata)
         {
-            return FMOD_Studio_EventDescription_GetUserData(rawPtr, out userdata);
+            return FMOD_Studio_EventDescription_GetUserData(this.handle, out userdata);
         }
 
         public RESULT setUserData(IntPtr userdata)
         {
-            return FMOD_Studio_EventDescription_SetUserData(rawPtr, userdata);
+            return FMOD_Studio_EventDescription_SetUserData(this.handle, userdata);
         }
 
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern bool FMOD_Studio_EventDescription_IsValid(IntPtr eventdescription);
-        [DllImport (STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_EventDescription_GetID(IntPtr eventdescription, [Out] byte[] id);
+        private static extern bool FMOD_Studio_EventDescription_IsValid                 (IntPtr eventdescription);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetPath(IntPtr eventdescription, [Out] byte[] path, int size, out int retrieved);
+        private static extern RESULT FMOD_Studio_EventDescription_GetID                 (IntPtr eventdescription, out Guid id);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetParameterCount(IntPtr eventdescription, out int count);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetParameterByIndex(IntPtr eventdescription, int index, out PARAMETER_DESCRIPTION_INTERNAL parameter);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetParameter(IntPtr eventdescription, byte[] name, out PARAMETER_DESCRIPTION_INTERNAL parameter);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetUserPropertyCount(IntPtr eventdescription, out int count);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetUserPropertyByIndex(IntPtr eventdescription, int index, out USER_PROPERTY_INTERNAL property);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetUserProperty(IntPtr eventdescription, byte[] name, out USER_PROPERTY_INTERNAL property);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetLength(IntPtr eventdescription, out int length);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetMinimumDistance(IntPtr eventdescription, out float distance);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetMaximumDistance(IntPtr eventdescription, out float distance);
+        private static extern RESULT FMOD_Studio_EventDescription_GetPath               (IntPtr eventdescription, IntPtr path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetSoundSize(IntPtr eventdescription, out float size);
+        private static extern RESULT FMOD_Studio_EventDescription_GetParameterCount     (IntPtr eventdescription, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_IsSnapshot(IntPtr eventdescription, out bool snapshot);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_IsOneshot(IntPtr eventdescription, out bool oneshot);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_IsStream(IntPtr eventdescription, out bool isStream);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_Is3D(IntPtr eventdescription, out bool is3D);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_HasCue(IntPtr eventdescription, out bool cue);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_CreateInstance(IntPtr eventdescription, out IntPtr instance);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetInstanceCount(IntPtr eventdescription, out int count);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetInstanceList(IntPtr eventdescription, IntPtr[] array, int capacity, out int count);
+        private static extern RESULT FMOD_Studio_EventDescription_GetParameterByIndex   (IntPtr eventdescription, int index, out PARAMETER_DESCRIPTION parameter);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_LoadSampleData(IntPtr eventdescription);
+        private static extern RESULT FMOD_Studio_EventDescription_GetParameter          (IntPtr eventdescription, byte[] name, out PARAMETER_DESCRIPTION parameter);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_UnloadSampleData(IntPtr eventdescription);
+        private static extern RESULT FMOD_Studio_EventDescription_GetUserPropertyCount  (IntPtr eventdescription, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetSampleLoadingState(IntPtr eventdescription, out LOADING_STATE state);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_ReleaseAllInstances(IntPtr eventdescription);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_SetCallback(IntPtr eventdescription, EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_GetUserData(IntPtr eventdescription, out IntPtr userdata);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventDescription_SetUserData(IntPtr eventdescription, IntPtr userdata);
+        private static extern RESULT FMOD_Studio_EventDescription_GetUserPropertyByIndex(IntPtr eventdescription, int index, out USER_PROPERTY property);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_GetUserProperty       (IntPtr eventdescription, byte[] name, out USER_PROPERTY property);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_GetLength             (IntPtr eventdescription, out int length);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_GetMinimumDistance    (IntPtr eventdescription, out float distance);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_GetMaximumDistance    (IntPtr eventdescription, out float distance);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_GetSoundSize          (IntPtr eventdescription, out float size);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_IsSnapshot            (IntPtr eventdescription, out bool snapshot);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_IsOneshot             (IntPtr eventdescription, out bool oneshot);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_IsStream              (IntPtr eventdescription, out bool isStream);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_Is3D                  (IntPtr eventdescription, out bool is3D);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_HasCue                (IntPtr eventdescription, out bool cue);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_CreateInstance        (IntPtr eventdescription, out IntPtr instance);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_GetInstanceCount      (IntPtr eventdescription, out int count);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_GetInstanceList       (IntPtr eventdescription, IntPtr[] array, int capacity, out int count);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_LoadSampleData        (IntPtr eventdescription);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_UnloadSampleData      (IntPtr eventdescription);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_GetSampleLoadingState (IntPtr eventdescription, out LOADING_STATE state);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_ReleaseAllInstances   (IntPtr eventdescription);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_SetCallback           (IntPtr eventdescription, EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_GetUserData           (IntPtr eventdescription, out IntPtr userdata);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventDescription_SetUserData           (IntPtr eventdescription, IntPtr userdata);
         #endregion
         #region wrapperinternal
 
-        public EventDescription(IntPtr raw)
-        : base(raw)
-        {
-        }
+        public IntPtr handle;
 
-        protected override bool isValidInternal()
+        public bool hasHandle()     { return this.handle != IntPtr.Zero; }
+        public void clearHandle()   { this.handle = IntPtr.Zero; }
+
+        public bool isValid()
         {
-            return FMOD_Studio_EventDescription_IsValid(rawPtr);
+            return hasHandle() && FMOD_Studio_EventDescription_IsValid(this.handle);
         }
 
         #endregion
     }
 
-    public class EventInstance : HandleBase
+    public struct EventInstance
     {
         public RESULT getDescription(out EventDescription description)
         {
-            description = null;
-
-            IntPtr newPtr;
-            RESULT result = FMOD_Studio_EventInstance_GetDescription(rawPtr, out newPtr);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-            description = new EventDescription(newPtr);
-            return result;
+            return FMOD_Studio_EventInstance_GetDescription(this.handle, out description.handle);
         }
         public RESULT getVolume(out float volume, out float finalvolume)
         {
-            return FMOD_Studio_EventInstance_GetVolume(rawPtr, out volume, out finalvolume);
+            return FMOD_Studio_EventInstance_GetVolume(this.handle, out volume, out finalvolume);
         }
         public RESULT setVolume(float volume)
         {
-            return FMOD_Studio_EventInstance_SetVolume(rawPtr, volume);
+            return FMOD_Studio_EventInstance_SetVolume(this.handle, volume);
         }
         public RESULT getPitch(out float pitch, out float finalpitch)
         {
-            return FMOD_Studio_EventInstance_GetPitch(rawPtr, out pitch, out finalpitch);
+            return FMOD_Studio_EventInstance_GetPitch(this.handle, out pitch, out finalpitch);
         }
         public RESULT setPitch(float pitch)
         {
-            return FMOD_Studio_EventInstance_SetPitch(rawPtr, pitch);
+            return FMOD_Studio_EventInstance_SetPitch(this.handle, pitch);
         }
         public RESULT get3DAttributes(out ATTRIBUTES_3D attributes)
         {
-            return FMOD_Studio_EventInstance_Get3DAttributes(rawPtr, out attributes);
+            return FMOD_Studio_EventInstance_Get3DAttributes(this.handle, out attributes);
         }
         public RESULT set3DAttributes(ATTRIBUTES_3D attributes)
         {
-            return FMOD_Studio_EventInstance_Set3DAttributes(rawPtr, ref attributes);
+            return FMOD_Studio_EventInstance_Set3DAttributes(this.handle, ref attributes);
         }
         public RESULT getListenerMask(out uint mask)
         {
-            return FMOD_Studio_EventInstance_GetListenerMask(rawPtr, out mask);
+            return FMOD_Studio_EventInstance_GetListenerMask(this.handle, out mask);
         }
         public RESULT setListenerMask(uint mask)
         {
-            return FMOD_Studio_EventInstance_SetListenerMask(rawPtr, mask);
+            return FMOD_Studio_EventInstance_SetListenerMask(this.handle, mask);
         }
         public RESULT getProperty(EVENT_PROPERTY index, out float value)
         {
-            return FMOD_Studio_EventInstance_GetProperty(rawPtr, index, out value);
+            return FMOD_Studio_EventInstance_GetProperty(this.handle, index, out value);
         }
         public RESULT setProperty(EVENT_PROPERTY index, float value)
         {
-            return FMOD_Studio_EventInstance_SetProperty(rawPtr, index, value);
+            return FMOD_Studio_EventInstance_SetProperty(this.handle, index, value);
         }
         public RESULT getReverbLevel(int index, out float level)
         {
-            return FMOD_Studio_EventInstance_GetReverbLevel(rawPtr, index, out level);
+            return FMOD_Studio_EventInstance_GetReverbLevel(this.handle, index, out level);
         }
         public RESULT setReverbLevel(int index, float level)
         {
-            return FMOD_Studio_EventInstance_SetReverbLevel(rawPtr, index, level);
+            return FMOD_Studio_EventInstance_SetReverbLevel(this.handle, index, level);
         }
         public RESULT getPaused(out bool paused)
         {
-            return FMOD_Studio_EventInstance_GetPaused(rawPtr, out paused);
+            return FMOD_Studio_EventInstance_GetPaused(this.handle, out paused);
         }
         public RESULT setPaused(bool paused)
         {
-            return FMOD_Studio_EventInstance_SetPaused(rawPtr, paused);
+            return FMOD_Studio_EventInstance_SetPaused(this.handle, paused);
         }
         public RESULT start()
         {
-            return FMOD_Studio_EventInstance_Start(rawPtr);
+            return FMOD_Studio_EventInstance_Start(this.handle);
         }
         public RESULT stop(STOP_MODE mode)
         {
-            return FMOD_Studio_EventInstance_Stop(rawPtr, mode);
+            return FMOD_Studio_EventInstance_Stop(this.handle, mode);
         }
         public RESULT getTimelinePosition(out int position)
         {
-            return FMOD_Studio_EventInstance_GetTimelinePosition(rawPtr, out position);
+            return FMOD_Studio_EventInstance_GetTimelinePosition(this.handle, out position);
         }
         public RESULT setTimelinePosition(int position)
         {
-            return FMOD_Studio_EventInstance_SetTimelinePosition(rawPtr, position);
+            return FMOD_Studio_EventInstance_SetTimelinePosition(this.handle, position);
         }
         public RESULT getPlaybackState(out PLAYBACK_STATE state)
         {
-            return FMOD_Studio_EventInstance_GetPlaybackState(rawPtr, out state);
+            return FMOD_Studio_EventInstance_GetPlaybackState(this.handle, out state);
         }
         public RESULT getChannelGroup(out FMOD.ChannelGroup group)
         {
-            group = null;
-
-            IntPtr groupraw = new IntPtr();
-            RESULT result = FMOD_Studio_EventInstance_GetChannelGroup(rawPtr, out groupraw);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-
-            group = new FMOD.ChannelGroup(groupraw);
-
-            return result;
+            return FMOD_Studio_EventInstance_GetChannelGroup(this.handle, out group.handle);
         }
         public RESULT release()
         {
-            return FMOD_Studio_EventInstance_Release(rawPtr);
+            return FMOD_Studio_EventInstance_Release(this.handle);
         }
         public RESULT isVirtual(out bool virtualState)
         {
-            return FMOD_Studio_EventInstance_IsVirtual(rawPtr, out virtualState);
+            return FMOD_Studio_EventInstance_IsVirtual(this.handle, out virtualState);
         }
         public RESULT getParameter(string name, out ParameterInstance instance)
         {
-            instance = null;
-
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_EventInstance_GetParameter(rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), out newPtr);
-            if (result != RESULT.OK)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                return result;
+                return FMOD_Studio_EventInstance_GetParameter(this.handle, encoder.byteFromStringUTF8(name), out instance.handle);
             }
-            instance = new ParameterInstance(newPtr);
-
-            return result;
         }
         public RESULT getParameterCount(out int count)
         {
-            return FMOD_Studio_EventInstance_GetParameterCount(rawPtr, out count);
+            return FMOD_Studio_EventInstance_GetParameterCount(this.handle, out count);
         }
         public RESULT getParameterByIndex(int index, out ParameterInstance instance)
         {
-            instance = null;
-
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_EventInstance_GetParameterByIndex(rawPtr, index, out newPtr);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-            instance = new ParameterInstance(newPtr);
-
-            return result;
+            return FMOD_Studio_EventInstance_GetParameterByIndex(this.handle, index, out instance.handle);
         }
         public RESULT getParameterValue(string name, out float value, out float finalvalue)
         {
-            return FMOD_Studio_EventInstance_GetParameterValue(rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), out value, out finalvalue);
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
+            {
+                return FMOD_Studio_EventInstance_GetParameterValue(this.handle, encoder.byteFromStringUTF8(name), out value, out finalvalue);
+            }
         }
         public RESULT setParameterValue(string name, float value)
         {
-            return FMOD_Studio_EventInstance_SetParameterValue(rawPtr, Encoding.UTF8.GetBytes(name + Char.MinValue), value);
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
+            {
+                return FMOD_Studio_EventInstance_SetParameterValue(this.handle, encoder.byteFromStringUTF8(name), value);
+            }
         }
         public RESULT getParameterValueByIndex(int index, out float value, out float finalvalue)
         {
-            return FMOD_Studio_EventInstance_GetParameterValueByIndex(rawPtr, index, out value, out finalvalue);
+            return FMOD_Studio_EventInstance_GetParameterValueByIndex(this.handle, index, out value, out finalvalue);
         }
         public RESULT setParameterValueByIndex(int index, float value)
         {
-            return FMOD_Studio_EventInstance_SetParameterValueByIndex(rawPtr, index, value);
+            return FMOD_Studio_EventInstance_SetParameterValueByIndex(this.handle, index, value);
         }
         public RESULT triggerCue()
         {
-            return FMOD_Studio_EventInstance_TriggerCue(rawPtr);
+            return FMOD_Studio_EventInstance_TriggerCue(this.handle);
         }
         public RESULT setCallback(EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask = EVENT_CALLBACK_TYPE.ALL)
         {
-            return FMOD_Studio_EventInstance_SetCallback(rawPtr, callback, callbackmask);
+            return FMOD_Studio_EventInstance_SetCallback(this.handle, callback, callbackmask);
         }
         public RESULT getUserData(out IntPtr userdata)
         {
-            return FMOD_Studio_EventInstance_GetUserData(rawPtr, out userdata);
+            return FMOD_Studio_EventInstance_GetUserData(this.handle, out userdata);
         }
         public RESULT setUserData(IntPtr userdata)
         {
-            return FMOD_Studio_EventInstance_SetUserData(rawPtr, userdata);
+            return FMOD_Studio_EventInstance_SetUserData(this.handle, userdata);
         }
 
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern bool FMOD_Studio_EventInstance_IsValid(IntPtr _event);
+        private static extern bool   FMOD_Studio_EventInstance_IsValid                  (IntPtr _event);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetDescription       (IntPtr _event, out IntPtr description);
+        private static extern RESULT FMOD_Studio_EventInstance_GetDescription           (IntPtr _event, out IntPtr description);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetVolume            (IntPtr _event, out float volume, out float finalvolume);
+        private static extern RESULT FMOD_Studio_EventInstance_GetVolume                (IntPtr _event, out float volume, out float finalvolume);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetVolume            (IntPtr _event, float volume);
+        private static extern RESULT FMOD_Studio_EventInstance_SetVolume                (IntPtr _event, float volume);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetPitch             (IntPtr _event, out float pitch, out float finalpitch);
+        private static extern RESULT FMOD_Studio_EventInstance_GetPitch                 (IntPtr _event, out float pitch, out float finalpitch);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetPitch             (IntPtr _event, float pitch);
+        private static extern RESULT FMOD_Studio_EventInstance_SetPitch                 (IntPtr _event, float pitch);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_Get3DAttributes      (IntPtr _event, out ATTRIBUTES_3D attributes);
+        private static extern RESULT FMOD_Studio_EventInstance_Get3DAttributes          (IntPtr _event, out ATTRIBUTES_3D attributes);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_Set3DAttributes      (IntPtr _event, ref ATTRIBUTES_3D attributes);
+        private static extern RESULT FMOD_Studio_EventInstance_Set3DAttributes          (IntPtr _event, ref ATTRIBUTES_3D attributes);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetListenerMask      (IntPtr _event, out uint mask);
+        private static extern RESULT FMOD_Studio_EventInstance_GetListenerMask          (IntPtr _event, out uint mask);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetListenerMask      (IntPtr _event, uint mask);
+        private static extern RESULT FMOD_Studio_EventInstance_SetListenerMask          (IntPtr _event, uint mask);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetProperty          (IntPtr _event, EVENT_PROPERTY index, out float value);
+        private static extern RESULT FMOD_Studio_EventInstance_GetProperty              (IntPtr _event, EVENT_PROPERTY index, out float value);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetProperty          (IntPtr _event, EVENT_PROPERTY index, float value);
+        private static extern RESULT FMOD_Studio_EventInstance_SetProperty              (IntPtr _event, EVENT_PROPERTY index, float value);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetReverbLevel       (IntPtr _event, int index, out float level);
+        private static extern RESULT FMOD_Studio_EventInstance_GetReverbLevel           (IntPtr _event, int index, out float level);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetReverbLevel       (IntPtr _event, int index, float level);
+        private static extern RESULT FMOD_Studio_EventInstance_SetReverbLevel           (IntPtr _event, int index, float level);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetPaused            (IntPtr _event, out bool paused);
+        private static extern RESULT FMOD_Studio_EventInstance_GetPaused                (IntPtr _event, out bool paused);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetPaused            (IntPtr _event, bool paused);
+        private static extern RESULT FMOD_Studio_EventInstance_SetPaused                (IntPtr _event, bool paused);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_Start                (IntPtr _event);
+        private static extern RESULT FMOD_Studio_EventInstance_Start                    (IntPtr _event);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_Stop                 (IntPtr _event, STOP_MODE mode);
+        private static extern RESULT FMOD_Studio_EventInstance_Stop                     (IntPtr _event, STOP_MODE mode);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetTimelinePosition  (IntPtr _event, out int position);
+        private static extern RESULT FMOD_Studio_EventInstance_GetTimelinePosition      (IntPtr _event, out int position);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetTimelinePosition  (IntPtr _event, int position);
+        private static extern RESULT FMOD_Studio_EventInstance_SetTimelinePosition      (IntPtr _event, int position);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetPlaybackState     (IntPtr _event, out PLAYBACK_STATE state);
+        private static extern RESULT FMOD_Studio_EventInstance_GetPlaybackState         (IntPtr _event, out PLAYBACK_STATE state);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetChannelGroup      (IntPtr _event, out IntPtr group);
+        private static extern RESULT FMOD_Studio_EventInstance_GetChannelGroup          (IntPtr _event, out IntPtr group);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_Release              (IntPtr _event);
+        private static extern RESULT FMOD_Studio_EventInstance_Release                  (IntPtr _event);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_IsVirtual            (IntPtr _event, out bool virtualState);
+        private static extern RESULT FMOD_Studio_EventInstance_IsVirtual                (IntPtr _event, out bool virtualState);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetParameter         (IntPtr _event, byte[] name, out IntPtr parameter);
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameter             (IntPtr _event, byte[] name, out IntPtr parameter);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetParameterByIndex  (IntPtr _event, int index, out IntPtr parameter);
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameterByIndex      (IntPtr _event, int index, out IntPtr parameter);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetParameterCount    (IntPtr _event, out int count);
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameterCount        (IntPtr _event, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValue    (IntPtr _event, byte[] name, out float value, out float finalvalue);
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValue        (IntPtr _event, byte[] name, out float value, out float finalvalue);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetParameterValue    (IntPtr _event, byte[] name, float value);
+        private static extern RESULT FMOD_Studio_EventInstance_SetParameterValue        (IntPtr _event, byte[] name, float value);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_GetParameterValueByIndex (IntPtr _event, int index, out float value, out float finalvalue);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_SetParameterValueByIndex (IntPtr _event, int index, float value);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_TriggerCue           (IntPtr _event);
+        private static extern RESULT FMOD_Studio_EventInstance_TriggerCue               (IntPtr _event);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetCallback          (IntPtr _event, EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask);
+        private static extern RESULT FMOD_Studio_EventInstance_SetCallback              (IntPtr _event, EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetUserData          (IntPtr _event, out IntPtr userdata);
+        private static extern RESULT FMOD_Studio_EventInstance_GetUserData              (IntPtr _event, out IntPtr userdata);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetUserData          (IntPtr _event, IntPtr userdata);
+        private static extern RESULT FMOD_Studio_EventInstance_SetUserData              (IntPtr _event, IntPtr userdata);
         #endregion
 
         #region wrapperinternal
 
-        public EventInstance(IntPtr raw)
-        : base(raw)
-        {
-        }
+        public IntPtr handle;
 
-        protected override bool isValidInternal()
+        public bool hasHandle()     { return this.handle != IntPtr.Zero; }
+        public void clearHandle()   { this.handle = IntPtr.Zero; }
+
+        public bool isValid()
         {
-            return FMOD_Studio_EventInstance_IsValid(rawPtr);
+            return hasHandle() && FMOD_Studio_EventInstance_IsValid(this.handle);
         }
 
         #endregion
     }
 
-    public class ParameterInstance : HandleBase
+    public struct ParameterInstance
     {
         public RESULT getDescription(out PARAMETER_DESCRIPTION description)
         {
-            description = new PARAMETER_DESCRIPTION();
-
-            PARAMETER_DESCRIPTION_INTERNAL paramInternal;
-            RESULT result = FMOD_Studio_ParameterInstance_GetDescription(rawPtr, out paramInternal);
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-            paramInternal.assign(out description);
-            return result;
+            return FMOD_Studio_ParameterInstance_GetDescription(this.handle, out description);
         }
-
         public RESULT getValue(out float value)
         {
-            return FMOD_Studio_ParameterInstance_GetValue(rawPtr, out value);
+            return FMOD_Studio_ParameterInstance_GetValue(this.handle, out value);
         }
         public RESULT setValue(float value)
         {
-            return FMOD_Studio_ParameterInstance_SetValue(rawPtr, value);
+            return FMOD_Studio_ParameterInstance_SetValue(this.handle, value);
         }
 
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern bool FMOD_Studio_ParameterInstance_IsValid(IntPtr parameter);
+        private static extern bool   FMOD_Studio_ParameterInstance_IsValid              (IntPtr parameter);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_ParameterInstance_GetDescription(IntPtr parameter, out PARAMETER_DESCRIPTION_INTERNAL description);
+        private static extern RESULT FMOD_Studio_ParameterInstance_GetDescription       (IntPtr parameter, out PARAMETER_DESCRIPTION description);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_ParameterInstance_GetValue(IntPtr parameter, out float value);
+        private static extern RESULT FMOD_Studio_ParameterInstance_GetValue             (IntPtr parameter, out float value);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_ParameterInstance_SetValue(IntPtr parameter, float value);
+        private static extern RESULT FMOD_Studio_ParameterInstance_SetValue             (IntPtr parameter, float value);
         #endregion
 
         #region wrapperinternal
 
-        public ParameterInstance(IntPtr raw)
-        : base(raw)
-        {
-        }
+        public IntPtr handle;
 
-        protected override bool isValidInternal()
+        public bool hasHandle()     { return this.handle != IntPtr.Zero; }
+        public void clearHandle()   { this.handle = IntPtr.Zero; }
+
+        public bool isValid()
         {
-            return FMOD_Studio_ParameterInstance_IsValid(rawPtr);
+            return hasHandle() && FMOD_Studio_ParameterInstance_IsValid(this.handle);
         }
 
         #endregion
     }
 
-    public class Bus : HandleBase
+    public struct Bus
     {
         public RESULT getID(out Guid id)
         {
-			byte[] rawguid = new byte[16];
-			RESULT result = FMOD_Studio_Bus_GetID(rawPtr, rawguid);
-			id = new Guid(rawguid);
-			return result;
+            return FMOD_Studio_Bus_GetID(this.handle, out id);
         }
         public RESULT getPath(out string path)
         {
             path = null;
 
-            byte[] buffer = new byte[256];
-            int retrieved = 0;
-            RESULT result = FMOD_Studio_Bus_GetPath(rawPtr, buffer, buffer.Length, out retrieved);
-
-            if (result == RESULT.ERR_TRUNCATED)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                buffer = new byte[retrieved];
-                result = FMOD_Studio_Bus_GetPath(rawPtr, buffer, buffer.Length, out retrieved);
-            }
+                IntPtr stringMem = Marshal.AllocHGlobal(256);
+                int retrieved = 0;
+                RESULT result = FMOD_Studio_Bus_GetPath(this.handle, stringMem, 256, out retrieved);
 
-            if (result == RESULT.OK)
-            {
-                path = Encoding.UTF8.GetString(buffer, 0, retrieved - 1);
-            }
+                if (result == RESULT.ERR_TRUNCATED)
+                {
+                    Marshal.FreeHGlobal(stringMem);
+                    stringMem = Marshal.AllocHGlobal(retrieved);
+                    result = FMOD_Studio_Bus_GetPath(this.handle, stringMem, retrieved, out retrieved);
+                }
 
-            return result;
-        }
-        public RESULT getVolume(out float volume, out float finalvolume)
-        {
-            return FMOD_Studio_Bus_GetVolume(rawPtr, out volume, out finalvolume);
-        }
-        public RESULT setVolume(float volume)
-        {
-            return FMOD_Studio_Bus_SetVolume(rawPtr, volume);
-        }
-        public RESULT getPaused(out bool paused)
-        {
-            return FMOD_Studio_Bus_GetPaused(rawPtr, out paused);
-        }
-        public RESULT setPaused(bool paused)
-        {
-            return FMOD_Studio_Bus_SetPaused(rawPtr, paused);
-        }
-        public RESULT getMute(out bool mute)
-        {
-            return FMOD_Studio_Bus_GetMute(rawPtr, out mute);
-        }
-        public RESULT setMute(bool mute)
-        {
-            return FMOD_Studio_Bus_SetMute(rawPtr, mute);
-        }
-        public RESULT stopAllEvents(STOP_MODE mode)
-        {
-            return FMOD_Studio_Bus_StopAllEvents(rawPtr, mode);
-        }
-        public RESULT lockChannelGroup()
-        {
-            return FMOD_Studio_Bus_LockChannelGroup(rawPtr);
-        }
-        public RESULT unlockChannelGroup()
-        {
-            return FMOD_Studio_Bus_UnlockChannelGroup(rawPtr);
-        }
-        public RESULT getChannelGroup(out FMOD.ChannelGroup group)
-        {
-            group = null;
-
-            IntPtr groupraw = new IntPtr();
-            RESULT result = FMOD_Studio_Bus_GetChannelGroup(rawPtr, out groupraw);
-            if (result != RESULT.OK)
-            {
+                if (result == RESULT.OK)
+                {
+                    path = encoder.stringFromNative(stringMem);
+                }
+                Marshal.FreeHGlobal(stringMem);
                 return result;
             }
 
-            group = new FMOD.ChannelGroup(groupraw);
-
-            return result;
+        }
+        public RESULT getVolume(out float volume, out float finalvolume)
+        {
+            return FMOD_Studio_Bus_GetVolume(this.handle, out volume, out finalvolume);
+        }
+        public RESULT setVolume(float volume)
+        {
+            return FMOD_Studio_Bus_SetVolume(this.handle, volume);
+        }
+        public RESULT getPaused(out bool paused)
+        {
+            return FMOD_Studio_Bus_GetPaused(this.handle, out paused);
+        }
+        public RESULT setPaused(bool paused)
+        {
+            return FMOD_Studio_Bus_SetPaused(this.handle, paused);
+        }
+        public RESULT getMute(out bool mute)
+        {
+            return FMOD_Studio_Bus_GetMute(this.handle, out mute);
+        }
+        public RESULT setMute(bool mute)
+        {
+            return FMOD_Studio_Bus_SetMute(this.handle, mute);
+        }
+        public RESULT stopAllEvents(STOP_MODE mode)
+        {
+            return FMOD_Studio_Bus_StopAllEvents(this.handle, mode);
+        }
+        public RESULT lockChannelGroup()
+        {
+            return FMOD_Studio_Bus_LockChannelGroup(this.handle);
+        }
+        public RESULT unlockChannelGroup()
+        {
+            return FMOD_Studio_Bus_UnlockChannelGroup(this.handle);
+        }
+        public RESULT getChannelGroup(out FMOD.ChannelGroup group)
+        {
+            return FMOD_Studio_Bus_GetChannelGroup(this.handle, out group.handle);
         }
 
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern bool FMOD_Studio_Bus_IsValid(IntPtr bus);
+        private static extern bool   FMOD_Studio_Bus_IsValid              (IntPtr bus);
         [DllImport(STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_Bus_GetID(IntPtr bus, [Out] byte[] id);
+        private static extern RESULT FMOD_Studio_Bus_GetID                (IntPtr bus, out Guid id);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_GetPath(IntPtr bus, [Out] byte[] path, int size, out int retrieved);
+        private static extern RESULT FMOD_Studio_Bus_GetPath              (IntPtr bus, IntPtr path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_GetVolume(IntPtr bus, out float volume, out float finalvolume);
+        private static extern RESULT FMOD_Studio_Bus_GetVolume            (IntPtr bus, out float volume, out float finalvolume);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_SetVolume(IntPtr bus, float value);
+        private static extern RESULT FMOD_Studio_Bus_SetVolume            (IntPtr bus, float value);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_GetPaused(IntPtr bus, out bool paused);
+        private static extern RESULT FMOD_Studio_Bus_GetPaused            (IntPtr bus, out bool paused);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_SetPaused(IntPtr bus, bool paused);
+        private static extern RESULT FMOD_Studio_Bus_SetPaused            (IntPtr bus, bool paused);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_GetMute(IntPtr bus, out bool mute);
+        private static extern RESULT FMOD_Studio_Bus_GetMute              (IntPtr bus, out bool mute);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_SetMute(IntPtr bus, bool mute);
+        private static extern RESULT FMOD_Studio_Bus_SetMute              (IntPtr bus, bool mute);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_StopAllEvents(IntPtr bus, STOP_MODE mode);
+        private static extern RESULT FMOD_Studio_Bus_StopAllEvents        (IntPtr bus, STOP_MODE mode);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_LockChannelGroup(IntPtr bus);
+        private static extern RESULT FMOD_Studio_Bus_LockChannelGroup     (IntPtr bus);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_UnlockChannelGroup(IntPtr bus);
+        private static extern RESULT FMOD_Studio_Bus_UnlockChannelGroup   (IntPtr bus);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bus_GetChannelGroup(IntPtr bus, out IntPtr group);
+        private static extern RESULT FMOD_Studio_Bus_GetChannelGroup      (IntPtr bus, out IntPtr group);
         #endregion
 
         #region wrapperinternal
 
-        public Bus(IntPtr raw)
-        : base(raw)
-        {
-        }
+        public IntPtr handle;
 
-        protected override bool isValidInternal()
+        public bool hasHandle()     { return this.handle != IntPtr.Zero; }
+        public void clearHandle()   { this.handle = IntPtr.Zero; }
+
+        public bool isValid()
         {
-            return FMOD_Studio_Bus_IsValid(rawPtr);
+            return hasHandle() && FMOD_Studio_Bus_IsValid(this.handle);
         }
 
         #endregion
     }
 
-    public class VCA : HandleBase
+    public struct VCA
     {
         public RESULT getID(out Guid id)
         {
-			byte[] rawguid = new byte[16];
-			RESULT result = FMOD_Studio_VCA_GetID(rawPtr, rawguid);
-			id = new Guid(rawguid);
-			return result;
+            return FMOD_Studio_VCA_GetID(this.handle, out id);
         }
         public RESULT getPath(out string path)
         {
             path = null;
 
-            byte[] buffer = new byte[256];
-            int retrieved = 0;
-            RESULT result = FMOD_Studio_VCA_GetPath(rawPtr, buffer, buffer.Length, out retrieved);
-
-            if (result == RESULT.ERR_TRUNCATED)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                buffer = new byte[retrieved];
-                result = FMOD_Studio_VCA_GetPath(rawPtr, buffer, buffer.Length, out retrieved);
-            }
+                IntPtr stringMem = Marshal.AllocHGlobal(256);
+                int retrieved = 0;
+                RESULT result = FMOD_Studio_VCA_GetPath(this.handle, stringMem, 256, out retrieved);
 
-            if (result == RESULT.OK)
-            {
-                path = Encoding.UTF8.GetString(buffer, 0, retrieved - 1);
-            }
+                if (result == RESULT.ERR_TRUNCATED)
+                {
+                    Marshal.FreeHGlobal(stringMem);
+                    stringMem = Marshal.AllocHGlobal(retrieved);
+                    result = FMOD_Studio_VCA_GetPath(this.handle, stringMem, retrieved, out retrieved);
+                }
 
-            return result;
+                if (result == RESULT.OK)
+                {
+                    path = encoder.stringFromNative(stringMem);
+                }
+                Marshal.FreeHGlobal(stringMem);
+                return result;
+            }
         }
         public RESULT getVolume(out float volume, out float finalvolume)
         {
-            return FMOD_Studio_VCA_GetVolume(rawPtr, out volume, out finalvolume);
+            return FMOD_Studio_VCA_GetVolume(this.handle, out volume, out finalvolume);
         }
         public RESULT setVolume(float volume)
         {
-            return FMOD_Studio_VCA_SetVolume(rawPtr, volume);
+            return FMOD_Studio_VCA_SetVolume(this.handle, volume);
         }
 
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern bool FMOD_Studio_VCA_IsValid(IntPtr vca);
+        private static extern bool   FMOD_Studio_VCA_IsValid       (IntPtr vca);
         [DllImport(STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_VCA_GetID(IntPtr vca, [Out] byte[] id);
+        private static extern RESULT FMOD_Studio_VCA_GetID         (IntPtr vca, out Guid id);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_VCA_GetPath(IntPtr vca, [Out] byte[] path, int size, out int retrieved);
+        private static extern RESULT FMOD_Studio_VCA_GetPath       (IntPtr vca, IntPtr path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_VCA_GetVolume(IntPtr vca, out float volume, out float finalvolume);
+        private static extern RESULT FMOD_Studio_VCA_GetVolume     (IntPtr vca, out float volume, out float finalvolume);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_VCA_SetVolume(IntPtr vca, float value);
+        private static extern RESULT FMOD_Studio_VCA_SetVolume     (IntPtr vca, float value);
         #endregion
 
         #region wrapperinternal
 
-        public VCA(IntPtr raw)
-            : base(raw)
-        {
-        }
+        public IntPtr handle;
 
-        protected override bool isValidInternal()
+        public bool hasHandle()     { return this.handle != IntPtr.Zero; }
+        public void clearHandle()   { this.handle = IntPtr.Zero; }
+
+        public bool isValid()
         {
-            return FMOD_Studio_VCA_IsValid(rawPtr);
+            return hasHandle() && FMOD_Studio_VCA_IsValid(this.handle);
         }
 
         #endregion
     }
 
-    public class Bank : HandleBase
+    public struct Bank
     {
         // Property access
 
         public RESULT getID(out Guid id)
         {
-			byte[] rawguid = new byte[16];
-			RESULT result = FMOD_Studio_Bank_GetID(rawPtr, rawguid);
-			id = new Guid(rawguid);
-			return result;
+            return FMOD_Studio_Bank_GetID(this.handle, out id);
         }
         public RESULT getPath(out string path)
         {
             path = null;
 
-            byte[] buffer = new byte[256];
-            int retrieved = 0;
-            RESULT result = FMOD_Studio_Bank_GetPath(rawPtr, buffer, buffer.Length, out retrieved);
-
-            if (result == RESULT.ERR_TRUNCATED)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                buffer = new byte[retrieved];
-                result = FMOD_Studio_Bank_GetPath(rawPtr, buffer, buffer.Length, out retrieved);
-            }
+                IntPtr stringMem = Marshal.AllocHGlobal(256);
+                int retrieved = 0;
+                RESULT result = FMOD_Studio_Bank_GetPath(this.handle, stringMem, 256, out retrieved);
 
-            if (result == RESULT.OK)
-            {
-                path = Encoding.UTF8.GetString(buffer, 0, retrieved - 1);
-            }
+                if (result == RESULT.ERR_TRUNCATED)
+                {
+                    Marshal.FreeHGlobal(stringMem);
+                    stringMem = Marshal.AllocHGlobal(retrieved);
+                    result = FMOD_Studio_Bank_GetPath(this.handle, stringMem, retrieved, out retrieved);
+                }
 
-            return result;
+                if (result == RESULT.OK)
+                {
+                    path = encoder.stringFromNative(stringMem);
+                }
+                Marshal.FreeHGlobal(stringMem);
+                return result;
+            }
         }
         public RESULT unload()
         {
-            RESULT result = FMOD_Studio_Bank_Unload(rawPtr);
-
-            if (result != RESULT.OK)
-            {
-                return result;
-            }
-
-            rawPtr = IntPtr.Zero;
-
-            return RESULT.OK;
+            return FMOD_Studio_Bank_Unload(this.handle);
         }
         public RESULT loadSampleData()
         {
-            return FMOD_Studio_Bank_LoadSampleData(rawPtr);
+            return FMOD_Studio_Bank_LoadSampleData(this.handle);
         }
         public RESULT unloadSampleData()
         {
-            return FMOD_Studio_Bank_UnloadSampleData(rawPtr);
+            return FMOD_Studio_Bank_UnloadSampleData(this.handle);
         }
         public RESULT getLoadingState(out LOADING_STATE state)
         {
-            return FMOD_Studio_Bank_GetLoadingState(rawPtr, out state);
+            return FMOD_Studio_Bank_GetLoadingState(this.handle, out state);
         }
         public RESULT getSampleLoadingState(out LOADING_STATE state)
         {
-            return FMOD_Studio_Bank_GetSampleLoadingState(rawPtr, out state);
+            return FMOD_Studio_Bank_GetSampleLoadingState(this.handle, out state);
         }
 
         // Enumeration
         public RESULT getStringCount(out int count)
         {
-            return FMOD_Studio_Bank_GetStringCount(rawPtr, out count);
+            return FMOD_Studio_Bank_GetStringCount(this.handle, out count);
         }
         public RESULT getStringInfo(int index, out Guid id, out string path)
         {
             path = null;
-			id = Guid.Empty;
+            id = Guid.Empty;
 
-            byte[] buffer = new byte[256];
-            int retrieved = 0;
-			byte[] rawguid = new byte[16];
-            RESULT result = FMOD_Studio_Bank_GetStringInfo(rawPtr, index, rawguid, buffer, buffer.Length, out retrieved);
-
-            if (result == RESULT.ERR_TRUNCATED)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                buffer = new byte[retrieved];
-                result = FMOD_Studio_Bank_GetStringInfo(rawPtr, index, rawguid, buffer, buffer.Length, out retrieved);
-            }
+                IntPtr stringMem = Marshal.AllocHGlobal(256);
+                int retrieved = 0;
+                RESULT result = FMOD_Studio_Bank_GetStringInfo(this.handle, index, out id, stringMem, 256, out retrieved);
 
-            if (result == RESULT.OK)
-            {
-                path = Encoding.UTF8.GetString(buffer, 0, retrieved - 1);
-				id = new Guid(rawguid);
-            }
+                if (result == RESULT.ERR_TRUNCATED)
+                {
+                    Marshal.FreeHGlobal(stringMem);
+                    stringMem = Marshal.AllocHGlobal(retrieved);
+                    result = FMOD_Studio_Bank_GetStringInfo(this.handle, index, out id, stringMem, retrieved, out retrieved);
+                }
 
-            return RESULT.OK;
+                if (result == RESULT.OK)
+                {
+                    path = encoder.stringFromNative(stringMem);
+                }
+                Marshal.FreeHGlobal(stringMem);
+                return result;
+            }
         }
 
         public RESULT getEventCount(out int count)
         {
-            return FMOD_Studio_Bank_GetEventCount(rawPtr, out count);
+            return FMOD_Studio_Bank_GetEventCount(this.handle, out count);
         }
         public RESULT getEventList(out EventDescription[] array)
         {
@@ -1988,7 +1513,7 @@ namespace FMOD.Studio
 
             RESULT result;
             int capacity;
-            result = FMOD_Studio_Bank_GetEventCount(rawPtr, out capacity);
+            result = FMOD_Studio_Bank_GetEventCount(this.handle, out capacity);
             if (result != RESULT.OK)
             {
                 return result;
@@ -2001,7 +1526,7 @@ namespace FMOD.Studio
 
             IntPtr[] rawArray = new IntPtr[capacity];
             int actualCount;
-            result = FMOD_Studio_Bank_GetEventList(rawPtr, rawArray, capacity, out actualCount);
+            result = FMOD_Studio_Bank_GetEventList(this.handle, rawArray, capacity, out actualCount);
             if (result != RESULT.OK)
             {
                 return result;
@@ -2011,15 +1536,15 @@ namespace FMOD.Studio
                 actualCount = capacity;
             }
             array = new EventDescription[actualCount];
-            for (int i=0; i<actualCount; ++i)
+            for (int i = 0; i < actualCount; ++i)
             {
-                array[i] = new EventDescription(rawArray[i]);
+                array[i].handle = rawArray[i];
             }
             return RESULT.OK;
         }
         public RESULT getBusCount(out int count)
         {
-            return FMOD_Studio_Bank_GetBusCount(rawPtr, out count);
+            return FMOD_Studio_Bank_GetBusCount(this.handle, out count);
         }
         public RESULT getBusList(out Bus[] array)
         {
@@ -2027,7 +1552,7 @@ namespace FMOD.Studio
 
             RESULT result;
             int capacity;
-            result = FMOD_Studio_Bank_GetBusCount(rawPtr, out capacity);
+            result = FMOD_Studio_Bank_GetBusCount(this.handle, out capacity);
             if (result != RESULT.OK)
             {
                 return result;
@@ -2040,7 +1565,7 @@ namespace FMOD.Studio
 
             IntPtr[] rawArray = new IntPtr[capacity];
             int actualCount;
-            result = FMOD_Studio_Bank_GetBusList(rawPtr, rawArray, capacity, out actualCount);
+            result = FMOD_Studio_Bank_GetBusList(this.handle, rawArray, capacity, out actualCount);
             if (result != RESULT.OK)
             {
                 return result;
@@ -2050,15 +1575,15 @@ namespace FMOD.Studio
                 actualCount = capacity;
             }
             array = new Bus[actualCount];
-            for (int i=0; i<actualCount; ++i)
+            for (int i = 0; i < actualCount; ++i)
             {
-                array[i] = new Bus(rawArray[i]);
+                array[i].handle = rawArray[i];
             }
             return RESULT.OK;
         }
         public RESULT getVCACount(out int count)
         {
-            return FMOD_Studio_Bank_GetVCACount(rawPtr, out count);
+            return FMOD_Studio_Bank_GetVCACount(this.handle, out count);
         }
         public RESULT getVCAList(out VCA[] array)
         {
@@ -2066,7 +1591,7 @@ namespace FMOD.Studio
 
             RESULT result;
             int capacity;
-            result = FMOD_Studio_Bank_GetVCACount(rawPtr, out capacity);
+            result = FMOD_Studio_Bank_GetVCACount(this.handle, out capacity);
             if (result != RESULT.OK)
             {
                 return result;
@@ -2079,7 +1604,7 @@ namespace FMOD.Studio
 
             IntPtr[] rawArray = new IntPtr[capacity];
             int actualCount;
-            result = FMOD_Studio_Bank_GetVCAList(rawPtr, rawArray, capacity, out actualCount);
+            result = FMOD_Studio_Bank_GetVCAList(this.handle, rawArray, capacity, out actualCount);
             if (result != RESULT.OK)
             {
                 return result;
@@ -2091,291 +1616,251 @@ namespace FMOD.Studio
             array = new VCA[actualCount];
             for (int i = 0; i < actualCount; ++i)
             {
-                array[i] = new VCA(rawArray[i]);
+                array[i].handle = rawArray[i];
             }
             return RESULT.OK;
         }
 
         public RESULT getUserData(out IntPtr userdata)
         {
-            return FMOD_Studio_Bank_GetUserData(rawPtr, out userdata);
+            return FMOD_Studio_Bank_GetUserData(this.handle, out userdata);
         }
 
         public RESULT setUserData(IntPtr userdata)
         {
-            return FMOD_Studio_Bank_SetUserData(rawPtr, userdata);
+            return FMOD_Studio_Bank_SetUserData(this.handle, userdata);
         }
 
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern bool FMOD_Studio_Bank_IsValid(IntPtr bank);
+        private static extern bool   FMOD_Studio_Bank_IsValid                   (IntPtr bank);
         [DllImport(STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_Bank_GetID(IntPtr bank, [Out] byte[] id);
+        private static extern RESULT FMOD_Studio_Bank_GetID                     (IntPtr bank, out Guid id);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetPath(IntPtr bank, [Out] byte[] path, int size, out int retrieved);
+        private static extern RESULT FMOD_Studio_Bank_GetPath                   (IntPtr bank, IntPtr path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_Unload(IntPtr bank);
+        private static extern RESULT FMOD_Studio_Bank_Unload                    (IntPtr bank);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_LoadSampleData(IntPtr bank);
+        private static extern RESULT FMOD_Studio_Bank_LoadSampleData            (IntPtr bank);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_UnloadSampleData(IntPtr bank);
+        private static extern RESULT FMOD_Studio_Bank_UnloadSampleData          (IntPtr bank);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetLoadingState(IntPtr bank, out LOADING_STATE state);
+        private static extern RESULT FMOD_Studio_Bank_GetLoadingState           (IntPtr bank, out LOADING_STATE state);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetSampleLoadingState(IntPtr bank, out LOADING_STATE state);
+        private static extern RESULT FMOD_Studio_Bank_GetSampleLoadingState     (IntPtr bank, out LOADING_STATE state);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetStringCount(IntPtr bank, out int count);
+        private static extern RESULT FMOD_Studio_Bank_GetStringCount            (IntPtr bank, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-		private static extern RESULT FMOD_Studio_Bank_GetStringInfo(IntPtr bank, int index, [Out] byte[] id, [Out] byte[] path, int size, out int retrieved);
+        private static extern RESULT FMOD_Studio_Bank_GetStringInfo             (IntPtr bank, int index, out Guid id, IntPtr path, int size, out int retrieved);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetEventCount(IntPtr bank, out int count);
+        private static extern RESULT FMOD_Studio_Bank_GetEventCount             (IntPtr bank, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetEventList(IntPtr bank, IntPtr[] array, int capacity, out int count);
+        private static extern RESULT FMOD_Studio_Bank_GetEventList              (IntPtr bank, IntPtr[] array, int capacity, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetBusCount(IntPtr bank, out int count);
+        private static extern RESULT FMOD_Studio_Bank_GetBusCount               (IntPtr bank, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetBusList(IntPtr bank, IntPtr[] array, int capacity, out int count);
+        private static extern RESULT FMOD_Studio_Bank_GetBusList                (IntPtr bank, IntPtr[] array, int capacity, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetVCACount(IntPtr bank, out int count);
+        private static extern RESULT FMOD_Studio_Bank_GetVCACount               (IntPtr bank, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetVCAList(IntPtr bank, IntPtr[] array, int capacity, out int count);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_GetUserData(IntPtr studiosystem, out IntPtr userdata);
-        [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_Bank_SetUserData(IntPtr studiosystem, IntPtr userdata);
+        private static extern RESULT FMOD_Studio_Bank_GetVCAList                (IntPtr bank, IntPtr[] array, int capacity, out int count);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_Bank_GetUserData               (IntPtr bank, out IntPtr userdata);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_Bank_SetUserData               (IntPtr bank, IntPtr userdata);
         #endregion
 
         #region wrapperinternal
 
-        public Bank(IntPtr raw)
-        : base(raw)
-        {
-        }
+        public IntPtr handle;
 
-        protected override bool isValidInternal()
+        public bool hasHandle()     { return this.handle != IntPtr.Zero; }
+        public void clearHandle()   { this.handle = IntPtr.Zero; }
+
+        public bool isValid()
         {
-            return FMOD_Studio_Bank_IsValid(rawPtr);
+            return hasHandle() && FMOD_Studio_Bank_IsValid(this.handle);
         }
 
         #endregion
     }
 
-    public class CommandReplay : HandleBase
+    public struct CommandReplay
     {
         // Information query
         public RESULT getSystem(out System system)
         {
-            system = null;
-            IntPtr newPtr = new IntPtr();
-            RESULT result = FMOD_Studio_CommandReplay_GetSystem(rawPtr, out newPtr);
-            if (result == RESULT.OK)
-            {
-                system = new System(newPtr);
-            }
-            return result;
+            return FMOD_Studio_CommandReplay_GetSystem(this.handle, out system.handle);
         }
 
         public RESULT getLength(out float totalTime)
         {
-            return FMOD_Studio_CommandReplay_GetLength(rawPtr, out totalTime);
+            return FMOD_Studio_CommandReplay_GetLength(this.handle, out totalTime);
         }
         public RESULT getCommandCount(out int count)
         {
-            return FMOD_Studio_CommandReplay_GetCommandCount(rawPtr, out count);
+            return FMOD_Studio_CommandReplay_GetCommandCount(this.handle, out count);
         }
         public RESULT getCommandInfo(int commandIndex, out COMMAND_INFO info)
         {
-            COMMAND_INFO_INTERNAL internalInfo = new COMMAND_INFO_INTERNAL();
-            FMOD.RESULT result = FMOD_Studio_CommandReplay_GetCommandInfo(rawPtr, commandIndex, out internalInfo);
-            if (result != FMOD.RESULT.OK)
-            {
-                info = new COMMAND_INFO();
-                return result;
-            }
-            info = internalInfo.createPublic();
-            return result;
+            return FMOD_Studio_CommandReplay_GetCommandInfo(this.handle, commandIndex, out info);
         }
 
         public RESULT getCommandString(int commandIndex, out string description)
         {
             description = null;
-            byte[] buffer = new byte[8];
-            while (true)
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
-                RESULT result = FMOD_Studio_CommandReplay_GetCommandString(rawPtr, commandIndex, buffer, buffer.Length);
-                if (result == RESULT.ERR_TRUNCATED)
-                {
-                    buffer = new byte[2 * buffer.Length];
-                }
-                else 
-                {
-                    if (result == RESULT.OK)
-                    {
-                        int len = 0;
-                        while (buffer[len] != 0)
-                        {
-                            ++len;
-                        }
+                int stringLength = 256;
+                IntPtr stringMem = Marshal.AllocHGlobal(256);
+                RESULT result = FMOD_Studio_CommandReplay_GetCommandString(this.handle, commandIndex, stringMem, stringLength);
 
-                        description = Encoding.UTF8.GetString(buffer, 0, len);
-                    }
-                    return result;
+                while (result == RESULT.ERR_TRUNCATED)
+                {
+                    Marshal.FreeHGlobal(stringMem);
+                    stringLength *= 2;
+                    stringMem = Marshal.AllocHGlobal(stringLength);
+                    result = FMOD_Studio_CommandReplay_GetCommandString(this.handle, commandIndex, stringMem, stringLength);
                 }
+
+                if (result == RESULT.OK)
+                {
+                    description = encoder.stringFromNative(stringMem);
+                }
+                Marshal.FreeHGlobal(stringMem);
+                return result;
             }
         }
         public RESULT getCommandAtTime(float time, out int commandIndex)
         {
-            return FMOD_Studio_CommandReplay_GetCommandAtTime(rawPtr, time, out commandIndex);
+            return FMOD_Studio_CommandReplay_GetCommandAtTime(this.handle, time, out commandIndex);
         }
         // Playback
         public RESULT setBankPath(string bankPath)
         {
-            return FMOD_Studio_CommandReplay_SetBankPath(rawPtr, Encoding.UTF8.GetBytes(bankPath + Char.MinValue));
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
+            {
+                return FMOD_Studio_CommandReplay_SetBankPath(this.handle, encoder.byteFromStringUTF8(bankPath));
+            }
         }
         public RESULT start()
         {
-            return FMOD_Studio_CommandReplay_Start(rawPtr);
+            return FMOD_Studio_CommandReplay_Start(this.handle);
         }
         public RESULT stop()
         {
-            return FMOD_Studio_CommandReplay_Stop(rawPtr);
+            return FMOD_Studio_CommandReplay_Stop(this.handle);
         }
         public RESULT seekToTime(float time)
         {
-            return FMOD_Studio_CommandReplay_SeekToTime(rawPtr, time);
+            return FMOD_Studio_CommandReplay_SeekToTime(this.handle, time);
         }
         public RESULT seekToCommand(int commandIndex)
         {
-            return FMOD_Studio_CommandReplay_SeekToCommand(rawPtr, commandIndex);
+            return FMOD_Studio_CommandReplay_SeekToCommand(this.handle, commandIndex);
         }
         public RESULT getPaused(out bool paused)
         {
-            return FMOD_Studio_CommandReplay_GetPaused(rawPtr, out paused);
+            return FMOD_Studio_CommandReplay_GetPaused(this.handle, out paused);
         }
         public RESULT setPaused(bool paused)
         {
-            return FMOD_Studio_CommandReplay_SetPaused(rawPtr, paused);
+            return FMOD_Studio_CommandReplay_SetPaused(this.handle, paused);
         }
         public RESULT getPlaybackState(out PLAYBACK_STATE state)
         {
-            return FMOD_Studio_CommandReplay_GetPlaybackState(rawPtr, out state);
+            return FMOD_Studio_CommandReplay_GetPlaybackState(this.handle, out state);
         }
         public RESULT getCurrentCommand(out int commandIndex, out float currentTime)
         {
-            return FMOD_Studio_CommandReplay_GetCurrentCommand(rawPtr, out commandIndex, out currentTime);
+            return FMOD_Studio_CommandReplay_GetCurrentCommand(this.handle, out commandIndex, out currentTime);
         }
         // Release
         public RESULT release()
         {
-            return FMOD_Studio_CommandReplay_Release(rawPtr);
+            return FMOD_Studio_CommandReplay_Release(this.handle);
         }
         // Callbacks
         public RESULT setFrameCallback(COMMANDREPLAY_FRAME_CALLBACK callback)
         {
-            return FMOD_Studio_CommandReplay_SetFrameCallback(rawPtr, callback);
+            return FMOD_Studio_CommandReplay_SetFrameCallback(this.handle, callback);
         }
         public RESULT setLoadBankCallback(COMMANDREPLAY_LOAD_BANK_CALLBACK callback)
         {
-            return FMOD_Studio_CommandReplay_SetLoadBankCallback(rawPtr, callback);
+            return FMOD_Studio_CommandReplay_SetLoadBankCallback(this.handle, callback);
         }
         public RESULT setCreateInstanceCallback(COMMANDREPLAY_CREATE_INSTANCE_CALLBACK callback)
         {
-            return FMOD_Studio_CommandReplay_SetCreateInstanceCallback(rawPtr, callback);
+            return FMOD_Studio_CommandReplay_SetCreateInstanceCallback(this.handle, callback);
         }
         public RESULT getUserData(out IntPtr userdata)
         {
-            return FMOD_Studio_CommandReplay_GetUserData(rawPtr, out userdata);
+            return FMOD_Studio_CommandReplay_GetUserData(this.handle, out userdata);
         }
         public RESULT setUserData(IntPtr userdata)
         {
-            return FMOD_Studio_CommandReplay_SetUserData(rawPtr, userdata);
+            return FMOD_Studio_CommandReplay_SetUserData(this.handle, userdata);
         }
 
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern bool FMOD_Studio_CommandReplay_IsValid(IntPtr replay);
+        private static extern bool FMOD_Studio_CommandReplay_IsValid                    (IntPtr replay);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_GetSystem(IntPtr replay, out IntPtr system);
+        private static extern RESULT FMOD_Studio_CommandReplay_GetSystem                (IntPtr replay, out IntPtr system);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_GetLength(IntPtr replay, out float totalTime);
+        private static extern RESULT FMOD_Studio_CommandReplay_GetLength                (IntPtr replay, out float totalTime);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_GetCommandCount(IntPtr replay, out int count);
+        private static extern RESULT FMOD_Studio_CommandReplay_GetCommandCount          (IntPtr replay, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_GetCommandInfo(IntPtr replay, int commandIndex, out COMMAND_INFO_INTERNAL info);
+        private static extern RESULT FMOD_Studio_CommandReplay_GetCommandInfo           (IntPtr replay, int commandIndex, out COMMAND_INFO info);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_GetCommandString(IntPtr replay, int commandIndex, [Out] byte[] description, int capacity);
+        private static extern RESULT FMOD_Studio_CommandReplay_GetCommandString         (IntPtr replay, int commandIndex, IntPtr description, int capacity);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_GetCommandAtTime(IntPtr replay, float time, out int commandIndex);
+        private static extern RESULT FMOD_Studio_CommandReplay_GetCommandAtTime         (IntPtr replay, float time, out int commandIndex);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_SetBankPath(IntPtr replay, byte[] bankPath);
+        private static extern RESULT FMOD_Studio_CommandReplay_SetBankPath              (IntPtr replay, byte[] bankPath);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_Start(IntPtr replay);
+        private static extern RESULT FMOD_Studio_CommandReplay_Start                    (IntPtr replay);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_Stop(IntPtr replay);
+        private static extern RESULT FMOD_Studio_CommandReplay_Stop                     (IntPtr replay);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_SeekToTime(IntPtr replay, float time);
+        private static extern RESULT FMOD_Studio_CommandReplay_SeekToTime               (IntPtr replay, float time);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_SeekToCommand(IntPtr replay, int commandIndex);
+        private static extern RESULT FMOD_Studio_CommandReplay_SeekToCommand            (IntPtr replay, int commandIndex);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_GetPaused(IntPtr replay, out bool paused);
+        private static extern RESULT FMOD_Studio_CommandReplay_GetPaused                (IntPtr replay, out bool paused);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_SetPaused(IntPtr replay, bool paused);
+        private static extern RESULT FMOD_Studio_CommandReplay_SetPaused                (IntPtr replay, bool paused);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_GetPlaybackState(IntPtr replay, out PLAYBACK_STATE state);
+        private static extern RESULT FMOD_Studio_CommandReplay_GetPlaybackState         (IntPtr replay, out PLAYBACK_STATE state);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_GetCurrentCommand(IntPtr replay, out int commandIndex, out float currentTime);
+        private static extern RESULT FMOD_Studio_CommandReplay_GetCurrentCommand        (IntPtr replay, out int commandIndex, out float currentTime);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_Release(IntPtr replay);
+        private static extern RESULT FMOD_Studio_CommandReplay_Release                  (IntPtr replay);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_SetFrameCallback(IntPtr replay, COMMANDREPLAY_FRAME_CALLBACK callback);
+        private static extern RESULT FMOD_Studio_CommandReplay_SetFrameCallback         (IntPtr replay, COMMANDREPLAY_FRAME_CALLBACK callback);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_SetLoadBankCallback(IntPtr replay, COMMANDREPLAY_LOAD_BANK_CALLBACK callback);
+        private static extern RESULT FMOD_Studio_CommandReplay_SetLoadBankCallback      (IntPtr replay, COMMANDREPLAY_LOAD_BANK_CALLBACK callback);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_CommandReplay_SetCreateInstanceCallback(IntPtr replay, COMMANDREPLAY_CREATE_INSTANCE_CALLBACK callback);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_GetUserData(IntPtr replay, out IntPtr userdata);
+        private static extern RESULT FMOD_Studio_CommandReplay_GetUserData              (IntPtr replay, out IntPtr userdata);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_CommandReplay_SetUserData(IntPtr replay, IntPtr userdata);
+        private static extern RESULT FMOD_Studio_CommandReplay_SetUserData              (IntPtr replay, IntPtr userdata);
         #endregion
 
         #region wrapperinternal
 
-        public CommandReplay(IntPtr raw)
-        : base(raw)
-        {
-        }
+        public IntPtr handle;
 
-        protected override bool isValidInternal()
+        public bool hasHandle()     { return this.handle != IntPtr.Zero; }
+        public void clearHandle()   { this.handle = IntPtr.Zero; }
+
+        public bool isValid()
         {
-            return FMOD_Studio_CommandReplay_IsValid(rawPtr);
+            return hasHandle() && FMOD_Studio_CommandReplay_IsValid(this.handle);
         }
 
         #endregion
     }
-
-    #region wrapperinternal
-
-    // Helper functions
-    class MarshallingHelper
-    {
-        public static int stringLengthUtf8(IntPtr nativeUtf8)
-        {
-            int len = 0;
-            while (Marshal.ReadByte(nativeUtf8, len) != 0) ++len;
-
-            return len;
-        }
-
-        public static string stringFromNativeUtf8(IntPtr nativeUtf8)
-        {
-            // There is no one line marshal IntPtr->string for UTF8
-            int len = stringLengthUtf8(nativeUtf8);
-            if (len == 0) return string.Empty;
-            byte[] buffer = new byte[len];
-            Marshal.Copy(nativeUtf8, buffer, 0, buffer.Length);
-            return Encoding.UTF8.GetString(buffer, 0, len);
-        }
-    }
-
-    #endregion
 } // FMOD

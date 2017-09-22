@@ -1,14 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
-
+using System.IO;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 namespace FMODUnity
 {
-
 
     [Serializable]
     public enum FMODPlatform
@@ -31,7 +30,7 @@ namespace FMODUnity
         PS4,
         WiiU,
         PSVita,
-		AppleTV,
+        AppleTV,
         UWP,
         Switch,
         Count,
@@ -76,7 +75,7 @@ namespace FMODUnity
     public class PlatformBoolSetting : PlatformSetting<TriStateBool>
     {
     }
-    
+
     #if UNITY_EDITOR
     [InitializeOnLoad]
     #endif
@@ -112,29 +111,63 @@ namespace FMODUnity
             }
         }
 
-            
-	    #if UNITY_EDITOR
+        #if UNITY_EDITOR
         [MenuItem("FMOD/Edit Settings", priority = 0)]
         public static void EditSettings()
-	    {
-	        Selection.activeObject = Instance;
+        {
+            Selection.activeObject = Instance;
             EditorApplication.ExecuteMenuItem("Window/Inspector");
         }
         #endif
-
 
         [SerializeField]
         public bool HasSourceProject = true;
 
         [SerializeField]
         public bool HasPlatforms = true;
-        
-        [SerializeField]
-        public string SourceProjectPath;
 
         [SerializeField]
-        public string SourceBankPath;
-        
+        private string sourceProjectPath;
+
+        public string SourceProjectPath
+        {
+            get
+            {
+                if (String.IsNullOrEmpty(sourceProjectPath) && !String.IsNullOrEmpty(SourceProjectPathUnformatted))
+                {
+                    sourceProjectPath = GetPlatformSpecificPath(SourceProjectPathUnformatted);
+                }
+                return sourceProjectPath;
+            }
+            set
+            {
+                sourceProjectPath = GetPlatformSpecificPath(value);
+            }
+        }
+
+        [SerializeField]
+        public string SourceProjectPathUnformatted;
+
+        private string sourceBankPath;
+        public string SourceBankPath
+        {
+            get
+            {
+                if (String.IsNullOrEmpty(sourceBankPath) && !String.IsNullOrEmpty(SourceBankPathUnformatted))
+                {
+                    sourceBankPath = GetPlatformSpecificPath(SourceBankPathUnformatted);
+                }
+                return sourceBankPath;
+            }
+            set
+            {
+            	sourceBankPath = GetPlatformSpecificPath(value);
+            }
+        }
+
+        [SerializeField]
+        public string SourceBankPathUnformatted;
+
         [SerializeField]
         public bool AutomaticEventLoading;
 
@@ -194,8 +227,8 @@ namespace FMODUnity
                 case FMODPlatform.iOS:
                 case FMODPlatform.Android:
                 case FMODPlatform.WindowsPhone:
-				case FMODPlatform.PSVita:
-			    case FMODPlatform.AppleTV:
+                case FMODPlatform.PSVita:
+                case FMODPlatform.AppleTV:
                 case FMODPlatform.Switch:
                     return FMODPlatform.Mobile;
                 case FMODPlatform.XboxOne:
@@ -272,7 +305,6 @@ namespace FMODUnity
             return GetSetting(OverlaySettings, platform, TriStateBool.Disabled) == TriStateBool.Enabled;
             #endif
         }
-        
 
         // --------   Real channels ----------------------
         public int GetRealChannels(FMODPlatform platform)
@@ -324,7 +356,7 @@ namespace FMODUnity
                 return GetSetting(BankDirectorySettings, platform, "Desktop");
             }
         }
- 
+
         private Settings()
         {
             Banks = new List<string>();
@@ -359,6 +391,20 @@ namespace FMODUnity
             AutomaticEventLoading = true;
             AutomaticSampleLoading = false;
             TargetAssetPath = "";
+        }
+
+        private string GetPlatformSpecificPath(string path)
+        {
+            if (String.IsNullOrEmpty(path))
+            {
+                return path;
+            }
+
+            if (Path.DirectorySeparatorChar == '/')
+            {
+                return path.Replace('\\', '/');
+            }
+            return path.Replace('/', '\\');
         }
     }
 

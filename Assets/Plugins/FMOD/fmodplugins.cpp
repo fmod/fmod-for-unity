@@ -3,6 +3,10 @@ struct FMOD_DSP_DESCRIPTION;
 
 extern "C" uint32_t FMOD5_System_RegisterDSP(FMOD_SYSTEM *system, const FMOD_DSP_DESCRIPTION *description, uint32_t *handle);
 
+extern FMOD_DSP_DESCRIPTION* FMOD_Google_GVRListener_GetDSPDescription();
+extern FMOD_DSP_DESCRIPTION* FMOD_Google_GVRSoundfield_GetDSPDescription();
+extern FMOD_DSP_DESCRIPTION* FMOD_Google_GVRSource_GetDSPDescription();
+
 extern "C" uint32_t FmodUnityNativePluginInit(FMOD_SYSTEM* system)
 {
     uint32_t result = 0;
@@ -19,13 +23,31 @@ extern "C" uint32_t FmodUnityNativePluginInit(FMOD_SYSTEM* system)
     
     */
     
-    /*    
+    /*
     result = FMOD5_System_RegisterDSP(system, GetMyDSPDescription(), nullptr);
     if (result != 0)
     {
         return result;
-    }    
+    }
     */
-    
+
+    /* Uncomment this next section to use the GoogleVR plugin on iOS */
+    /*
+    result = FMOD5_System_RegisterDSP(system, FMOD_Google_GVRListener_GetDSPDescription(), nullptr);
+    if (result != 0)
+    {
+      return result;
+    }
+    result = FMOD5_System_RegisterDSP(system, FMOD_Google_GVRSoundfield_GetDSPDescription(), nullptr);
+    if (result != 0)
+    {
+      return result;
+    }
+    result = FMOD5_System_RegisterDSP(system, FMOD_Google_GVRSource_GetDSPDescription(), nullptr);
+    if (result != 0)
+    {
+      return result;
+    }
+    */
     return result;
 }

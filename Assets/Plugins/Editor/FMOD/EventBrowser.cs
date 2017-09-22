@@ -260,6 +260,7 @@ namespace FMODUnity
                 
                 if (item.Expanded || !string.IsNullOrEmpty(searchString))
                 {
+                    item.Children.Sort((a, b) => a.Name.CompareTo(b.Name));
                     if (item.Name.ToLower().Contains(searchString.ToLower()))
                     {
                         foreach(var childFolder in item.Children)
