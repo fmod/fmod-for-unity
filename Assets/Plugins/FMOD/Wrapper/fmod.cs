@@ -4457,6 +4457,9 @@ namespace FMOD
 
             public byte[] byteFromStringUTF8(string s)
             {
+                if (s == null)
+                    return null;
+                
                 // Allow one extra byte for null terminator
                 int maximumLength = encoding.GetMaxByteCount(s.Length) + 1;
                 if (maximumLength > buffer.Length)
