@@ -331,10 +331,6 @@ retry:
                 }
 
                 #if UNITY_EDITOR
-                MuteAllEvents(UnityEditor.EditorUtility.audioMasterMute);
-                #endif
-
-                #if UNITY_EDITOR
                 for (int i = eventPositionWarnings.Count - 1; i >= 0; i--)
                 {
                     if (eventPositionWarnings[i].isValid())
@@ -478,7 +474,9 @@ retry:
         {
             if (studioSystem.isValid())
             {
-                PauseAllEvents(pauseStatus);
+                // Strings bank is always loaded
+                if (loadedBanks.Count > 1)
+                    PauseAllEvents(pauseStatus);
 
                 if (pauseStatus)
                 {
@@ -854,6 +852,14 @@ retry:
             get
             {
                 return instance != null && instance.studioSystem.isValid();
+            }
+        }
+
+        public static bool HasBanksLoaded
+        {
+            get
+            {
+                return instance.loadedBanks.Count > 1;
             }
         }
 

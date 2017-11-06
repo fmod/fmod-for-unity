@@ -32,5 +32,7 @@ namespace FMODUnity
         public float MinDistance;
         [SerializeField]
         public float MaxDistance;
-    }
+        [SerializeField]
+        public int Length;
+	}
 }

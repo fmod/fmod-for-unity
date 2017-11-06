@@ -372,6 +372,7 @@ namespace FMODUnity
                         eventDesc.isStream(out eventRef.IsStream);
                         eventDesc.getMaximumDistance(out eventRef.MaxDistance);
                         eventDesc.getMinimumDistance(out eventRef.MinDistance);
+                        eventDesc.getLength(out eventRef.Length);
                         int paramCount = 0;
                         eventDesc.getParameterCount(out paramCount);
                         eventRef.Parameters = new List<EditorParamRef>(paramCount);

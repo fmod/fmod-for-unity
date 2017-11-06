@@ -8,7 +8,7 @@ using UnityEngine;
 namespace FMODUnity
 {
     [CustomEditor(typeof(StudioParameterTrigger))]
-    class StudioParameterTriggerEditor : Editor
+    public class StudioParameterTriggerEditor : Editor
     {
         StudioEventEmitter targetEmitter;
         SerializedProperty emitters;

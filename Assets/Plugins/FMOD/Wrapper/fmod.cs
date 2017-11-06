@@ -17,7 +17,7 @@ namespace FMOD
     */
     public class VERSION
     {
-        public const int    number = 0x00011000;
+        public const int    number = 0x00011001;
 #if (UNITY_IPHONE || UNITY_TVOS || UNITY_SWITCH) && !UNITY_EDITOR
         public const string dll    = "__Internal";
 #elif (UNITY_PS4) && !UNITY_EDITOR
@@ -4457,9 +4457,7 @@ namespace FMOD
 
             public byte[] byteFromStringUTF8(string s)
             {
-                if (s == null)
-                    return null;
-                
+                if (s == null)  return null;
                 // Allow one extra byte for null terminator
                 int maximumLength = encoding.GetMaxByteCount(s.Length) + 1;
                 if (maximumLength > buffer.Length)

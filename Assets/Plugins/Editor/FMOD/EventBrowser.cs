@@ -525,6 +525,10 @@ namespace FMODUnity
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Panning", selectedEvent.Is3D ? "3D" : "2D", style);
             EditorGUILayout.LabelField("Oneshot", selectedEvent.IsOneShot.ToString(), style);
+
+            TimeSpan t = System.TimeSpan.FromMilliseconds(selectedEvent.Length);
+            EditorGUILayout.LabelField("Length", selectedEvent.Length > 0 ? string.Format("{0:D2}:{1:D2}:{2:D3}", t.Minutes, t.Seconds, t.Milliseconds) : "N/A", style);
+
             if (!isNarrow) EditorGUILayout.LabelField("Streaming", selectedEvent.IsStream.ToString(), style);
             EditorGUILayout.EndHorizontal();
             if (isNarrow) EditorGUILayout.LabelField("Streaming", selectedEvent.IsStream.ToString(), style);

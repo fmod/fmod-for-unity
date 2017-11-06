@@ -9,7 +9,7 @@ namespace FMODUnity
 {
     [CustomEditor(typeof(StudioEventEmitter))]
     [CanEditMultipleObjects]
-    class StudioEventEmitterEditor : Editor
+    public class StudioEventEmitterEditor : Editor
     {
         public void OnSceneGUI()
         {

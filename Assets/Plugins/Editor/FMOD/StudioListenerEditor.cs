@@ -9,7 +9,7 @@ namespace FMODUnity
 {
     [CustomEditor(typeof(StudioListener))]
     [CanEditMultipleObjects]
-    class StudioListenerEditor : Editor
+    public class StudioListenerEditor : Editor
     {
         public override void OnInspectorGUI()
         {

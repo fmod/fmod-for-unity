@@ -187,7 +187,7 @@ namespace FMODUnity
         	    DestroySystem();
 		    }
             
-            if (RuntimeManager.IsInitialized)
+            if (RuntimeManager.IsInitialized && RuntimeManager.HasBanksLoaded)
             {
                 if (EditorApplication.isPlayingOrWillChangePlaymode)
                 {
