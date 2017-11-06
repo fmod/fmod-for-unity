@@ -11,7 +11,11 @@ namespace FMODUnity
         static void ShowFindAndReplace()
         {
             var window = CreateInstance<FindAndReplace>();
+            #if UNITY_5_0 || UNITY_5_1
+            window.title = "FMOD Find and Replace";
+            #else
             window.titleContent = new GUIContent("FMOD Find and Replace");
+            #endif
             window.OnHierarchyChange();
             var position = window.position;
             window.maxSize = window.minSize = position.size = new Vector2(400, 170);

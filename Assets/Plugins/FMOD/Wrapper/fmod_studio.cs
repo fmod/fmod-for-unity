@@ -1086,6 +1086,10 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_EventInstance_SetParameterValueByIndex(this.handle, index, value);
         }
+        public RESULT setParameterValuesByIndices(int[] indices, float[] values, int count)
+        {
+            return FMOD_Studio_EventInstance_SetParameterValuesByIndices(this.handle, indices, values, count);
+        }
         public RESULT triggerCue()
         {
             return FMOD_Studio_EventInstance_TriggerCue(this.handle);
@@ -1105,75 +1109,77 @@ namespace FMOD.Studio
 
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern bool   FMOD_Studio_EventInstance_IsValid                  (IntPtr _event);
+        private static extern bool   FMOD_Studio_EventInstance_IsValid                     (IntPtr _event);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetDescription           (IntPtr _event, out IntPtr description);
+        private static extern RESULT FMOD_Studio_EventInstance_GetDescription              (IntPtr _event, out IntPtr description);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetVolume                (IntPtr _event, out float volume, out float finalvolume);
+        private static extern RESULT FMOD_Studio_EventInstance_GetVolume                   (IntPtr _event, out float volume, out float finalvolume);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetVolume                (IntPtr _event, float volume);
+        private static extern RESULT FMOD_Studio_EventInstance_SetVolume                   (IntPtr _event, float volume);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetPitch                 (IntPtr _event, out float pitch, out float finalpitch);
+        private static extern RESULT FMOD_Studio_EventInstance_GetPitch                    (IntPtr _event, out float pitch, out float finalpitch);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetPitch                 (IntPtr _event, float pitch);
+        private static extern RESULT FMOD_Studio_EventInstance_SetPitch                    (IntPtr _event, float pitch);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_Get3DAttributes          (IntPtr _event, out ATTRIBUTES_3D attributes);
+        private static extern RESULT FMOD_Studio_EventInstance_Get3DAttributes             (IntPtr _event, out ATTRIBUTES_3D attributes);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_Set3DAttributes          (IntPtr _event, ref ATTRIBUTES_3D attributes);
+        private static extern RESULT FMOD_Studio_EventInstance_Set3DAttributes             (IntPtr _event, ref ATTRIBUTES_3D attributes);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetListenerMask          (IntPtr _event, out uint mask);
+        private static extern RESULT FMOD_Studio_EventInstance_GetListenerMask             (IntPtr _event, out uint mask);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetListenerMask          (IntPtr _event, uint mask);
+        private static extern RESULT FMOD_Studio_EventInstance_SetListenerMask             (IntPtr _event, uint mask);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetProperty              (IntPtr _event, EVENT_PROPERTY index, out float value);
+        private static extern RESULT FMOD_Studio_EventInstance_GetProperty                 (IntPtr _event, EVENT_PROPERTY index, out float value);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetProperty              (IntPtr _event, EVENT_PROPERTY index, float value);
+        private static extern RESULT FMOD_Studio_EventInstance_SetProperty                 (IntPtr _event, EVENT_PROPERTY index, float value);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetReverbLevel           (IntPtr _event, int index, out float level);
+        private static extern RESULT FMOD_Studio_EventInstance_GetReverbLevel              (IntPtr _event, int index, out float level);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetReverbLevel           (IntPtr _event, int index, float level);
+        private static extern RESULT FMOD_Studio_EventInstance_SetReverbLevel              (IntPtr _event, int index, float level);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetPaused                (IntPtr _event, out bool paused);
+        private static extern RESULT FMOD_Studio_EventInstance_GetPaused                   (IntPtr _event, out bool paused);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetPaused                (IntPtr _event, bool paused);
+        private static extern RESULT FMOD_Studio_EventInstance_SetPaused                   (IntPtr _event, bool paused);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_Start                    (IntPtr _event);
+        private static extern RESULT FMOD_Studio_EventInstance_Start                       (IntPtr _event);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_Stop                     (IntPtr _event, STOP_MODE mode);
+        private static extern RESULT FMOD_Studio_EventInstance_Stop                        (IntPtr _event, STOP_MODE mode);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetTimelinePosition      (IntPtr _event, out int position);
+        private static extern RESULT FMOD_Studio_EventInstance_GetTimelinePosition         (IntPtr _event, out int position);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetTimelinePosition      (IntPtr _event, int position);
+        private static extern RESULT FMOD_Studio_EventInstance_SetTimelinePosition         (IntPtr _event, int position);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetPlaybackState         (IntPtr _event, out PLAYBACK_STATE state);
+        private static extern RESULT FMOD_Studio_EventInstance_GetPlaybackState            (IntPtr _event, out PLAYBACK_STATE state);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetChannelGroup          (IntPtr _event, out IntPtr group);
+        private static extern RESULT FMOD_Studio_EventInstance_GetChannelGroup             (IntPtr _event, out IntPtr group);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_Release                  (IntPtr _event);
+        private static extern RESULT FMOD_Studio_EventInstance_Release                     (IntPtr _event);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_IsVirtual                (IntPtr _event, out bool virtualState);
+        private static extern RESULT FMOD_Studio_EventInstance_IsVirtual                   (IntPtr _event, out bool virtualState);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetParameter             (IntPtr _event, byte[] name, out IntPtr parameter);
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameter                (IntPtr _event, byte[] name, out IntPtr parameter);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetParameterByIndex      (IntPtr _event, int index, out IntPtr parameter);
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameterByIndex         (IntPtr _event, int index, out IntPtr parameter);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetParameterCount        (IntPtr _event, out int count);
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameterCount           (IntPtr _event, out int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValue        (IntPtr _event, byte[] name, out float value, out float finalvalue);
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValue           (IntPtr _event, byte[] name, out float value, out float finalvalue);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetParameterValue        (IntPtr _event, byte[] name, float value);
+        private static extern RESULT FMOD_Studio_EventInstance_SetParameterValue           (IntPtr _event, byte[] name, float value);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValueByIndex (IntPtr _event, int index, out float value, out float finalvalue);
+        private static extern RESULT FMOD_Studio_EventInstance_GetParameterValueByIndex    (IntPtr _event, int index, out float value, out float finalvalue);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetParameterValueByIndex (IntPtr _event, int index, float value);
+        private static extern RESULT FMOD_Studio_EventInstance_SetParameterValueByIndex    (IntPtr _event, int index, float value);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_TriggerCue               (IntPtr _event);
+        private static extern RESULT FMOD_Studio_EventInstance_SetParameterValuesByIndices (IntPtr _event, int[] indices, float[] values, int count);
         [DllImport(STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetCallback              (IntPtr _event, EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask);
+        private static extern RESULT FMOD_Studio_EventInstance_TriggerCue                  (IntPtr _event);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventInstance_SetCallback                 (IntPtr _event, EVENT_CALLBACK callback, EVENT_CALLBACK_TYPE callbackmask);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_GetUserData              (IntPtr _event, out IntPtr userdata);
+        private static extern RESULT FMOD_Studio_EventInstance_GetUserData                 (IntPtr _event, out IntPtr userdata);
         [DllImport (STUDIO_VERSION.dll)]
-        private static extern RESULT FMOD_Studio_EventInstance_SetUserData              (IntPtr _event, IntPtr userdata);
+        private static extern RESULT FMOD_Studio_EventInstance_SetUserData                 (IntPtr _event, IntPtr userdata);
         #endregion
 
         #region wrapperinternal
