@@ -33,6 +33,7 @@ namespace FMODUnity
         AppleTV,
         UWP,
         Switch,
+        WebGL,
         Count,
     }
 

@@ -172,37 +172,39 @@ namespace FMODUnity
         }
 
         static EditorUtils()
-	    {
+        {
             EditorApplication.update += Update;
-		    EditorApplication.playmodeStateChanged += HandleOnPlayModeChanged;
-	    }
-        
+            #if UNITY_2017_2_OR_NEWER
+            EditorApplication.pauseStateChanged += HandleOnPausedModeChanged;
+            #else
+            EditorApplication.playmodeStateChanged += HandleOnPlayModeChanged;
+            #endif
+        }
 
+        #if UNITY_2017_2_OR_NEWER
+        static void HandleOnPausedModeChanged(PauseState state)
+        {
+            if (RuntimeManager.IsInitialized && RuntimeManager.HasBanksLoaded)
+            {
+                RuntimeManager.GetBus("bus:/").setPaused(EditorApplication.isPaused);
+                RuntimeManager.StudioSystem.update();
+            }
+        }
+        #endif
+
+        #if !UNITY_2017_2_OR_NEWER
         static void HandleOnPlayModeChanged()
-	    {
-            // Ensure we don't leak system handles in the DLL
-		    if (EditorApplication.isPlayingOrWillChangePlaymode &&
-			    !EditorApplication.isPaused)
-		    {
-        	    DestroySystem();
-		    }
-            
+        {
             if (RuntimeManager.IsInitialized && RuntimeManager.HasBanksLoaded)
             {
                 if (EditorApplication.isPlayingOrWillChangePlaymode)
                 {
-                    if (EditorApplication.isPaused)
-                    {
-                        RuntimeManager.GetBus("bus:/").setPaused(true);
-                        RuntimeManager.StudioSystem.update();
-                    }
-                    else
-                    {
-                        RuntimeManager.GetBus("bus:/").setPaused(false);
-                    }
+                    RuntimeManager.GetBus("bus:/").setPaused(EditorApplication.isPaused);
+                    RuntimeManager.StudioSystem.update();
                 }
             }
-	    }
+        }
+        #endif
 
         static void Update()
         {
@@ -358,7 +360,7 @@ namespace FMODUnity
             uint version;
             CheckResult(lowlevel.getVersion(out version));
 
-            EditorUtility.DisplayDialog("FMOD Studio Unity Integration", "Version: " + VerionNumberToString(version) + "\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2017 \n\nSee LICENSE.TXT for additional license information.", "OK");
+            EditorUtility.DisplayDialog("FMOD Studio Unity Integration", "Version: " + VerionNumberToString(version) + "\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2018 \n\nSee LICENSE.TXT for additional license information.", "OK");
         }
 
         static FMOD.Studio.Bank masterBank;

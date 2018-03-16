@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEditor.Callbacks;
-#if UNITY_2017
+#if UNITY_2017_1_OR_NEWER
 using UnityEditor.Build;
 #endif
 
@@ -413,9 +413,9 @@ namespace FMODUnity
         static EventManager()
         {
             countdownTimer = CountdownTimerReset;
-#if !UNITY_2017
+            #if !UNITY_2017_1_OR_NEWER
             EditorUserBuildSettings.activeBuildTargetChanged += BuildTargetChanged;
-#endif
+            #endif
             EditorApplication.update += Update;
         }
 
@@ -618,7 +618,7 @@ namespace FMODUnity
             return eventCache.EditorEvents.Find((x) => x.Guid == guid);
         }
 
-#if UNITY_2017
+        #if UNITY_2017_1_OR_NEWER
         public class ActiveBuildTargetListener : IActiveBuildTargetChanged
         {
             public int callbackOrder{ get { return 0; } }
@@ -627,7 +627,7 @@ namespace FMODUnity
                 BuildTargetChanged();
             }
         }
-#endif
+        #endif
 
     }
 }
