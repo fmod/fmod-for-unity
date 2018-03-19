@@ -573,7 +573,7 @@ retry:
                         {
                             LoadedBank loadedBank = new LoadedBank();
                             loadResult = Instance.studioSystem.loadBankMemory(www.bytes, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out loadedBank.Bank);
-                            loadedBankRegister(loadedBank, bankPath, bankName, loadSamples, loadResult);
+                            Instance.loadedBankRegister(loadedBank, bankPath, bankName, loadSamples, loadResult);
                         }
                     }
                 }
