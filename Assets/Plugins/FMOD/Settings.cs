@@ -117,7 +117,11 @@ namespace FMODUnity
         public static void EditSettings()
         {
             Selection.activeObject = Instance;
+            #if UNITY_2018_2_OR_NEWER
+            EditorApplication.ExecuteMenuItem("Window/General/Inspector");
+            #else
             EditorApplication.ExecuteMenuItem("Window/Inspector");
+            #endif
         }
         #endif
 
