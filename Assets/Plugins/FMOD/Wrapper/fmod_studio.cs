@@ -248,6 +248,7 @@ namespace FMOD.Studio
         NORMAL                  = 0x00000000,   /* Standard behaviour. */
         SKIP_CLEANUP            = 0x00000001,   /* Normally the playback will release any created resources when it stops, unless this flag is set. */
         FAST_FORWARD            = 0x00000002,   /* Play back at maximum speed, ignoring the timing of the original replay. */
+        SKIP_BANK_LOAD          = 0x00000004,   /* Skip commands related to bank loading. */
     }
 
     public enum PLAYBACK_STATE : int

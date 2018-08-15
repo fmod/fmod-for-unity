@@ -6,6 +6,10 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace FMODUnity
 {
     [AddComponentMenu("")]
@@ -14,6 +18,7 @@ namespace FMODUnity
         static SystemNotInitializedException initException = null;
         static RuntimeManager instance;
         static bool isQuitting = false;
+        bool loadAllSampleData = false;
 
         [SerializeField]
         FMODPlatform fmodPlatform;
@@ -50,13 +55,17 @@ namespace FMODUnity
 
                     var gameObject = new GameObject("FMOD.UnityIntegration.RuntimeManager");
                     instance = gameObject.AddComponent<RuntimeManager>();
-                    DontDestroyOnLoad(gameObject);
+
+                    if (Application.isPlaying) // This class is used in edit mode by the Timeline auditioning system
+                    {
+                        DontDestroyOnLoad(gameObject);
+                    }
                     gameObject.hideFlags = HideFlags.HideInHierarchy;
 
                     try
                     {
                         #if UNITY_ANDROID && !UNITY_EDITOR
-            
+
                         // First, obtain the current activity context
                         AndroidJavaObject activity = null;
                         using (var activityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
@@ -151,7 +160,7 @@ namespace FMODUnity
                 if (studioSystem.isValid())
                 {
                     studioSystem.release();
-					studioSystem.clearHandle();
+                    studioSystem.clearHandle();
                 }
                 throw new SystemNotInitializedException(result, cause);
             }
@@ -159,6 +168,14 @@ namespace FMODUnity
 
         FMOD.RESULT Initialize()
         {
+            #if UNITY_EDITOR
+                #if UNITY_2017_2_OR_NEWER
+            EditorApplication.playModeStateChanged += HandlePlayModeStateChange;
+                #elif UNITY_2017_1_OR_NEWER
+            EditorApplication.playmodeStateChanged += HandleOnPlayModeChanged;
+                #endif // UNITY_2017_2_OR_NEWER
+            #endif // UNITY_EDITOR
+
             FMOD.RESULT result = FMOD.RESULT.OK;
             FMOD.RESULT initResult = FMOD.RESULT.OK;
             Settings fmodSettings = Settings.Instance;
@@ -181,6 +198,8 @@ namespace FMODUnity
             #else
             advancedSettings.maxFADPCMCodecs = realChannels;
             #endif
+
+            SetThreadAffinity();
 
             #if UNITY_EDITOR || ((UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX) && DEVELOPMENT_BUILD)
             result = FMOD.Debug.Initialize(FMOD.DEBUG_FLAGS.LOG, FMOD.DEBUG_MODE.FILE, null, RuntimeUtils.LogFileName);
@@ -467,6 +486,10 @@ retry:
         {
             if (studioSystem.isValid())
             {
+                if (loadAllSampleData)
+                {
+                    UnloadAllBankSampleData();
+                }
                 studioSystem.release();
                 studioSystem.clearHandle();
             }
@@ -474,6 +497,55 @@ retry:
             instance = null;
             isQuitting = true;
         }
+
+#if UNITY_EDITOR
+        public static void Destroy()
+        {
+            if (instance)
+            {
+                if (instance.studioSystem.isValid())
+                {
+                    if (instance.loadAllSampleData)
+                    {
+                        instance.UnloadAllBankSampleData();
+                    }
+                    instance.studioSystem.release();
+                    instance.studioSystem.clearHandle();
+                }
+                DestroyImmediate(instance.gameObject);
+            }
+
+            initException = null;
+            instance = null;
+        }
+
+        #if UNITY_2017_2_OR_NEWER
+        void HandlePlayModeStateChange(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.ExitingEditMode)
+            {
+                Destroy();
+            }
+            else if (state == PlayModeStateChange.EnteredEditMode)
+            {
+                isQuitting = false;
+            }
+        }
+        #elif UNITY_2017_1_OR_NEWER
+        void HandleOnPlayModeChanged()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode &&
+                !EditorApplication.isPlaying)
+            {
+                Destroy();
+            }
+            else if (!EditorApplication.isPlaying)
+            {
+                isQuitting = false;
+            }
+        }
+        #endif // UNITY_2017_2_OR_NEWER
+#endif
 
         void OnApplicationPause(bool pauseStatus)
         {
@@ -642,15 +714,23 @@ retry:
                 // Always load strings bank
                 try
                 {
-                    LoadBank(fmodSettings.MasterBank + ".strings", fmodSettings.AutomaticSampleLoading);
+                    LoadBank(fmodSettings.MasterBank + ".strings");
 
                     if (fmodSettings.AutomaticEventLoading)
                     {
-                        LoadBank(fmodSettings.MasterBank, fmodSettings.AutomaticSampleLoading);
+                        LoadBank(fmodSettings.MasterBank);
 
                         foreach (var bank in fmodSettings.Banks)
                         {
-                            LoadBank(bank, fmodSettings.AutomaticSampleLoading);
+                            LoadBank(bank);
+                        }
+                    }
+
+                    if (fmodSettings.AutomaticSampleLoading)
+                    {
+                        foreach (var keyPair in Instance.loadedBanks)
+                        {
+                            keyPair.Value.Bank.loadSampleData();
                         }
 
                         WaitForAllLoads();
@@ -659,6 +739,48 @@ retry:
                 catch (BankLoadException e)
                 {
                     UnityEngine.Debug.LogException(e);
+                }
+            }
+            loadAllSampleData = fmodSettings.AutomaticSampleLoading;
+        }
+
+        private void UnloadAllBankSampleData()
+        {
+            int bankCount;
+            Instance.studioSystem.getBankCount(out bankCount);
+            if (bankCount > 0)
+            {
+                FMOD.Studio.Bank[] bankArray = new FMOD.Studio.Bank[bankCount];
+                Instance.studioSystem.getBankList(out bankArray);
+                for (int i = 0; i < bankCount; i++)
+                {
+                    int eventCount;
+                    bankArray[i].getEventCount(out eventCount);
+                    if (eventCount > 0)
+                    {
+                        FMOD.Studio.EventDescription[] eventArray = new FMOD.Studio.EventDescription[eventCount];
+                        bankArray[i].getEventList(out eventArray);
+                        for (int j = 0; j < eventCount; j++)
+                        {
+                            int instanceCount;
+                            eventArray[j].getInstanceCount(out instanceCount);
+                            if (instanceCount > 0)
+                            {
+                                FMOD.Studio.EventInstance[] instanceArray = new FMOD.Studio.EventInstance[instanceCount];
+                                eventArray[j].getInstanceList(out instanceArray);
+                                for (int k = 0; k < instanceCount; k++)
+                                {
+                                    instanceArray[k].stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+                                    instanceArray[k].release();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (int i = 0; i < bankCount; i++)
+                {
+                    bankArray[i].unloadSampleData();
                 }
             }
         }
@@ -893,6 +1015,14 @@ retry:
             }
         }
 
+#if UNITY_EDITOR
+        /* Only relavant to protect the Play-In-Editor to Editor transition. */
+        public static bool IsQuitting()
+        {
+            return isQuitting;
+        }
+#endif
+
         public static bool HasBanksLoaded
         {
             get
@@ -931,6 +1061,43 @@ retry:
                 CheckInitResult(result, String.Format("Loading plugin '{0}' from '{1}'", pluginName, pluginPath));
                 loadedPlugins.Add(pluginName, handle);
             }
+            #endif
+        }
+
+        private void SetThreadAffinity()
+        {
+            #if UNITY_PS4 && !UNITY_EDITOR
+            FMOD.PS4.THREADAFFINITY affinity = new FMOD.PS4.THREADAFFINITY
+            {
+                mixer = FMOD.PS4.THREAD.CORE0,
+                studioUpdate = FMOD.PS4.THREAD.CORE0,
+                studioLoadBank = FMOD.PS4.THREAD.CORE0,
+                studioLoadSample = FMOD.PS4.THREAD.CORE0
+            };
+            FMOD.RESULT result = FMOD.PS4.setThreadAffinity(ref affinity);
+            CheckInitResult(result, "FMOD.PS4.setThreadAffinity");
+
+            #elif UNITY_XBOXONE && !UNITY_EDITOR
+            FMOD.XboxOne.THREADAFFINITY affinity = new FMOD.XboxOne.THREADAFFINITY
+            {
+                mixer = FMOD.XboxOne.THREAD.CORE0,
+                studioUpdate = FMOD.XboxOne.THREAD.CORE0,
+                studioLoadBank = FMOD.XboxOne.THREAD.CORE0,
+                studioLoadSample = FMOD.XboxOne.THREAD.CORE0
+            };
+            FMOD.RESULT result = FMOD.XboxOne.setThreadAffinity(ref affinity);
+            CheckInitResult(result, "FMOD.XboxOne.setThreadAffinity");
+
+            #elif UNITY_SWITCH && !UNITY_EDITOR
+            FMOD.Switch.THREADAFFINITY affinity = new FMOD.Switch.THREADAFFINITY
+            {
+                mixer = FMOD.Switch.THREAD.CORE0,
+                studioUpdate = FMOD.Switch.THREAD.CORE0,
+                studioLoadBank = FMOD.Switch.THREAD.CORE0,
+                studioLoadSample = FMOD.Switch.THREAD.CORE0
+            };
+            FMOD.RESULT result = FMOD.Switch.setThreadAffinity(ref affinity);
+            CheckInitResult(result, "FMOD.Switch.setThreadAffinity");
             #endif
         }
 

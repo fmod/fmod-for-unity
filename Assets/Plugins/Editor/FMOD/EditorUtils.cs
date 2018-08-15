@@ -9,7 +9,6 @@ using System.Net.Sockets;
 
 namespace FMODUnity
 {
-
     public enum PreviewState
     {
         Stopped,
@@ -175,6 +174,7 @@ namespace FMODUnity
         {
             EditorApplication.update += Update;
             #if UNITY_2017_2_OR_NEWER
+            EditorApplication.playModeStateChanged += HandleOnPlayModeChanged;
             EditorApplication.pauseStateChanged += HandleOnPausedModeChanged;
             #else
             EditorApplication.playmodeStateChanged += HandleOnPlayModeChanged;
@@ -190,11 +190,27 @@ namespace FMODUnity
                 RuntimeManager.StudioSystem.update();
             }
         }
-        #endif
 
-        #if !UNITY_2017_2_OR_NEWER
+        static void HandleOnPlayModeChanged(PlayModeStateChange state)
+        {
+            // Entering Play Mode will cause scripts to reload, losing all state
+            // This is the last chance to clean up FMOD and avoid a leak.
+            if (state == PlayModeStateChange.ExitingEditMode)
+            {
+                DestroySystem();
+            }
+        }
+        #else
         static void HandleOnPlayModeChanged()
         {
+            // Entering Play Mode will cause scripts to reload, losing all state
+            // This is the last chance to clean up FMOD and avoid a leak.
+            if (EditorApplication.isPlayingOrWillChangePlaymode &&
+                !EditorApplication.isPaused)
+            {
+                DestroySystem();
+            }
+            
             if (RuntimeManager.IsInitialized && RuntimeManager.HasBanksLoaded)
             {
                 if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -208,10 +224,12 @@ namespace FMODUnity
 
         static void Update()
         {
-            // Ensure we don't leak system handles in the DLL
+            // Compilation will cause scripts to reload, losing all state
+            // This is the last chance to clean up FMOD and avoid a leak.
             if (EditorApplication.isCompiling)
             {
                 DestroySystem();
+                RuntimeManager.Destroy();
             }
 
             // Update the editor system

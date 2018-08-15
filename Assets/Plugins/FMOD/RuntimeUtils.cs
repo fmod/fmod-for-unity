@@ -428,7 +428,7 @@ namespace FMODUnity
                     return FMODPlatform.Windows;
                 case BuildTarget.XboxOne:
                     return FMODPlatform.XboxOne;
-                #if UNITY_5_2 || UNITY_5_3_OR_NEWER
+                #if (UNITY_5_2 || UNITY_5_3_OR_NEWER) && !UNITY_2018_1_OR_NEWER
                 case BuildTarget.WiiU:
                     return FMODPlatform.WiiU;
                 #endif

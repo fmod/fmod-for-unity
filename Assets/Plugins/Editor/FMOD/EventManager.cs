@@ -527,8 +527,6 @@ namespace FMODUnity
                     Settings.Instance.Banks.Add(bankRef.Name);
                 }
             }
-            EditorUtility.SetDirty(Settings.Instance);
-            EditorUtility.SetDirty(eventCache);
 
             CopyToStreamingAssets();
 
