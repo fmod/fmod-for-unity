@@ -547,6 +547,32 @@ retry:
         #endif // UNITY_2017_2_OR_NEWER
 #endif
 
+#if UNITY_IOS
+        /* iOS alarm interruptions do not trigger OnApplicationPause
+         * Sending the app to the background does trigger OnApplicationFocus
+         * We don't want to use this on Android as other things (like the keyboard)
+         * can steal focus.
+         * https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnApplicationFocus.html */
+
+        void OnApplicationFocus(bool focus)
+        {
+            if (studioSystem.isValid())
+            {
+                // Strings bank is always loaded
+                if (loadedBanks.Count > 1)
+                    PauseAllEvents(focus);
+
+                if (focus)
+                {
+                    lowlevelSystem.mixerResume();
+                }
+                else
+                {
+                    lowlevelSystem.mixerSuspend();
+                }
+            }
+        }
+#else
         void OnApplicationPause(bool pauseStatus)
         {
             if (studioSystem.isValid())
@@ -565,6 +591,7 @@ retry:
                 }
             }
         }
+#endif
 
         private void loadedBankRegister(LoadedBank loadedBank, string bankPath, string bankName, bool loadSamples, FMOD.RESULT loadResult)
         {
