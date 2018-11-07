@@ -65,6 +65,23 @@ namespace FMODUnity
                 if (instance.isValid())
                 {
                     RuntimeManager.DetachInstanceFromGameObject(instance);
+					
+					//making sure the event is released when the object is destroyed
+                    if (eventDescription.isValid())
+                    {
+
+                        bool isOneshot = false;
+                        if (!Event.StartsWith("snapshot", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            eventDescription.isOneshot(out isOneshot);
+                        }
+
+                        if (isOneshot)
+                        {
+                            instance.release();
+                            instance.clearHandle();
+                        }
+                    }
                 }
 
                 if (Preload)
@@ -245,6 +262,14 @@ namespace FMODUnity
             if (instance.isValid())
             {
                 instance.setParameterValue(name, value);
+            }
+        }
+		
+		public void SetParameter(int index, float value)
+        {
+            if (instance.isValid())
+            {
+                instance.setParameterValueByIndex(index, value);
             }
         }
         
