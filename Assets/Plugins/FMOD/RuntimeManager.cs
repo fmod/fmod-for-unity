@@ -295,6 +295,28 @@ retry:
         bool listenerWarningIssued = false;
         void Update()
         {
+			#if UNITY_EDITOR
+            _isOverlayEnabled = Settings.Instance.IsOverlayEnabled(fmodPlatform);
+			#endif
+            if (studioSystem.isValid() && _isOverlayEnabled)
+            {
+                if(_overlayDrawer == null)
+                {
+                    GameObject overlayDrawer = new GameObject("FMODRunTimeManagerOverlayDrawer");
+                    _overlayDrawer = overlayDrawer.AddComponent<FMODRuntimeManagerOnGUIHelper>();
+                    _overlayDrawer.transform.SetParent(transform);
+                    _overlayDrawer.TargetRuntimeManager = this;
+                }
+                else
+                {
+                    _overlayDrawer.gameObject.SetActive(true);
+                }
+            }
+            else
+            {
+                if (_overlayDrawer != null && _overlayDrawer.gameObject.activeSelf) _overlayDrawer.gameObject.SetActive(false);
+            }
+			
             if (studioSystem.isValid())
             {
                 studioSystem.update();
@@ -411,11 +433,23 @@ retry:
                 }
             }
         }
+		
+		FMODRuntimeManagerOnGUIHelper _overlayDrawer = null;
+		protected bool _isOverlayEnabled = false;
+ 
+	 #if !UNITY_EDITOR
+			private void Start()
+			{
+				//Only set the bool once to avoid gc overhead each frame
+				_isOverlayEnabled = Settings.Instance.IsOverlayEnabled(fmodPlatform);
+			}
+	#endif
 
-        Rect windowRect = new Rect(10, 10, 300, 100);
-        void OnGUI()
+		Rect windowRect = new Rect(10, 10, 300, 100);
+		//this method is called from an external object to avoid the continious overhead of calling an OnGUI that does nothing, the object is enabled only when needed
+		public void ExecuteOnGUI()
         {
-            if (studioSystem.isValid() && Settings.Instance.IsOverlayEnabled(fmodPlatform))
+            if (studioSystem.isValid() && _isOverlayEnabled)
             {
                 windowRect = GUI.Window(0, windowRect, DrawDebugOverlay, "FMOD Studio Debug");
             }
