@@ -384,7 +384,6 @@ retry:
             attachedInstance.transform = transform;
             attachedInstance.instance = instance;
             attachedInstance.rigidBody = rigidBody;
-            instance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform, rigidBody));
             Instance.attachedInstances.Add(attachedInstance);
         }
 
@@ -395,7 +394,6 @@ retry:
             attachedInstance.instance = instance;
             attachedInstance.rigidBody2D = rigidBody2D;
             attachedInstance.rigidBody = null;
-            instance.set3DAttributes(FMODUnity.RuntimeUtils.To3DAttributes(transform, rigidBody2D));
             Instance.attachedInstances.Add(attachedInstance);
         }
 
