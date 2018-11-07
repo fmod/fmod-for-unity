@@ -28,6 +28,8 @@ namespace FMODUnity
 
         private bool hasTriggered = false;
         private bool isQuitting = false;
+		
+		private const string cString_snapshot = "snapshot";
 
         void Start() 
         {
@@ -71,7 +73,7 @@ namespace FMODUnity
                     {
 
                         bool isOneshot = false;
-                        if (!Event.StartsWith("snapshot", StringComparison.CurrentCultureIgnoreCase))
+                        if (!Event.StartsWith(cString_snapshot, StringComparison.CurrentCultureIgnoreCase))
                         {
                             eventDescription.isOneshot(out isOneshot);
                         }
@@ -188,7 +190,7 @@ namespace FMODUnity
             }
 
             bool isOneshot = false;
-            if (!Event.StartsWith("snapshot", StringComparison.CurrentCultureIgnoreCase))
+            if (!Event.StartsWith(cString_snapshot, StringComparison.CurrentCultureIgnoreCase))
             {
                 eventDescription.isOneshot(out isOneshot);
             }
