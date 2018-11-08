@@ -525,6 +525,14 @@ namespace FMODUnity
             EditorGUI.EndDisabledGroup();
             EditorGUI.BeginDisabledGroup(settings.ImportType == ImportType.AssetBundle);
 
+            // ----- Logging -----------------
+            EditorGUILayout.Separator();
+            EditorGUILayout.LabelField("<b>Logging</b>", style);
+            EditorGUI.indentLevel++;
+            settings.LoggingLevel = (FMOD.DEBUG_FLAGS)EditorGUILayout.EnumPopup("Logging Level", settings.LoggingLevel);
+            EditorGUI.indentLevel--;
+            EditorGUI.EndDisabledGroup();
+
             // ----- Loading -----------------
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("<b>Loading</b>", style);
