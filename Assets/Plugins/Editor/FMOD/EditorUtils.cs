@@ -174,6 +174,7 @@ namespace FMODUnity
         {
             EditorApplication.update += Update;
             #if UNITY_2017_2_OR_NEWER
+            AssemblyReloadEvents.beforeAssemblyReload += HandleBeforeAssemblyReload;
             EditorApplication.playModeStateChanged += HandleOnPlayModeChanged;
             EditorApplication.pauseStateChanged += HandleOnPausedModeChanged;
             #else
@@ -182,6 +183,13 @@ namespace FMODUnity
         }
 
         #if UNITY_2017_2_OR_NEWER
+        static void HandleBeforeAssemblyReload()
+        {
+            // Reloading assemblies causes losing of all state
+            // This is the last chance to clean up FMOD and avoid a leak.
+            DestroySystem();
+        }
+        
         static void HandleOnPausedModeChanged(PauseState state)
         {
             if (RuntimeManager.IsInitialized && RuntimeManager.HasBanksLoaded)
@@ -224,6 +232,7 @@ namespace FMODUnity
 
         static void Update()
         {
+            #if !UNITY_2017_2_OR_NEWER
             // Compilation will cause scripts to reload, losing all state
             // This is the last chance to clean up FMOD and avoid a leak.
             if (EditorApplication.isCompiling)
@@ -231,6 +240,7 @@ namespace FMODUnity
                 DestroySystem();
                 RuntimeManager.Destroy();
             }
+            #endif
 
             // Update the editor system
             if (system.isValid())
