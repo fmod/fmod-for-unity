@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEditor.Callbacks;
+using UnityEditor.Build.Reporting;
 #if UNITY_2017_1_OR_NEWER
 using UnityEditor.Build;
 #endif
@@ -532,6 +533,10 @@ namespace FMODUnity
                         sourceInfo.Length != targetInfo.Length ||
                         sourceInfo.LastWriteTime != targetInfo.LastWriteTime)
                     {
+                        if (targetInfo.Exists)
+                        {
+                            targetInfo.IsReadOnly = false;
+                        }
                         File.Copy(sourcePath, targetPath, true);
                         targetInfo = new FileInfo(targetPath);
                         targetInfo.IsReadOnly = false;
@@ -561,27 +566,29 @@ namespace FMODUnity
 
             // Copy over assets for the new platform
             CopyToStreamingAssets();
-        }   
+        }
 
         static void OnCacheChange()
         {
-            Settings.Instance.MasterBanks.Clear();
+            var settings = Settings.Instance;
+            settings.MasterBanks.Clear();
 
             foreach (EditorBankRef bankRef in eventCache.MasterBanks)
             {
-                Settings.Instance.MasterBanks.Add(bankRef.Name);
+                settings.MasterBanks.Add(bankRef.Name);
             }
 
-            Settings.Instance.Banks.Clear();
+            settings.Banks.Clear();
 
             foreach (var bankRef in eventCache.EditorBanks)
             {
                 if (!eventCache.MasterBanks.Contains(bankRef) &&
                     !eventCache.StringsBanks.Contains(bankRef))
                 {
-                    Settings.Instance.Banks.Add(bankRef.Name);
+                    settings.Banks.Add(bankRef.Name);
                 }
             }
+            EditorUtility.SetDirty(settings);
 
             CopyToStreamingAssets();
 
@@ -676,6 +683,25 @@ namespace FMODUnity
         {
             public int callbackOrder{ get { return 0; } }
             public void OnActiveBuildTargetChanged(BuildTarget previousTarget, BuildTarget newTarget)
+            {
+                BuildTargetChanged();
+            }
+        }
+        #endif
+        #if UNITY_2018_1_OR_NEWER
+        public class PreprocessBuild : IPreprocessBuildWithReport
+        {
+            public int callbackOrder { get { return 0; } }
+            public void OnPreprocessBuild(BuildReport report)
+            {
+                BuildTargetChanged();
+            }
+        }
+        #else
+        public class PreprocessBuild : IPreprocessBuild
+        {
+            public int callbackOrder { get { return 0; } }
+            public void OnPreprocessBuild(BuildTarget target, string path)
             {
                 BuildTargetChanged();
             }
