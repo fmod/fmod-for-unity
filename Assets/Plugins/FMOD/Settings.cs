@@ -216,7 +216,7 @@ namespace FMODUnity
         public List<string> Plugins = new List<string>();
 
         [SerializeField]
-        public string MasterBank;
+        public List<string> MasterBanks;
 
         [SerializeField]
         public List<string> Banks;
@@ -367,6 +367,7 @@ namespace FMODUnity
 
         private Settings()
         {
+            MasterBanks = new List<string>();
             Banks = new List<string>();
             RealChannelSettings = new List<PlatformIntSetting>();
             VirtualChannelSettings = new List<PlatformIntSetting>();

@@ -13,6 +13,8 @@ public class FMODEventPlayable : PlayableAsset, ITimelineClipAsset
     public GameObject TrackTargetObject { get; set; }
     public float eventLength; //In seconds.
 
+    FMODEventPlayableBehavior behavior;
+
     [FMODUnity.EventRef]
     [SerializeField] public string eventName;
     [SerializeField] public STOP_MODE stopType;
@@ -44,7 +46,7 @@ public class FMODEventPlayable : PlayableAsset, ITimelineClipAsset
     public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)
     {
         var playable = ScriptPlayable<FMODEventPlayableBehavior>.Create(graph, template);
-        FMODEventPlayableBehavior behavior = playable.GetBehaviour();
+        behavior = playable.GetBehaviour();
 
         behavior.TrackTargetObject = TrackTargetObject;
         behavior.eventName = eventName;
@@ -67,6 +69,10 @@ public class FMODEventPlayable : PlayableAsset, ITimelineClipAsset
         {
             int index = eventName.LastIndexOf("/");
             OwningClip.displayName = eventName.Substring(index + 1);
+        }
+        if (behavior != null && !string.IsNullOrEmpty(behavior.eventName))
+        {
+            behavior.eventName = eventName;
         }
     }
 #endif //UNITY_EDITOR
@@ -168,6 +174,11 @@ public class FMODEventPlayableBehavior : PlayableBehaviour
     public override void OnGraphStop(Playable playable)
     {
         isPlayheadInside = false;
+        if (eventInstance.isValid())
+        {
+            eventInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+            eventInstance.release();
+        }
     }
 }
 

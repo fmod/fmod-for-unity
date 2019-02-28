@@ -45,7 +45,7 @@ public class FMODEventMixerBehaviour : PlayableBehaviour
          * Check IsQuitting to avoid accessing the RuntimeManager during the Play-In-Editor to Editor transition.
          */
         bool playing = playable.GetGraph().IsPlaying();
-        if (!playing || FMODUnity.RuntimeManager.IsQuitting())
+        if (!playing)
         {
             return;
         }
