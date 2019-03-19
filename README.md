@@ -9,6 +9,6 @@ Integration source or submit modifications.
 The FMOD libraries can be found in the .unitypackage file downloadable at http://www.fmod.com/download
 
 For more information about the FMOD integration, online documentation is available at
-http://www.fmod.org/documentation/#content/generated/engine_new_unity/overview.html
+https://fmod.com/resources/documentation-unity?version=2.0&page=welcome.html
 
 Support is available at http://www.fmod.org/support/
