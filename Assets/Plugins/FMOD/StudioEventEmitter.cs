@@ -20,10 +20,10 @@ namespace FMODUnity
         public float OverrideMinDistance = -1.0f;
         public float OverrideMaxDistance = -1.0f;
 
-        private FMOD.Studio.EventDescription eventDescription;
+        protected FMOD.Studio.EventDescription eventDescription;
         public  FMOD.Studio.EventDescription EventDescription { get { return eventDescription; } }
 
-        private FMOD.Studio.EventInstance instance;
+        protected FMOD.Studio.EventInstance instance;
         public  FMOD.Studio.EventInstance EventInstance { get { return instance; } }
 
         private bool hasTriggered = false;

@@ -1,6 +1,6 @@
 /*$ preserve start $*/
 /* ========================================================================================== */
-/* FMOD Studio - DSP header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2017.  */
+/* FMOD Studio - DSP header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2019.  */
 /*                                                                                            */
 /* Use this header if you are interested in delving deeper into the FMOD software mixing /    */
 /* DSP engine.  In this header you can find parameter structures for FMOD system registered   */
@@ -989,7 +989,8 @@ namespace FMOD
     */
     public enum DSP_FADER : int
     {
-        GAIN    /* (Type:float) - Signal gain in dB. -80.0 to 10.0. Default = 0.0. */
+        GAIN,           /* (Type:float) - Signal gain in dB. -80.0 to 10.0. Default = 0.0. */
+        OVERALL_GAIN,   /* (Type:data)  - Overall gain. For information only, not set by user. Data of type FMOD_DSP_PARAMETER_DATA_TYPE_OVERALLGAIN to provide to FMOD, to allow FMOD to know the DSP is scaling the signal for virtualization purposes. */
     }
 
 
