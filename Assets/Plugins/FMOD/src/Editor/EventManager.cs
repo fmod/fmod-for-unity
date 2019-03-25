@@ -495,7 +495,10 @@ namespace FMODUnity
                 ? "bank"
                 : "bytes";
 
-            string bankSourceFolder = EditorUtils.GetBankDirectory() + Path.DirectorySeparatorChar + Settings.Instance.GetBankPlatform(platform);
+            string bankSourceFolder =
+                Settings.Instance.HasSourceProject
+                ? EditorUtils.GetBankDirectory() + Path.DirectorySeparatorChar + Settings.Instance.GetBankPlatform(platform)
+                : EditorUtils.GetBankDirectory();
 
             if (Path.GetFullPath(bankTargetFolder).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).ToUpperInvariant() ==
                 Path.GetFullPath(bankSourceFolder).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).ToUpperInvariant())
