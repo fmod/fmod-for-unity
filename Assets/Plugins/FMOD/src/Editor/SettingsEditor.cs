@@ -415,6 +415,7 @@ namespace FMODUnity
                 if (EditorGUI.EndChangeCheck())
                 {
                     settings.SourceProjectPath = settings.SourceProjectPathUnformatted;
+                    settings.SourceProjectPathUnformatted = MakePathRelativeToProject(settings.SourceProjectPathUnformatted);
                 }
 
                 if (GUILayout.Button("Browse", GUILayout.ExpandWidth(false)))
@@ -423,9 +424,8 @@ namespace FMODUnity
                     string path = EditorUtility.OpenFilePanel("Locate Studio Project", oldPath, "fspro");
                     if (!string.IsNullOrEmpty(path))
                     {
-                        path = MakePathRelativeToProject(path);
-                        settings.SourceProjectPathUnformatted = path;
                         settings.SourceProjectPath = path;
+                        settings.SourceProjectPathUnformatted = MakePathRelativeToProject(path);
                         Repaint();
                     }
                 }
@@ -456,6 +456,7 @@ namespace FMODUnity
                 if (EditorGUI.EndChangeCheck())
                 {
                     settings.SourceBankPath = settings.SourceBankPathUnformatted;
+                    settings.SourceBankPathUnformatted = MakePathRelativeToProject(settings.SourceBankPathUnformatted);
                 }
 
                 if (GUILayout.Button("Browse", GUILayout.ExpandWidth(false)))
@@ -464,9 +465,9 @@ namespace FMODUnity
                     var path = EditorUtility.OpenFolderPanel("Locate Build Folder", oldPath, null);
                     if (!string.IsNullOrEmpty(path))
                     {
-                        path = MakePathRelativeToProject(path);
-                        settings.SourceBankPathUnformatted = path;
                         settings.SourceBankPath = path;
+                        settings.SourceBankPathUnformatted = MakePathRelativeToProject(path);
+                        Repaint();
                     }
                 }
                 EditorGUILayout.EndHorizontal();
@@ -627,6 +628,7 @@ namespace FMODUnity
                             {
                                 string path = Path.GetFullPath(banksFound[i]);
                                 string bankShortName = Path.GetFullPath(path).Replace(EditorUtils.GetBankDirectory() + Path.DirectorySeparatorChar + settings.GetBankPlatform(platform) + Path.DirectorySeparatorChar, "");
+
                                 if (!settings.BanksToLoad.Contains(bankShortName))
                                 {
                                     settings.BanksToLoad.Add(bankShortName);

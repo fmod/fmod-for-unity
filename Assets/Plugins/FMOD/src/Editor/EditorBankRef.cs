@@ -20,7 +20,14 @@ namespace FMODUnity
 
         [SerializeField]
         public string Path;
+
+        [SerializeField]
+        public string SubDir;
         public string Name
+        {
+            get { return SubDir + global::System.IO.Path.DirectorySeparatorChar + global::System.IO.Path.GetFileNameWithoutExtension(Path); }
+        }
+        public string FileName
         {
             get { return global::System.IO.Path.GetFileNameWithoutExtension(Path); }
         }
