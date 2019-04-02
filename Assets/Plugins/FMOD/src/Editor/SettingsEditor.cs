@@ -455,7 +455,7 @@ namespace FMODUnity
                 settings.SourceBankPathUnformatted = EditorGUILayout.TextField(GUIContent.none, settings.SourceBankPathUnformatted);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    settings.SourceBankPath = settings.SourceBankPathUnformatted;
+                    settings.SourceBankPath = Path.GetFullPath(settings.SourceBankPathUnformatted);
                     settings.SourceBankPathUnformatted = MakePathRelativeToProject(settings.SourceBankPathUnformatted);
                 }
 
@@ -486,7 +486,7 @@ namespace FMODUnity
                     (sourceType >= 1 && !settings.SourceBankPathUnformatted.Equals(settings.SourceBankPath)))
             {
                 EditorGUI.BeginDisabledGroup(true);
-                EditorGUILayout.TextField("Platform specific path", sourceType >= 1 ? settings.SourceBankPath : settings.SourceProjectPath);
+                EditorGUILayout.TextField("Local path", sourceType >= 1 ? settings.SourceBankPath : settings.SourceProjectPath);
                 EditorGUI.EndDisabledGroup();
             }
 
@@ -626,8 +626,8 @@ namespace FMODUnity
                             var banksFound = new List<string>(Directory.GetFiles(EditorUtils.GetBankDirectory(), "*.bank", SearchOption.AllDirectories));
                             for (int i = 0; i < banksFound.Count; i++)
                             {
-                                string path = Path.GetFullPath(banksFound[i]);
-                                string bankShortName = Path.GetFullPath(path).Replace(EditorUtils.GetBankDirectory() + Path.DirectorySeparatorChar + settings.GetBankPlatform(platform) + Path.DirectorySeparatorChar, "");
+                                string sourceDir = EditorUtils.GetBankDirectory() + Path.DirectorySeparatorChar + (settings.HasSourceProject ? settings.GetBankPlatform(platform) + Path.DirectorySeparatorChar : "");
+                                string bankShortName = Path.GetFullPath(banksFound[i]).Replace(sourceDir, "");
 
                                 if (!settings.BanksToLoad.Contains(bankShortName))
                                 {

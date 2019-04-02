@@ -34,11 +34,11 @@ namespace FMODUnity
             {
                 string projectPath = Settings.Instance.SourceProjectPath;
                 string projectFolder = Path.GetDirectoryName(projectPath);
-                return Path.Combine(projectFolder, BuildFolder);            
+                return Path.Combine(projectFolder, BuildFolder);
             }
             else if (!String.IsNullOrEmpty(Settings.Instance.SourceBankPath))
             {
-                return Settings.Instance.SourceBankPath;
+                return Path.GetFullPath(Settings.Instance.SourceBankPath);
             }
             return null;
         }
