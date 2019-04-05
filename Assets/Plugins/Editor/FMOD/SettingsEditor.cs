@@ -667,7 +667,7 @@ namespace FMODUnity
 
             // ----- Windows ----------------------------------------------
             DisplayPlatform(FMODPlatform.Desktop, null);
-            DisplayPlatform(FMODPlatform.Mobile, new FMODPlatform[] { FMODPlatform.MobileHigh, FMODPlatform.MobileLow, FMODPlatform.PSVita, FMODPlatform.AppleTV });
+            DisplayPlatform(FMODPlatform.Mobile, new FMODPlatform[] { FMODPlatform.Android, FMODPlatform.iOS, FMODPlatform.PSVita, FMODPlatform.AppleTV });
             DisplayPlatform(FMODPlatform.Console, new FMODPlatform[] { FMODPlatform.XboxOne, FMODPlatform.PS4, FMODPlatform.WiiU });
 
             if (EditorGUI.EndChangeCheck())
