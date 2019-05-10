@@ -94,7 +94,11 @@ namespace FMODUnity
         CollisionEnter2D,
         CollisionExit2D,
         ObjectEnable,
-        ObjectDisable
+        ObjectDisable,
+        MouseEnter,
+        MouseExit,
+        MouseDown,
+        MouseUp,
     }
 
     public enum LoaderGameEvent : int
@@ -352,14 +356,17 @@ namespace FMODUnity
                 string pluginFileName = pluginName + ".bc";
             #endif
 
+            string fmodLibPath = "/Plugins/FMOD/lib";
             #if UNITY_EDITOR_WIN && UNITY_EDITOR_64
-                string pluginFolder = Application.dataPath + "/Plugins/X86_64/";
+                string pluginFolder = Application.dataPath + fmodLibPath +"/win/X86_64/";
             #elif UNITY_EDITOR_WIN
-                string pluginFolder = Application.dataPath + "/Plugins/X86/";
-            #elif UNITY_STANDALONE_WIN || UNITY_PS4 || UNITY_XBOXONE || UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX || UNITY_WEBGL
+                string pluginFolder = Application.dataPath + fmodLibPath "/win/X86/";
+            #elif UNITY_EDITOR_OSX
+                string pluginFolder = Application.dataPath + fmodLibPath "/mac/";
+            #elif UNITY_STANDALONE_WIN || UNITY_PS4 || UNITY_XBOXONE || UNITY_STANDALONE_OSX || UNITY_WEBGL
                 string pluginFolder = Application.dataPath + "/Plugins/";
             #elif UNITY_STANDALONE_LINUX
-                string pluginFolder = Application.dataPath + ((IntPtr.Size == 8) ? "/Plugins/x86_64/" : "/Plugins/x86/");
+                string pluginFolder = Application.dataPath + fmodLibPath + ((IntPtr.Size == 8) ? "/linux/x86_64/" : "/linux/x86/");
             #elif UNITY_WSA || UNITY_ANDROID
                 string pluginFolder = "";
             #else

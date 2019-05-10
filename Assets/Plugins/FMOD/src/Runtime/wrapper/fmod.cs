@@ -19,7 +19,7 @@ namespace FMOD
     */
     public class VERSION
     {
-        public const int    number = 0x00020000;
+        public const int    number = 0x00020001;
 #if (UNITY_IPHONE || UNITY_TVOS || UNITY_SWITCH || UNITY_WEBGL) && !UNITY_EDITOR
         public const string dll    = "__Internal";
 #elif (UNITY_PS4) && DEVELOPMENT_BUILD
@@ -3645,6 +3645,7 @@ namespace FMOD
             byte[] encodedBuffer = new byte[128];
             char[] decodedBuffer = new char[128];
             bool inUse;
+            GCHandle gcHandle;
 
             public bool InUse()    { return inUse; }
             public void SetInUse() { inUse = true; }
@@ -3681,6 +3682,17 @@ namespace FMOD
                 encodedBuffer[byteCount] = 0; // Apply null terminator
 
                 return encodedBuffer;
+            }
+
+            public IntPtr intptrFromStringUTF8(string s)
+            {
+                if (s == null)
+                {
+                    return IntPtr.Zero;
+                }
+
+                gcHandle = GCHandle.Alloc(byteFromStringUTF8(s), GCHandleType.Pinned);
+                return gcHandle.AddrOfPinnedObject();
             }
 
             public string stringFromNative(IntPtr nativePtr)
@@ -3725,6 +3737,10 @@ namespace FMOD
 
             public void Dispose()
             {
+                if (gcHandle.IsAllocated)
+                {
+                    gcHandle.Free();
+                }
                 lock (encoders)
                 {
                     inUse = false;

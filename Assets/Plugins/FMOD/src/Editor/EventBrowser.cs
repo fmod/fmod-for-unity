@@ -868,12 +868,11 @@ namespace FMODUnity
 
                 foreach (var editorBank in editorBanks)
                 {
-                    var name = Path.GetFileNameWithoutExtension(editorBank.Path);
-                    TreeItem item = children.Find((x) => x.Name == name);
+                    TreeItem item = children.Find((x) => x.Name == editorBank.Name);
                     if (item == null)
                     {
                         item = new TreeItem();
-                        item.Name = name;
+                        item.Name = editorBank.Name;
                         item.BankRef = editorBank;
                         children.Add(item);
                     }

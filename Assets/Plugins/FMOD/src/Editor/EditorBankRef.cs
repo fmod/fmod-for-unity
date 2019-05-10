@@ -39,7 +39,7 @@ namespace FMODUnity
         [SerializeField]
         public FMOD.RESULT LoadResult;
 
-        [SerializeField]
+        [SerializeField]        
         public List<NameValuePair> FileSizes;
 
         public bool Exists;

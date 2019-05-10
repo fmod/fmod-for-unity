@@ -191,6 +191,7 @@ public class FMODEventPlayableBehavior : PlayableBehaviour
         {
             eventInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
             eventInstance.release();
+            FMODUnity.RuntimeManager.StudioSystem.update();
         }
     }
 }

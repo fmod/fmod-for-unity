@@ -721,13 +721,14 @@ namespace FMOD
 
     public enum DSP_CHANNELMIX_OUTPUT : int
     {
-        DEFAULT,      /*  Output channel count = input channel count.  Mapping: See FMOD_SPEAKER enumeration. */
-        ALLMONO,      /*  Output channel count = 1.  Mapping: Mono, Mono, Mono, Mono, Mono, Mono, ... (each channel all the way up to FMOD_MAX_CHANNEL_WIDTH channels are treated as if they were mono) */
-        ALLSTEREO,    /*  Output channel count = 2.  Mapping: Left, Right, Left, Right, Left, Right, ... (each pair of channels is treated as stereo all the way up to FMOD_MAX_CHANNEL_WIDTH channels) */
-        ALLQUAD,      /*  Output channel count = 4.  Mapping: Repeating pattern of Front Left, Front Right, Surround Left, Surround Right. */
-        ALL5POINT1,   /*  Output channel count = 6.  Mapping: Repeating pattern of Front Left, Front Right, Center, LFE, Surround Left, Surround Right. */
-        ALL7POINT1,   /*  Output channel count = 8.  Mapping: Repeating pattern of Front Left, Front Right, Center, LFE, Surround Left, Surround Right, Back Left, Back Right.  */
-        ALLLFE        /*  Output channel count = 6.  Mapping: Repeating pattern of LFE in a 5.1 output signal.  */
+        DEFAULT,            /*  Output channel count = input channel count.  Mapping: See FMOD_SPEAKER enumeration. */
+        ALLMONO,            /*  Output channel count = 1.  Mapping: Mono, Mono, Mono, Mono, Mono, Mono, ... (each channel all the way up to FMOD_MAX_CHANNEL_WIDTH channels are treated as if they were mono) */
+        ALLSTEREO,          /*  Output channel count = 2.  Mapping: Left, Right, Left, Right, Left, Right, ... (each pair of channels is treated as stereo all the way up to FMOD_MAX_CHANNEL_WIDTH channels) */
+        ALLQUAD,            /*  Output channel count = 4.  Mapping: Repeating pattern of Front Left, Front Right, Surround Left, Surround Right. */
+        ALL5POINT1,         /*  Output channel count = 6.  Mapping: Repeating pattern of Front Left, Front Right, Center, LFE, Surround Left, Surround Right. */
+        ALL7POINT1,         /*  Output channel count = 8.  Mapping: Repeating pattern of Front Left, Front Right, Center, LFE, Surround Left, Surround Right, Back Left, Back Right.  */
+        ALLLFE,             /*  Output channel count = 6.  Mapping: Repeating pattern of LFE in a 5.1 output signal.  */
+        ALL7POINT1POINT4    /*  Output channel count = 12. Mapping: Repeating pattern of Front Left, Front Right, Center, LFE, Surround Left, Surround Right, Back Left, Back Right, Top Front Left, Top Front Right, Top Back Left, Top Back Right.  */
     }
 
     public enum DSP_CHANNELMIX : int
@@ -764,7 +765,39 @@ namespace FMOD
         GAIN_CH28,          /* (Type:float) - Channel #28 gain in dB.  -80.0 to 10.0.  Default = 0. */
         GAIN_CH29,          /* (Type:float) - Channel #29 gain in dB.  -80.0 to 10.0.  Default = 0. */
         GAIN_CH30,          /* (Type:float) - Channel #30 gain in dB.  -80.0 to 10.0.  Default = 0. */
-        GAIN_CH31           /* (Type:float) - Channel #31 gain in dB.  -80.0 to 10.0.  Default = 0. */
+        GAIN_CH31,          /* (Type:float) - Channel #31 gain in dB.  -80.0 to 10.0.  Default = 0. */
+        OUTPUT_CH0,         /* (Type:int)   - Input channel #0  Output channel.   0 to 31.  Default = 0. */
+        OUTPUT_CH1,         /* (Type:int)   - Input channel #1  Output channel.   0 to 31.  Default = 1. */
+        OUTPUT_CH2,         /* (Type:int)   - Input channel #2  Output channel.   0 to 31.  Default = 2. */
+        OUTPUT_CH3,         /* (Type:int)   - Input channel #3  Output channel.   0 to 31.  Default = 3. */
+        OUTPUT_CH4,         /* (Type:int)   - Input channel #4  Output channel.   0 to 31.  Default = 4. */
+        OUTPUT_CH5,         /* (Type:int)   - Input channel #5  Output channel.   0 to 31.  Default = 5. */
+        OUTPUT_CH6,         /* (Type:int)   - Input channel #6  Output channel.   0 to 31.  Default = 6. */
+        OUTPUT_CH7,         /* (Type:int)   - Input channel #7  Output channel.   0 to 31.  Default = 7. */
+        OUTPUT_CH8,         /* (Type:int)   - Input channel #8  Output channel.   0 to 31.  Default = 8. */
+        OUTPUT_CH9,         /* (Type:int)   - Input channel #9  Output channel.   0 to 31.  Default = 9. */
+        OUTPUT_CH10,        /* (Type:int)   - Input channel #10 Output channel.   0 to 31.  Default = 10. */
+        OUTPUT_CH11,        /* (Type:int)   - Input channel #11 Output channel.   0 to 31.  Default = 11. */
+        OUTPUT_CH12,        /* (Type:int)   - Input channel #12 Output channel.   0 to 31.  Default = 12. */
+        OUTPUT_CH13,        /* (Type:int)   - Input channel #13 Output channel.   0 to 31.  Default = 13. */
+        OUTPUT_CH14,        /* (Type:int)   - Input channel #14 Output channel.   0 to 31.  Default = 14. */
+        OUTPUT_CH15,        /* (Type:int)   - Input channel #15 Output channel.   0 to 31.  Default = 15. */
+        OUTPUT_CH16,        /* (Type:int)   - Input channel #16 Output channel.   0 to 31.  Default = 16. */
+        OUTPUT_CH17,        /* (Type:int)   - Input channel #17 Output channel.   0 to 31.  Default = 17. */
+        OUTPUT_CH18,        /* (Type:int)   - Input channel #18 Output channel.   0 to 31.  Default = 18. */
+        OUTPUT_CH19,        /* (Type:int)   - Input channel #19 Output channel.   0 to 31.  Default = 19. */
+        OUTPUT_CH20,        /* (Type:int)   - Input channel #20 Output channel.   0 to 31.  Default = 20. */
+        OUTPUT_CH21,        /* (Type:int)   - Input channel #21 Output channel.   0 to 31.  Default = 21. */
+        OUTPUT_CH22,        /* (Type:int)   - Input channel #22 Output channel.   0 to 31.  Default = 22. */
+        OUTPUT_CH23,        /* (Type:int)   - Input channel #23 Output channel.   0 to 31.  Default = 23. */
+        OUTPUT_CH24,        /* (Type:int)   - Input channel #24 Output channel.   0 to 31.  Default = 24. */
+        OUTPUT_CH25,        /* (Type:int)   - Input channel #25 Output channel.   0 to 31.  Default = 25. */
+        OUTPUT_CH26,        /* (Type:int)   - Input channel #26 Output channel.   0 to 31.  Default = 26. */
+        OUTPUT_CH27,        /* (Type:int)   - Input channel #27 Output channel.   0 to 31.  Default = 27. */
+        OUTPUT_CH28,        /* (Type:int)   - Input channel #28 Output channel.   0 to 31.  Default = 28. */
+        OUTPUT_CH29,        /* (Type:int)   - Input channel #29 Output channel.   0 to 31.  Default = 29. */
+        OUTPUT_CH30,        /* (Type:int)   - Input channel #30 Output channel.   0 to 31.  Default = 30. */
+        OUTPUT_CH31,        /* (Type:int)   - Input channel #31 Output channel.   0 to 31.  Default = 31. */
     }
 
     public enum DSP_TRANSCEIVER_SPEAKERMODE : int

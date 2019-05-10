@@ -94,7 +94,7 @@ namespace FMODUnity
                 string buildFolder = Path.Combine(projectFolder, BuildFolder);
                 if (!Directory.Exists(buildFolder) ||
                     Directory.GetDirectories(buildFolder).Length == 0 ||
-                    Directory.GetFiles(Directory.GetDirectories(buildFolder)[0], "*.bank").Length == 0
+                    Directory.GetFiles(Directory.GetDirectories(buildFolder)[0], "*.bank", SearchOption.AllDirectories).Length == 0
                     )
                 {
                     valid = false;
@@ -172,9 +172,14 @@ namespace FMODUnity
         static EditorUtils()
         {
             EditorApplication.update += Update;
-
+            AssemblyReloadEvents.beforeAssemblyReload += HandleBeforeAssemblyReload;
             EditorApplication.playModeStateChanged += HandleOnPlayModeChanged;
             EditorApplication.pauseStateChanged += HandleOnPausedModeChanged;
+        }
+
+        static void HandleBeforeAssemblyReload()
+        {
+            DestroySystem();
         }
 
         static void HandleOnPausedModeChanged(PauseState state)
@@ -198,14 +203,6 @@ namespace FMODUnity
 
         static void Update()
         {
-            // Compilation will cause scripts to reload, losing all state
-            // This is the last chance to clean up FMOD and avoid a leak.
-            if (EditorApplication.isCompiling)
-            {
-                DestroySystem();
-                RuntimeManager.Destroy();
-            }
-
             // Update the editor system
             if (system.isValid())
             {

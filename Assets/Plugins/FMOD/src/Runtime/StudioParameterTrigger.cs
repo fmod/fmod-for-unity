@@ -11,11 +11,10 @@ namespace FMODUnity
     }
 
     [AddComponentMenu("FMOD Studio/FMOD Studio Parameter Trigger")]
-    public class StudioParameterTrigger: MonoBehaviour
+    public class StudioParameterTrigger: EventHandler
     {
         public EmitterRef[] Emitters;
         public EmitterGameEvent TriggerEvent;
-        public string CollisionTag;
 
         void Awake()
         {
@@ -30,87 +29,14 @@ namespace FMODUnity
                         for (int j = 0; j < Emitters[i].Params.Length; j++)
                         {
                             FMOD.Studio.PARAMETER_DESCRIPTION param;
-                            eventDesc.getParameterDescriptionByName(emitterRef.Target.Params[j].Name, out param);
+                            eventDesc.getParameterDescriptionByName(emitterRef.Params[j].Name, out param);
                             emitterRef.Params[j].ID = param.id;
                         }
                     }
                 }
             }
         }
-
-        void Start()
-        {
-            HandleGameEvent(EmitterGameEvent.ObjectStart);
-        }
-
-        void OnDestroy()
-        {
-            HandleGameEvent(EmitterGameEvent.ObjectDestroy);
-        }
-
-        void OnEnable()
-        {
-            HandleGameEvent(EmitterGameEvent.ObjectEnable);
-        }
-
-        void OnDisable()
-        {
-            HandleGameEvent(EmitterGameEvent.ObjectDisable);
-        }
-
-        void OnTriggerEnter(Collider other)
-        {
-            if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
-            {
-                HandleGameEvent(EmitterGameEvent.TriggerEnter);
-            }
-        }
-
-        void OnTriggerExit(Collider other)
-        {
-            if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
-            {
-                HandleGameEvent(EmitterGameEvent.TriggerExit);
-            }
-        }
-
-        void OnTriggerEnter2D(Collider2D other)
-        {
-            if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
-            {
-                HandleGameEvent(EmitterGameEvent.TriggerEnter2D);
-            }
-        }
-
-        void OnTriggerExit2D(Collider2D other)
-        {
-            if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
-            {
-                HandleGameEvent(EmitterGameEvent.TriggerExit2D);
-            }
-        }
-
-        void OnCollisionEnter()
-        {
-            HandleGameEvent(EmitterGameEvent.CollisionEnter);
-        }
-
-        void OnCollisionExit()
-        {
-            HandleGameEvent(EmitterGameEvent.CollisionExit);
-        }
-
-        void OnCollisionEnter2D()
-        {
-            HandleGameEvent(EmitterGameEvent.CollisionEnter2D);
-        }
-
-        void OnCollisionExit2D()
-        {
-            HandleGameEvent(EmitterGameEvent.CollisionExit2D);
-        }
-
-        void HandleGameEvent(EmitterGameEvent gameEvent)
+        protected override void HandleGameEvent(EmitterGameEvent gameEvent)
         {
             if (TriggerEvent == gameEvent)
             {
