@@ -360,9 +360,9 @@ namespace FMODUnity
             #if UNITY_EDITOR_WIN && UNITY_EDITOR_64
                 string pluginFolder = Application.dataPath + fmodLibPath +"/win/X86_64/";
             #elif UNITY_EDITOR_WIN
-                string pluginFolder = Application.dataPath + fmodLibPath "/win/X86/";
+                string pluginFolder = Application.dataPath + fmodLibPath + "/win/X86/";
             #elif UNITY_EDITOR_OSX
-                string pluginFolder = Application.dataPath + fmodLibPath "/mac/";
+                string pluginFolder = Application.dataPath + fmodLibPath + "/mac/";
             #elif UNITY_STANDALONE_WIN || UNITY_PS4 || UNITY_XBOXONE || UNITY_STANDALONE_OSX || UNITY_WEBGL
                 string pluginFolder = Application.dataPath + "/Plugins/";
             #elif UNITY_STANDALONE_LINUX
