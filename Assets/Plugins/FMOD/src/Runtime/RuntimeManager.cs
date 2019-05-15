@@ -470,7 +470,8 @@ retry:
         {
             if (studioSystem.isValid() && isOverlayEnabled)
             {
-                windowRect = GUI.Window(0, windowRect, DrawDebugOverlay, "FMOD Studio Debug");
+                int window_id = ('F'+'M'+'O'+'D' + 'D'+'E'+'B'+'U'+'G' + 'O'+'V'+'E'+'R'+'L'+'A'+'Y') * 0xC001 ;
+                windowRect = GUI.Window(window_id, windowRect, DrawDebugOverlay, "FMOD Studio Debug");
             }
         }
 
