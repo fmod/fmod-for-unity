@@ -586,7 +586,7 @@ retry:
         }
         #endif
 
-        #if UNITY_IOS
+        #if UNITY_IOS && !UNITY_EDITOR
         /* iOS alarm interruptions do not trigger OnApplicationPause
          * Sending the app to the background does trigger OnApplicationFocus
          * We don't want to use this on Android as other things (like the keyboard)
