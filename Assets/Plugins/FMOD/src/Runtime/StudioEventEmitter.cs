@@ -202,7 +202,7 @@ namespace FMODUnity
 
         public bool IsPlaying()
         {
-            if (instance.isValid() && instance.isValid())
+            if (instance.isValid())
             {
                 FMOD.Studio.PLAYBACK_STATE playbackState;
                 instance.getPlaybackState(out playbackState);
