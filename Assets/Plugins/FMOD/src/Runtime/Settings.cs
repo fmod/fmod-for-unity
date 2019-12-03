@@ -33,6 +33,7 @@ namespace FMODUnity
         UWP,
         Switch,
         WebGL,
+        Stadia,
         Count,
     }
 
@@ -50,7 +51,6 @@ namespace FMODUnity
         Specified,
         None
     }
-
 
     public class PlatformSettingBase
     {
@@ -148,40 +148,30 @@ namespace FMODUnity
         {
             get
             {
-                if (string.IsNullOrEmpty(sourceProjectPath) && !string.IsNullOrEmpty(SourceProjectPathUnformatted))
-                {
-                    sourceProjectPath = GetPlatformSpecificPath(SourceProjectPathUnformatted);
-                }
                 return sourceProjectPath;
             }
             set
             {
-                sourceProjectPath = GetPlatformSpecificPath(value);
+                sourceProjectPath = value;
             }
         }
 
         [SerializeField]
-        public string SourceProjectPathUnformatted;
-
         private string sourceBankPath;
         public string SourceBankPath
         {
             get
             {
-                if (String.IsNullOrEmpty(sourceBankPath) && !String.IsNullOrEmpty(SourceBankPathUnformatted))
-                {
-                    sourceBankPath = GetPlatformSpecificPath(SourceBankPathUnformatted);
-                }
                 return sourceBankPath;
             }
             set
             {
-            	sourceBankPath = GetPlatformSpecificPath(value);
+            	sourceBankPath = value;
             }
         }
 
         [SerializeField]
-        public string SourceBankPathUnformatted;
+        public string SourceBankPathUnformatted; // Kept as to not break existing projects
 
         [SerializeField]
         public bool AutomaticEventLoading;
@@ -194,7 +184,7 @@ namespace FMODUnity
 
         [SerializeField]
         public string EncryptionKey;
-        
+
         [SerializeField]
         public ImportType ImportType;
 
@@ -261,6 +251,7 @@ namespace FMODUnity
                 case FMODPlatform.Switch:
                 case FMODPlatform.XboxOne:
                 case FMODPlatform.PS4:
+                case FMODPlatform.Stadia:
                     return FMODPlatform.Console;
                 case FMODPlatform.Desktop:
                 case FMODPlatform.Console:
@@ -388,6 +379,7 @@ namespace FMODUnity
         {
             MasterBanks = new List<string>();
             Banks = new List<string>();
+            BanksToLoad = new List<string>();
             RealChannelSettings = new List<PlatformIntSetting>();
             VirtualChannelSettings = new List<PlatformIntSetting>();
             LoggingSettings = new List<PlatformBoolSetting>();
@@ -437,20 +429,11 @@ namespace FMODUnity
                 SetSetting(SpeakerModeSettings, FMODPlatform.Switch, GetSetting(SpeakerModeSettings, FMODPlatform.Mobile, (int)FMOD.SPEAKERMODE.STEREO));
                 SwitchSettingsMigration = true;
             }
-        }
 
-        private string GetPlatformSpecificPath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                return path;
-            }
-
-            if (Path.DirectorySeparatorChar == '/')
-            {
-                return path.Replace('\\', '/');
-            }
-            return path.Replace('/', '\\');
+            // Fix up slashes for old settings meta data.
+            sourceProjectPath = RuntimeUtils.GetCommonPlatformPath(sourceProjectPath);
+            SourceBankPathUnformatted = RuntimeUtils.GetCommonPlatformPath(SourceBankPathUnformatted);
         }
     }
+
 }

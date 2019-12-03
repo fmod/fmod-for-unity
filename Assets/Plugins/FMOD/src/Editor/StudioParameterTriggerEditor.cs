@@ -97,6 +97,12 @@ namespace FMODUnity
                     if (expanded[emitterIndex])
                     {
                         var eventRef = EventManager.EventFromPath(emitter.Event);
+                        if (emitter.Event.StartsWith("{"))
+                        {
+                            EditorGUI.BeginDisabledGroup(true);
+                            EditorGUILayout.TextField("Path:", eventRef.Path);
+                            EditorGUI.EndDisabledGroup();
+                        }
                         foreach (var paramRef in eventRef.Parameters)
                         {
                             bool set = false;

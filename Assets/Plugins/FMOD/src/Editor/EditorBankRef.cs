@@ -25,7 +25,7 @@ namespace FMODUnity
         public string SubDir;
         public string Name
         {
-            get { return (string.IsNullOrEmpty(SubDir) ? "" : SubDir + global::System.IO.Path.DirectorySeparatorChar) + global::System.IO.Path.GetFileNameWithoutExtension(Path); }
+            get { return (string.IsNullOrEmpty(SubDir) ? "" : SubDir + '/') + global::System.IO.Path.GetFileNameWithoutExtension(Path); }
         }
 
         [SerializeField]

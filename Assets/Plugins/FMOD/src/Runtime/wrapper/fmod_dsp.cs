@@ -273,7 +273,7 @@ namespace FMOD
         
         [MarshalAs(UnmanagedType.ByValArray,SizeConst=32)]
         private IntPtr[] spectrum_internal;                           /* [r] Per channel spectrum arrays.  See remarks for more. */
-        
+
         public float[][] spectrum
         {
             get
@@ -288,6 +288,21 @@ namespace FMOD
                 
                 return buffer;
             }
+        }
+
+        public void getSpectrum(ref float[][] buffer)
+        {
+            int bufferLength = Math.Min(buffer.Length, numchannels);
+            for (int i = 0; i < bufferLength; ++i)
+            {
+                getSpectrum(i, ref buffer[i]);
+            }
+        }
+
+        public void getSpectrum(int channel, ref float[] buffer)
+        {
+            int bufferLength = Math.Min(buffer.Length, length);
+            Marshal.Copy(spectrum_internal[channel], buffer, 0, bufferLength);
         }
     }
 

@@ -192,11 +192,19 @@ namespace FMODUnity
             }
         }
 
-        public void SetParameter(FMOD.Studio.PARAMETER_ID id, float value)
+        public void SetParameter(string name, float value, bool ignoreseekspeed = false)
         {
             if (instance.isValid())
             {
-                instance.setParameterByID(id, value);
+                instance.setParameterByName(name, value, ignoreseekspeed);
+            }
+        }
+
+        public void SetParameter(FMOD.Studio.PARAMETER_ID id, float value, bool ignoreseekspeed = false)
+        {
+            if (instance.isValid())
+            {
+                instance.setParameterByID(id, value, ignoreseekspeed);
             }
         }
 

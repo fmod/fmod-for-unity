@@ -1081,7 +1081,11 @@ namespace FMODUnity
 
         public void OnEnable()
         {
+            #if UNITY_2019_1_OR_NEWER
+            SceneView.duringSceneGui += SceneUpdate;
+            #else
             SceneView.onSceneGUIDelegate += SceneUpdate;
+            #endif
             EditorApplication.hierarchyWindowItemOnGUI += HierachachyUpdate;
             instance = this;
         }

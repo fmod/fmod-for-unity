@@ -8,9 +8,11 @@ namespace FMODUnity
     {
         public override void OnInspectorGUI()
         {
+            EditorGUI.BeginDisabledGroup(true);
             var index = serializedObject.FindProperty("ListenerNumber");
             EditorGUILayout.IntSlider(index, 0, FMOD.CONSTANTS.MAX_LISTENERS - 1, "Listener Index");
-            serializedObject.ApplyModifiedProperties();
+            EditorGUI.EndDisabledGroup();
+
         }
     }
 }

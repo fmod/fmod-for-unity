@@ -102,8 +102,16 @@ namespace FMODUnity
                     Rect labelRect = new Rect(position.x, position.y + baseHeight * 2, width, baseHeight);
                     Rect valueRect = new Rect(position.x + width + 10, position.y + baseHeight * 2, pathRect.width, baseHeight);
 
-                    GUI.Label(labelRect, new GUIContent("<b>GUID</b>"), style);
-                    EditorGUI.SelectableLabel(valueRect, eventRef.Guid.ToString("b"));
+                    if (pathProperty.stringValue.StartsWith("{"))
+                    {
+                        GUI.Label(labelRect, new GUIContent("<b>Path</b>"), style);
+                        EditorGUI.SelectableLabel(valueRect, eventRef.Path);
+                    }
+                    else
+                    {
+                        GUI.Label(labelRect, new GUIContent("<b>GUID</b>"), style);
+                        EditorGUI.SelectableLabel(valueRect, eventRef.Guid.ToString("b"));
+                    }
                     labelRect.y += baseHeight;
                     valueRect.y += baseHeight;
 

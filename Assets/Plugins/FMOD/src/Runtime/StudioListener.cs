@@ -8,32 +8,27 @@ namespace FMODUnity
         Rigidbody rigidBody;
         Rigidbody2D rigidBody2D;
 
-        public int ListenerNumber = 0;
+        public int ListenerNumber = -1;
 
         void OnEnable()
         {
             RuntimeUtils.EnforceLibraryOrder();
             rigidBody = gameObject.GetComponent<Rigidbody>();
             rigidBody2D = gameObject.GetComponent<Rigidbody2D>();
-            if (RuntimeManager.AddListener(ListenerNumber) == false)
-            {
-                ListenerNumber = -1;
-                this.enabled = false;
-            }
-            else
-            {
-                SetListenerLocation();
-            }
+            ListenerNumber = RuntimeManager.AddListener(this);
         }
 
         void OnDisable()
         {
-            RuntimeManager.RemoveListener(ListenerNumber);
+            RuntimeManager.RemoveListener(this);
         }
 
         void Update()
         {
-            SetListenerLocation();
+            if (ListenerNumber >= 0 && ListenerNumber < FMOD.CONSTANTS.MAX_LISTENERS)
+            {
+                SetListenerLocation();
+            }
         }
 
         void SetListenerLocation()

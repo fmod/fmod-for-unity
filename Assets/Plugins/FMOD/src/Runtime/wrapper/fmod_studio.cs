@@ -21,7 +21,7 @@ namespace FMOD.Studio
         public const string dll     = "libfmodstudioL";
 #elif (UNITY_PS4 || UNITY_WIIU || UNITY_PSP2) && !UNITY_EDITOR
         public const string dll     = "libfmodstudio";
-#elif UNITY_EDITOR || ((UNITY_STANDALONE || UNITY_ANDROID || UNITY_XBOXONE) && DEVELOPMENT_BUILD)
+#elif UNITY_EDITOR || ((UNITY_STANDALONE || UNITY_ANDROID || UNITY_XBOXONE || UNITY_STADIA) && DEVELOPMENT_BUILD)
         public const string dll     = "fmodstudioL";
 #else
         public const string dll     = "fmodstudio";
@@ -1258,6 +1258,10 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_EventInstance_SetUserData(this.handle, userdata);
         }
+        public RESULT getCPUUsage(out uint exclusive, out uint inclusive)
+        {
+            return FMOD_Studio_EventInstance_GetCPUUsage(this.handle, out exclusive, out inclusive);
+        }
 
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
@@ -1326,6 +1330,8 @@ namespace FMOD.Studio
         private static extern RESULT FMOD_Studio_EventInstance_GetUserData                 (IntPtr _event, out IntPtr userdata);
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_SetUserData                 (IntPtr _event, IntPtr userdata);
+        [DllImport (STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventInstance_GetCPUUsage                 (IntPtr _event, out uint exclusive, out uint inclusive);
         #endregion
 
         #region wrapperinternal
@@ -1420,6 +1426,10 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_Bus_GetChannelGroup(this.handle, out group.handle);
         }
+        public RESULT getCPUUsage(out uint exclusive, out uint inclusive)
+        {
+            return FMOD_Studio_Bus_GetCPUUsage(this.handle, out exclusive, out inclusive);
+        }
 
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
@@ -1448,6 +1458,8 @@ namespace FMOD.Studio
         private static extern RESULT FMOD_Studio_Bus_UnlockChannelGroup   (IntPtr bus);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_Bus_GetChannelGroup      (IntPtr bus, out IntPtr group);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_Bus_GetCPUUsage          (IntPtr bus, out uint exclusive, out uint inclusive);
         #endregion
 
         #region wrapperinternal

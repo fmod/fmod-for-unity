@@ -26,7 +26,7 @@ namespace FMODUnity
             }
         }
 
-        const string BuildFolder = "Build";
+        public const string BuildFolder = "Build";
 
         public static string GetBankDirectory()
         {
@@ -39,32 +39,6 @@ namespace FMODUnity
             else if (!String.IsNullOrEmpty(Settings.Instance.SourceBankPath))
             {
                 return Path.GetFullPath(Settings.Instance.SourceBankPath);
-            }
-            return null;
-        }
-
-        public static string GetBankDirectoryUnformatted()
-        {
-            if (Settings.Instance.HasSourceProject && !String.IsNullOrEmpty(Settings.Instance.SourceProjectPathUnformatted))
-            {
-                string projectPath = Settings.Instance.SourceProjectPathUnformatted;
-                char directorySeparator = '\\';
-                var folderIndex = projectPath.LastIndexOf(directorySeparator);
-                if (folderIndex < 0)
-                {
-                    directorySeparator = '/';
-                    folderIndex = projectPath.LastIndexOf(directorySeparator);
-                }
-                string projectFolder = "";
-                if (folderIndex > 0)
-                {
-                    projectFolder = projectPath.Substring(0, folderIndex);
-                }
-                return projectFolder + directorySeparator + BuildFolder;
-            }
-            else if (!String.IsNullOrEmpty(Settings.Instance.SourceBankPathUnformatted))
-            {
-                return Settings.Instance.SourceBankPathUnformatted;
             }
             return null;
         }
@@ -140,11 +114,11 @@ namespace FMODUnity
 
         public static string[] GetBankPlatforms()
         {
-            string buildFolder = GetBankDirectory();
+            string buildFolder = Settings.Instance.SourceBankPath;
             try
             {
                 if (Directory.GetFiles(buildFolder, "*.bank").Length == 0)
-                {                
+                {
                     string[] buildDirectories = Directory.GetDirectories(buildFolder);
                     string[] buildNames = new string[buildDirectories.Length];
                     for (int i = 0; i < buildDirectories.Length; i++)
@@ -470,7 +444,7 @@ namespace FMODUnity
         }
 
         static List<FMOD.Studio.Bank> masterBanks = new List<FMOD.Studio.Bank>();
-        static FMOD.Studio.Bank previewBank;
+        static List<FMOD.Studio.Bank> previewBanks = new List<FMOD.Studio.Bank>();
         static FMOD.Studio.EventDescription previewEventDesc;
         static FMOD.Studio.EventInstance previewEventInstance;
 
@@ -500,6 +474,7 @@ namespace FMODUnity
             if (load)
             {
                 masterBanks.Clear();
+                previewBanks.Clear();
 
                 foreach (EditorBankRef masterBankRef in EventManager.MasterBanks)
                 {
@@ -510,11 +485,21 @@ namespace FMODUnity
 
                 if (!EventManager.MasterBanks.Exists(x => eventRef.Banks.Contains(x)))
                 {
-                    CheckResult(System.loadBankFile(eventRef.Banks[0].Path, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out previewBank));
+                    string bankName = eventRef.Banks[0].Name;
+                    var banks = EventManager.Banks.FindAll(x => x.Name.Contains(bankName));
+                    foreach (var bank in banks)
+                    {
+                        FMOD.Studio.Bank previewBank;
+                        CheckResult(System.loadBankFile(bank.Path, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out previewBank));
+                        previewBanks.Add(previewBank);
+                    }
                 }
                 else
                 {
-                    previewBank.clearHandle();
+                    foreach (var previewBank in previewBanks)
+                    {
+                        previewBank.clearHandle();
+                    }
                 }
 
                 CheckResult(System.getEventByID(eventRef.Guid, out previewEventDesc));
@@ -574,12 +559,8 @@ namespace FMODUnity
                 previewEventInstance.release();
                 previewEventInstance.clearHandle();
                 previewEventDesc.clearHandle();
-                if (previewBank.isValid())
-                {
-                    previewBank.unload();
-                }
+                previewBanks.ForEach(x => { x.unload(); x.clearHandle(); });
                 masterBanks.ForEach(x => { x.unload(); x.clearHandle(); });
-                previewBank.clearHandle();
                 previewState = PreviewState.Stopped;
             }
         }

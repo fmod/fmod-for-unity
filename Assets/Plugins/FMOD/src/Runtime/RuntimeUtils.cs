@@ -114,6 +114,16 @@ namespace FMODUnity
 
     public static class RuntimeUtils
     {
+        public static string GetCommonPlatformPath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return path;
+            }
+
+            return path.Replace('\\', '/');
+        }
+
         public static FMOD.VECTOR ToFMODVector(this Vector3 vec)
         {
             FMOD.VECTOR temp;
@@ -297,6 +307,8 @@ namespace FMODUnity
             return FMODPlatform.Switch;
             #elif UNITY_WEBGL
             return FMODPlatform.WebGL;
+            #elif UNITY_STADIA
+            return FMODPlatform.Stadia;
             #endif
         }
 
@@ -358,7 +370,7 @@ namespace FMODUnity
 
             string fmodLibPath = "/Plugins/FMOD/lib";
             #if UNITY_EDITOR_WIN && UNITY_EDITOR_64
-                string pluginFolder = Application.dataPath + fmodLibPath +"/win/X86_64/";
+                string pluginFolder = Application.dataPath + fmodLibPath + "/win/X86_64/";
             #elif UNITY_EDITOR_WIN
                 string pluginFolder = Application.dataPath + fmodLibPath + "/win/X86/";
             #elif UNITY_EDITOR_OSX
@@ -409,8 +421,9 @@ namespace FMODUnity
                 #if !UNITY_2019_2_OR_NEWER
                 case BuildTarget.StandaloneLinux:
                 case BuildTarget.StandaloneLinuxUniversal:
-                #endif
+                #else
                 case BuildTarget.StandaloneLinux64:
+                #endif
                     return FMODPlatform.Linux;
                 case BuildTarget.StandaloneOSX:
                     return FMODPlatform.Mac;
@@ -430,6 +443,10 @@ namespace FMODUnity
                 #if UNITY_WEBGL
                 case BuildTarget.WebGL:
                     return FMODPlatform.WebGL;
+                #endif
+                #if UNITY_STADIA
+                case BuildTarget.Stadia:
+                    return FMODPlatform.Stadia;
                 #endif
                 default:
                     return FMODPlatform.None;

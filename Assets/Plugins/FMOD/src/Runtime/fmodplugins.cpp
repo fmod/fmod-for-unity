@@ -1,7 +1,7 @@
 struct FMOD_SYSTEM;
 struct FMOD_DSP_DESCRIPTION;
 
-extern "C" uint32_t FMOD5_System_RegisterDSP(FMOD_SYSTEM *system, const FMOD_DSP_DESCRIPTION *description, uint32_t *handle);
+extern "C" unsigned int FMOD5_System_RegisterDSP(FMOD_SYSTEM *system, const FMOD_DSP_DESCRIPTION *description, void *handle);
 
 extern FMOD_DSP_DESCRIPTION* FMOD_Google_GVRListener_GetDSPDescription();
 extern FMOD_DSP_DESCRIPTION* FMOD_Google_GVRSoundfield_GetDSPDescription();
@@ -11,9 +11,9 @@ extern FMOD_DSP_DESCRIPTION* FMOD_ResonanceAudioListener_GetDSPDescription();
 extern FMOD_DSP_DESCRIPTION* FMOD_ResonanceAudioSoundfield_GetDSPDescription();
 extern FMOD_DSP_DESCRIPTION* FMOD_ResonanceAudioSource_GetDSPDescription();
 
-extern "C" uint32_t FmodUnityNativePluginInit(FMOD_SYSTEM* system)
+extern "C" unsigned int FmodUnityNativePluginInit(FMOD_SYSTEM *system)
 {
-    uint32_t result = 0;
+    unsigned int result = 0;
     
     /*
     
