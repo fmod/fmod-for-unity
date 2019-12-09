@@ -278,6 +278,10 @@ retry:
             LoadPlugins(fmodSettings);
             LoadBanks(fmodSettings);
 
+            #if (UNITY_IOS || UNITY_TVOS) && !UNITY_EDITOR
+            RegisterSuspendCallback(HandleInterrupt);
+            #endif
+
             return initResult;
         }
 
@@ -625,28 +629,23 @@ retry:
         }
         #endif
 
-        #if UNITY_IOS && !UNITY_EDITOR
-        /* iOS alarm interruptions do not trigger OnApplicationPause
-         * Sending the app to the background does trigger OnApplicationFocus
-         * We don't want to use this on Android as other things (like the keyboard)
-         * can steal focus.
-         * https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnApplicationFocus.html */
-
-        void OnApplicationFocus(bool focus)
+        #if (UNITY_IOS || UNITY_TVOS) && !UNITY_EDITOR
+        [AOT.MonoPInvokeCallback(typeof(Action<bool>))]
+        static void HandleInterrupt(bool began)
         {
-            if (studioSystem.isValid())
+            if (Instance.studioSystem.isValid())
             {
                 // Strings bank is always loaded
-                if (loadedBanks.Count > 1)
-                    PauseAllEvents(!focus);
+                if (Instance.loadedBanks.Count > 1)
+                    PauseAllEvents(began);
 
-                if (focus)
+                if (began)
                 {
-                    coreSystem.mixerResume();
+                    Instance.coreSystem.mixerSuspend();
                 }
                 else
                 {
-                    coreSystem.mixerSuspend();
+                    Instance.coreSystem.mixerResume();
                 }
             }
         }
@@ -1196,6 +1195,9 @@ retry:
         #if (UNITY_IOS || UNITY_TVOS) && !UNITY_EDITOR
         [DllImport("__Internal")]
         private static extern FMOD.RESULT FmodUnityNativePluginInit(IntPtr system);
+
+        [DllImport("__Internal")]
+        private static extern void RegisterSuspendCallback(Action<bool> func);
         #endif
     }
 }

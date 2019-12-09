@@ -370,65 +370,132 @@ namespace FMODUnity
                 MoveAsset(root + "/Timeline", runtime + "/Timeline");
                 MoveAsset("Assets/Plugins/FMOD/Wrapper", runtime + "/wrapper");
                 MoveAsset("Assets/Plugins/Editor/FMOD", editor);
-                if (AssetDatabase.IsValidFolder("Assets/Plugins/FMOD/Runtime") && AssetDatabase.FindAssets("Assets/Plugins/FMOD/Runtime").Length == 0)
-                    Directory.Delete("Assets/Plugins/FMOD/Runtime");
-                if (AssetDatabase.IsValidFolder("Assets/Plugins/Editor") && AssetDatabase.FindAssets("Assets/Plugins/Editor").Length == 0)
-                    Directory.Delete("Assets/Plugins/Editor");
+                MoveAsset("Assets/Plugins/Editor/FMOD/Timeline", editor + "/Timeline");
+                if (AssetDatabase.IsValidFolder("Assets/Plugins/FMOD/Runtime") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/FMOD/Runtime" }).Length == 0)
+                    AssetDatabase.MoveAssetToTrash("Assets/Plugins/FMOD/Runtime");
+                if (AssetDatabase.IsValidFolder("Assets/Plugins/Editor/FMOD") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/Editor/FMOD" }).Length == 0)
+                    AssetDatabase.MoveAssetToTrash("Assets/Plugins/Editor/FMOD");
+                if (AssetDatabase.IsValidFolder("Assets/Plugins/Editor") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/Editor" }).Length == 0)
+                    AssetDatabase.MoveAssetToTrash("Assets/Plugins/Editor");
                 // GoogleVR
                 if (AssetDatabase.IsValidFolder("Assets/GoogleVR"))
                     MoveAsset("Assets/GoogleVR", addons + "/GoogleVR");
                 // ResonanceAudio
                 MoveAsset("Assets/ResonanceAudio", addons + "/ResonanceAudio");
+                // GVR Audio
+                if (AssetDatabase.IsValidFolder("Assets/Plugins/gvraudio.bundle"))
+                    MoveAsset("Assets/Plugins/gvraudio.bundle", lib + "/mac/gvraudio.bundle");
                 // Cache files
-                MoveAsset("Assets/Resources", root + "/Resources");
+                MoveAsset("Assets/Resources/FMODStudioSettings.asset", root + "/Resources/FMODStudioSettings.asset");
+                if (AssetDatabase.IsValidFolder("Assets/Resources") && AssetDatabase.FindAssets("", new string[] { "Assets/Resources" }).Length == 0)
+                    AssetDatabase.MoveAssetToTrash("Assets/Resources");
                 MoveAsset("Assets/FMODStudioCache.asset", root + "/Resources/FMODStudioCache.asset");
-                if (AssetDatabase.IsValidFolder("Assets/Resources") && AssetDatabase.FindAssets("Assets/Resources").Length == 0)
-                    Directory.Delete("Assets/Resources");
+                if (AssetDatabase.FindAssets("Assets/FMODStudioCache.asset").Length != 0)
+                    AssetDatabase.MoveAssetToTrash("Assets/FMODStudioCache.asset");
                 // Android libs
-                MoveAsset("Assets/Plugins/Android/libs/armeabi-v7a", lib + "/android/armeabi-v7a");
-                MoveAsset("Assets/Plugins/Android/libs/x86", lib + "/android/x86");
-                if (AssetDatabase.IsValidFolder("Assets/Plugins/Android/libs/arm68-v8a"))
-                    MoveAsset("Assets/Plugins/Android/libs/arm68-v8a", lib + "/android/arm64-v8a");
+                string[] archs = new string[] { "armeabi-v7a", "x86", "arm64-v8a" };
+                foreach (string arch in archs)
+                {
+                    MoveAsset("Assets/Plugins/Android/libs/" + arch + "/libfmod.so", lib + "/android/" + arch + "/libfmod.so");
+                    MoveAsset("Assets/Plugins/Android/libs/" + arch + "/libfmodL.so", lib + "/android/" + arch + "/libfmodL.so");
+                    MoveAsset("Assets/Plugins/Android/libs/" + arch + "/libfmodstudio.so", lib + "/android/" + arch + "/libfmodstudio.so");
+                    MoveAsset("Assets/Plugins/Android/libs/" + arch + "/libfmodstudioL.so", lib + "/android/" + arch + "/libfmodstudioL.so");
+                    MoveAsset("Assets/Plugins/Android/libs/" + arch + "/libresonanceaudio.so", lib + "/android/" + arch + "/libresonanceaudio.so");
+                    MoveAsset("Assets/Plugins/Android/libs/" + arch + "/libgvraudio.so", lib + "/android/" + arch + "/libgvraudio.so");
+                    if (AssetDatabase.IsValidFolder("Assets/Plugins/Android/libs/" + arch) && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/Android/libs/" + arch }).Length == 0)
+                        AssetDatabase.MoveAssetToTrash("Assets/Plugins/Android/libs/" + arch);
+                }
                 MoveAsset("Assets/Plugins/Android/fmod.jar", lib + "/android/fmod.jar");
-                if (AssetDatabase.IsValidFolder("Assets/Plugins/Android") && AssetDatabase.FindAssets("Assets/Plugins/Android").Length == 0)
-                    Directory.Delete("Assets/Plugins/Android", true);
+                if (AssetDatabase.IsValidFolder("Assets/Plugins/Android/libs") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/Android/libs" }).Length == 0)
+                    AssetDatabase.MoveAssetToTrash("Assets/Plugins/Android/libs");
+                if (AssetDatabase.IsValidFolder("Assets/Plugins/Android") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/Android" }).Length == 0)
+                    AssetDatabase.MoveAssetToTrash("Assets/Plugins/Android");
                 AssetDatabase.
                 // Mac libs
                 MoveAsset("Assets/Plugins/fmodstudio.bundle", lib + "/mac/fmodstudio.bundle");
                 MoveAsset("Assets/Plugins/fmodstudioL.bundle", lib + "/mac/fmodstudioL.bundle");
                 MoveAsset("Assets/Plugins/resonanceaudio.bundle", lib + "/mac/resonanceaudio.bundle");
-                if (AssetDatabase.IsValidFolder("Assets/Plugins/gvraudio.bundle"))
-                    MoveAsset("Assets/Plugins/gvraudio.bundle", lib + "/mac/gvraudio.bundle");
                 // iOS libs
-                MoveAsset("Assets/Plugins/iOS", lib + "/ios");
+                MoveAsset("Assets/Plugins/iOS/libfmodstudiounityplugin.a", lib + "/ios/libfmodstudiounityplugin.a");
+                MoveAsset("Assets/Plugins/iOS/libfmodstudiounitypluginL.a", lib + "/ios/libfmodstudiounitypluginL.a");
+                MoveAsset("Assets/Plugins/iOS/libgvraudio.a", lib + "/ios/libgvraudio.a");
+                MoveAsset("Assets/Plugins/iOS/libresonanceaudio.a", lib + "/ios/libresonanceaudio.a");
+                if (AssetDatabase.IsValidFolder("Assets/Plugins/iOS") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/iOS" }).Length == 0)
+                    AssetDatabase.MoveAssetToTrash("Assets/Plugins/iOS");
                 // tvOS libs
-                MoveAsset("Assets/Plugins/tvOS", lib + "/tvos");
+                MoveAsset("Assets/Plugins/tvOS/libfmodstudiounityplugin.a", lib + "/tvos/libfmodstudiounityplugin.a");
+                MoveAsset("Assets/Plugins/tvOS/libfmodstudiounitypluginL.a", lib + "/tvos/libfmodstudiounitypluginL.a");
+                if (AssetDatabase.IsValidFolder("Assets/Plugins/tvOS") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/tvOS" }).Length == 0)
+                    AssetDatabase.MoveAssetToTrash("Assets/Plugins/tvOS");
                 // UWP libs
-                MoveAsset("Assets/Plugins/UWP", lib + "/uwp");
+                archs = new string[] { "arm", "x64", "x86" };
+                foreach (string arch in archs)
+                {
+                    MoveAsset("Assets/Plugins/UWP/" + arch + "/fmod.dll", lib + "/uwp/" + arch + "/fmod.dll");
+                    MoveAsset("Assets/Plugins/UWP/" + arch + "/fmodL.dll", lib + "/uwp/" + arch + "/fmodL.dll");
+                    MoveAsset("Assets/Plugins/UWP/" + arch + "/fmodstudio.dll", lib + "/uwp/" + arch + "/fmodstudio.dll");
+                    MoveAsset("Assets/Plugins/UWP/" + arch + "/fmodstudioL.dll", lib + "/uwp/" + arch + "/fmodstudioL.dll");
+                    if (AssetDatabase.IsValidFolder("Assets/Plugins/UWP/" + arch) && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/UWP/" + arch }).Length == 0)
+                        AssetDatabase.MoveAssetToTrash("Assets/Plugins/UWP/" + arch);
+                }
+                if (AssetDatabase.IsValidFolder("Assets/Plugins/UWP") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/UWP" }).Length == 0)
+                    AssetDatabase.MoveAssetToTrash("Assets/Plugins/UWP");
                 // HTML5 libs
-                MoveAsset("Assets/Plugins/WebGL", lib + "/html5");
+                MoveAsset("Assets/Plugins/WebGL/libfmodstudiounityplugin.bc", lib + "/html5/libfmodstudiounityplugin.bc");
+                MoveAsset("Assets/Plugins/WebGL/libfmodstudiounitypluginL.bc", lib + "/html5/libfmodstudiounitypluginL.bc");
+                if (AssetDatabase.IsValidFolder("Assets/Plugins/WebGL") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/WebGL" }).Length == 0)
+                    AssetDatabase.MoveAssetToTrash("Assets/Plugins/WebGL");
                 // PS4 libs (optional)
                 if (AssetDatabase.IsValidFolder("Assets/Plugins/PS4"))
-                    MoveAsset("Assets/Plugins/PS4", lib + "/ps4");
+                {
+                    MoveAsset("Assets/Plugins/PS4/libfmod.prx", lib + "/ps4/libfmod.prx");
+                    MoveAsset("Assets/Plugins/PS4/libfmodL.prx", lib + "/ps4/libfmodL.prx");
+                    MoveAsset("Assets/Plugins/PS4/libfmodstudio.prx", lib + "/ps4/libfmodstudio.prx");
+                    MoveAsset("Assets/Plugins/PS4/libfmodstudioL.prx", lib + "/ps4/libfmodstudioL.prx");
+                    MoveAsset("Assets/Plugins/PS4/resonanceaudio.prx", lib + "/ps4/resonanceaudio.prx");
+                    if (AssetDatabase.IsValidFolder("Assets/Plugins/PS4") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/PS4" }).Length == 0)
+                        AssetDatabase.MoveAssetToTrash("Assets/Plugins/PS4");
+                }
                 // Switch libs (optional)
                 if (AssetDatabase.IsValidFolder("Assets/Plugins/Switch"))
-                    MoveAsset("Assets/Plugins/Switch", lib + "/switch");
+                {
+                    MoveAsset("Assets/Plugins/Switch/libfmodstudiounityplugin.a", lib + "/switch/libfmodstudiounityplugin.a");
+                    MoveAsset("Assets/Plugins/Switch/libfmodstudiounitypluginL.a", lib + "/switch/libfmodstudiounitypluginL.a");
+                    if (AssetDatabase.IsValidFolder("Assets/Plugins/Switch") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/Switch" }).Length == 0)
+                        AssetDatabase.MoveAssetToTrash("Assets/Plugins/Switch");
+                }
                 // Xbox One libs (optional)
                 if (AssetDatabase.IsValidFolder("Assets/Plugins/XboxOne"))
-                    MoveAsset("Assets/Plugins/XboxOne", lib + "/xboxone");
+                {
+                    MoveAsset("Assets/Plugins/XboxOne/fmod.dll", lib + "/xboxone/fmod.dll");
+                    MoveAsset("Assets/Plugins/XboxOne/fmodL.dll", lib + "/xboxone/fmodL.dll");
+                    MoveAsset("Assets/Plugins/XboxOne/fmodstudio.dll", lib + "/xboxone/fmodstudio.dll");
+                    MoveAsset("Assets/Plugins/XboxOne/fmodstudioL.dll", lib + "/xboxone/fmodstudioL.dll");
+                    if (AssetDatabase.IsValidFolder("Assets/Plugins/XboxOne") && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/XboxOne" }).Length == 0)
+                        AssetDatabase.MoveAssetToTrash("Assets/Plugins/XboxOne");
+                }
                 // Linux libs
-                MoveAsset("Assets/Plugins/x86/libfmod.so", lib + "/linux/x86/libfmod.so");
-                MoveAsset("Assets/Plugins/x86/libfmodL.so", lib + "/linux/x86/libfmodL.so");
-                MoveAsset("Assets/Plugins/x86/libfmodstudio.so", lib + "/linux/x86/libfmodstudio.so");
-                MoveAsset("Assets/Plugins/x86/libfmodstudioL.so", lib + "/linux/x86/libfmodstudioL.so");
-                MoveAsset("Assets/Plugins/x86_64/libfmod.so", lib + "/linux/x86_64/libfmod.so");
-                MoveAsset("Assets/Plugins/x86_64/libfmodL.so", lib + "/linux/x86_64/libfmodL.so");
-                MoveAsset("Assets/Plugins/x86_64/libfmodstudio.so", lib + "/linux/x86_64/libfmodstudio.so");
-                MoveAsset("Assets/Plugins/x86_64/libfmodstudioL.so", lib + "/linux/x86_64/libfmodstudioL.so");
-                MoveAsset("Assets/Plugins/x86_64/libresonanceaudio.so", lib + "/linux/x86_64/libresonanceaudio.so");
+                archs = new string[] { "x86", "x86_64" };
+                foreach (string arch in archs)
+                {
+                    MoveAsset("Assets/Plugins/" + arch + "/libfmod.so", lib + "/linux/" + arch + "/libfmod.so");
+                    MoveAsset("Assets/Plugins/" + arch + "/libfmodL.so", lib + "/linux/" + arch + "/libfmodL.so");
+                    MoveAsset("Assets/Plugins/" + arch + "/libfmodstudio.so", lib + "/linux/" + arch + "/libfmodstudio.so");
+                    MoveAsset("Assets/Plugins/" + arch + "/libfmodstudioL.so", lib + "/linux/" + arch + "/libfmodstudio.so");
+                    MoveAsset("Assets/Plugins/" + arch + "/libgvraudio.so", lib + "/linux/" + arch + "/libgvraudio.so");
+                    MoveAsset("Assets/Plugins/" + arch + "/libresonanceaudio.so", lib + "/linux/" + arch + "/libresonanceaudio.so");
+                    // The folders will be deleted after the windows libs are moved.
+                }
                 // Windows libs
-                MoveAsset("Assets/Plugins/x86", lib + "/win/x86");
-                MoveAsset("Assets/Plugins/x86_64", lib + "/win/x86_64");
+                foreach (string arch in archs)
+                {
+                    MoveAsset("Assets/Plugins/" + arch + "/fmodstudio.dll", lib + "/win/" + arch + "/fmodstudio.dll");
+                    MoveAsset("Assets/Plugins/" + arch + "/fmodstudioL.dll", lib + "/win/" + arch + "/fmodstudioL.dll");
+                    MoveAsset("Assets/Plugins/" + arch + "/gvraudio.dll", lib + "/win/" + arch + "/gvraudio.dll");
+                    MoveAsset("Assets/Plugins/" + arch + "/resonanceaudio.dll", lib + "/win/" + arch + "/resonanceaudio.dll");
+                    if (AssetDatabase.IsValidFolder("Assets/Plugins/" + arch) && AssetDatabase.FindAssets("", new string[] { "Assets/Plugins/" + arch }).Length == 0)
+                        AssetDatabase.MoveAssetToTrash("Assets/Plugins/" + arch);
+                }
 
                 Debug.Log("Folder merge finished!");
             }
@@ -436,10 +503,32 @@ namespace FMODUnity
 
         static void MoveAsset(string from, string to)
         {
-            string result = AssetDatabase.MoveAsset(from, to);
-            if (!string.IsNullOrEmpty(result))
+            if (AssetDatabase.IsValidFolder(to))
             {
-                Debug.LogWarning("[FMOD] Failed to move " + from + " : " + result);
+                // Need to move all sub files/folders manually
+                string[] files = Directory.GetFiles(from, "*", SearchOption.TopDirectoryOnly);
+                foreach (string fileName in files)
+                {
+                    AssetDatabase.MoveAsset(fileName, to + '/' + Path.GetFileName(fileName));
+                }
+                string[] directories = Directory.GetDirectories(from, "*", SearchOption.AllDirectories);
+                foreach (string dir in directories)
+                {
+                    string subDir = dir.Replace(from, "");
+                    files = Directory.GetFiles(dir, "*", SearchOption.TopDirectoryOnly);
+                    foreach (string fileName in files)
+                    {
+                        AssetDatabase.MoveAsset(fileName, to + '/' + subDir + '/' + Path.GetFileName(fileName));
+                    }
+                }
+            }
+            else
+            {
+                string result = AssetDatabase.MoveAsset(from, to);
+                if (!string.IsNullOrEmpty(result))
+                {
+                    Debug.LogWarning("[FMOD] Failed to move " + from + " : " + result);
+                }
             }
         }
 

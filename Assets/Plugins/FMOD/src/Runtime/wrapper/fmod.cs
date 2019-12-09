@@ -19,7 +19,7 @@ namespace FMOD
     */
     public class VERSION
     {
-        public const int    number = 0x00020005;
+        public const int    number = 0x00020006;
 #if (UNITY_IPHONE || UNITY_TVOS || UNITY_SWITCH || UNITY_WEBGL) && !UNITY_EDITOR
         public const string dll    = "__Internal";
 #elif (UNITY_PS4) && DEVELOPMENT_BUILD
@@ -369,6 +369,7 @@ namespace FMOD
         MEDIA_FOUNDATION,/* Windows Store Application built in system codecs */
         MEDIACODEC,      /* Android MediaCodec */
         FADPCM,          /* FMOD Adaptive Differential Pulse Code Modulation */
+        OPUS,            /* Opus */
 
         MAX,             /* Maximum number of sound types supported. */
     }
