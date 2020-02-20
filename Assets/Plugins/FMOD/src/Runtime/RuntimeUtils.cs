@@ -421,7 +421,9 @@ namespace FMODUnity
                 #if !UNITY_2019_2_OR_NEWER
                 case BuildTarget.StandaloneLinux:
                 #endif
+                #if !UNITY_2019_3_OR_NEWER
                 case BuildTarget.StandaloneLinuxUniversal:
+                #endif
                 case BuildTarget.StandaloneLinux64:
                     return FMODPlatform.Linux;
                 case BuildTarget.StandaloneOSX:
