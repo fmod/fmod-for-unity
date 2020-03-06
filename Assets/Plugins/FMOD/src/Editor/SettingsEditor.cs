@@ -378,10 +378,56 @@ namespace FMODUnity
             return true;
         }
 
+        private bool DrawLinks()
+        {
+            string color = EditorGUIUtility.isProSkin ? "#fa4d14" : "#0000FF";
+            // Docs link
+            UnityEditor.EditorGUILayout.BeginHorizontal();
+            {
+                var linkStyle = GUI.skin.button;
+                linkStyle.richText = true;
+                string caption = "Open FMOD Getting Started Guide";
+                caption = String.Format("<color={0}>{1}</color>", color, caption);
+                bool bClicked = GUILayout.Button(caption, linkStyle, GUILayout.ExpandWidth(false), GUILayout.Height(30), GUILayout.MaxWidth(300));
+
+                var rect = GUILayoutUtility.GetLastRect();
+                rect.width = linkStyle.CalcSize(new GUIContent(caption)).x;
+                EditorGUIUtility.AddCursorRect(rect, MouseCursor.Link);
+
+                if (bClicked)
+                {
+                    Application.OpenURL("https://fmod.com/resources/documentation-unity?version=2.0&page=user-guide.html");
+                }
+            }
+            GUILayout.FlexibleSpace();
+            // Support Link
+            {
+                var linkStyle = GUI.skin.button;
+                linkStyle.richText = true;
+                string caption = "Open FMOD Q&A";
+                caption = String.Format("<color={0}>{1}</color>", color, caption);
+                bool bClicked = GUILayout.Button(caption, linkStyle, GUILayout.ExpandWidth(false), GUILayout.Height(30), GUILayout.MaxWidth(200));
+
+                var rect = GUILayoutUtility.GetLastRect();
+                rect.width = linkStyle.CalcSize(new GUIContent(caption)).x;
+                EditorGUIUtility.AddCursorRect(rect, MouseCursor.Link);
+
+                if (bClicked)
+                {
+                    Application.OpenURL("https://qa.fmod.com/");
+                }
+            }
+            UnityEditor.EditorGUILayout.EndHorizontal();
+
+            return true;
+        }
+
         public override void OnInspectorGUI()
         {
             Settings settings = target as Settings;
-            
+
+            DrawLinks();
+
             EditorGUI.BeginChangeCheck();
 
             hasBankSourceChanged = false;
@@ -453,8 +499,7 @@ namespace FMODUnity
                     hasBankSourceChanged = true;
                 }
             }
-
-            if (sourceType == SourceType.Single || sourceType == SourceType.Multi)
+            else if (sourceType == SourceType.Single || sourceType == SourceType.Multi)
             {
                 EditorGUILayout.BeginHorizontal();
                 string oldPath = settings.SourceBankPath;
@@ -494,7 +539,19 @@ namespace FMODUnity
             EditorUtils.ValidateSource(out validBanks, out failReason);
             if (!validBanks)
             {
+                failReason += "\n\nFor detailed setup instructions, please see the getting started guide linked above.";
                 EditorGUILayout.HelpBox(failReason, MessageType.Error, true);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    EditorUtility.SetDirty(settings);
+                }
+                return;
+            }
+
+            if (!RuntimeUtils.VerifyPlatformLibsExist())
+            {
+                string errMsg = "Unable to find the FMOD '" + RuntimeUtils.GetEditorFMODPlatform() + "' libs. See console for details.";
+                EditorGUILayout.HelpBox(errMsg, MessageType.Error, true);
                 if (EditorGUI.EndChangeCheck())
                 {
                     EditorUtility.SetDirty(settings);
@@ -507,6 +564,16 @@ namespace FMODUnity
             {
                 hasBankTargetChanged = true;
                 settings.ImportType = importType;
+
+                bool deleteBanks = EditorUtility.DisplayDialog(
+                    "FMOD Bank Import Type Changed", "Do you want to delete the " + (importType == ImportType.AssetBundle ? "StreamingAssets" : "AssetBundle") + " banks in " + (importType == ImportType.AssetBundle ? Application.streamingAssetsPath : Application.dataPath + '/' + settings.TargetAssetPath)
+                    , "Yes", "No");
+                if (deleteBanks)
+                {
+                    // Delete the old banks
+                    EventManager.removeBanks = true;
+                    EventManager.RefreshBanks();
+                }
             }
 
             // ----- Text Assets -------------
@@ -523,17 +590,24 @@ namespace FMODUnity
                         {
                             case KeyCode.Return:
                             case KeyCode.KeypadEnter:
-                                settings.TargetAssetPath = targetAssetPath;
-                                hasBankTargetChanged = true;
+                                if (settings.TargetAssetPath != targetAssetPath)
+                                {
+                                    EventManager.RemoveBanks(Application.dataPath + '/' + settings.TargetAssetPath);
+                                    settings.TargetAssetPath = targetAssetPath;
+                                    hasBankTargetChanged = true;
+                                }
                                 break;
                         }
                     }
                 }
                 else if (focused)
                 {
-                    settings.TargetAssetPath = targetAssetPath;
-                    hasBankTargetChanged = true;
-                    focused = false;
+                    if (settings.TargetAssetPath != targetAssetPath)
+                    {
+                        EventManager.RemoveBanks(Application.dataPath + '/' + settings.TargetAssetPath);
+                        settings.TargetAssetPath = targetAssetPath;
+                        hasBankTargetChanged = true;
+                    }
                 }
             }
 

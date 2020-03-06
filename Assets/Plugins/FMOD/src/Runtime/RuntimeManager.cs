@@ -100,6 +100,7 @@ namespace FMODUnity
                         }
                         #endif
 
+                        RuntimeUtils.VerifyPlatformLibsExist();
                         RuntimeUtils.EnforceLibraryOrder();
                         initResult = instance.Initialize();
                     }

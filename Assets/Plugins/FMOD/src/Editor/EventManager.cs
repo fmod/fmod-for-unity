@@ -14,7 +14,7 @@ namespace FMODUnity
     public class EventManager : MonoBehaviour
     {
         const string CacheAssetName = "FMODStudioCache";
-        const string CacheAssetFullName = "Assets/Plugins/FMOD/Resources/" + CacheAssetName + ".asset";
+        const string CacheAssetFullName = "Assets/Plugins/FMOD/Cache/Editor/" + CacheAssetName + ".asset";
         static EventCache eventCache;
 
         const string StringBankExtension = "strings.bank";
@@ -26,6 +26,8 @@ namespace FMODUnity
         const int CountdownTimerReset = 15 / FilePollTimeSeconds;
 
         static int countdownTimer;
+
+        public static bool removeBanks = false;
 
 #if UNITY_EDITOR
         [MenuItem("FMOD/Refresh Banks", priority = 1)]
@@ -62,10 +64,8 @@ namespace FMODUnity
                     UnityEngine.Debug.Log("FMOD Studio: Cannot find serialized event cache or cache in old format, creating new instance");
                     eventCache = ScriptableObject.CreateInstance<EventCache>();
                     eventCache.cacheVersion = EventCache.CurrentCacheVersion;
-                    if (!Directory.Exists("Assets/Plugins/FMOD/Resources"))
-                    {
-                        AssetDatabase.CreateFolder("Assets/Plugins/FMOD", "Resources");
-                    }
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(CacheAssetFullName));
                     AssetDatabase.CreateAsset(eventCache, CacheAssetFullName);
                 }
             }
@@ -121,7 +121,7 @@ namespace FMODUnity
                 ClearCache();
                 if (wasValid)
                 {
-                    UnityEngine.Debug.LogError(string.Format("FMOD Studio: Directory {0} doesn't contain any banks. Build from the tool or check the path in the settings", defaultBankFolder));
+                    UnityEngine.Debug.LogError(string.Format("FMOD Studio: Directory {0} doesn't contain any banks. Build the banks in Studio or check the path in the settings.", defaultBankFolder));
                 }
                 return;
             }
@@ -524,6 +524,17 @@ namespace FMODUnity
 
             bool madeChanges = false;
 
+            if (removeBanks)
+            {
+                string oldBankTargetFolder =
+                Settings.Instance.ImportType == ImportType.AssetBundle
+                ? Application.dataPath + "/StreamingAssets"
+                : Application.dataPath + "/" + Settings.Instance.TargetAssetPath;
+
+                RemoveBanks(oldBankTargetFolder);
+                madeChanges = true;
+            }
+
             try
             {
                 // Clean out any stale .bank files
@@ -799,6 +810,35 @@ namespace FMODUnity
                     return false;
             }
             return true;
+        }
+
+        public static void RemoveBanks(string path)
+        {
+            string[] oldBankFiles = Directory.GetFiles(path);
+
+            foreach (var oldBankFileName in oldBankFiles)
+            {
+                if (oldBankFileName.EndsWith(".meta"))
+                    continue;
+                string assetString = oldBankFileName.Replace(Application.dataPath, "Assets");
+                AssetDatabase.ImportAsset(assetString);
+                UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetString);
+                string[] labels = AssetDatabase.GetLabels(obj);
+                foreach (string label in labels)
+                {
+                    if (label.Equals("FMOD"))
+                    {
+                        AssetDatabase.MoveAssetToTrash(assetString);
+                        //File.Delete(oldBankFileName);
+                        break;
+                    }
+                }
+            }
+            if (Directory.GetFiles(Path.GetDirectoryName(oldBankFiles[0])).Length == 0)
+            {
+                Directory.Delete(Path.GetDirectoryName(oldBankFiles[0]));
+            }
+            removeBanks = false;
         }
     }
 }

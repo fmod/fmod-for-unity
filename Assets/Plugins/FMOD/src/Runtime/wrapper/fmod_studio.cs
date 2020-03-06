@@ -1,6 +1,6 @@
 /* ======================================================================================== */
 /* FMOD Studio API - C# wrapper.                                                            */
-/* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2019.                               */
+/* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2020.                               */
 /*                                                                                          */
 /* For more detail visit:                                                                   */
 /* https://fmod.com/resources/documentation-api?version=2.0&page=page=studio-api.html       */
@@ -246,6 +246,7 @@ namespace FMOD.Studio
         SYNCHRONOUS_UPDATE      = 0x00000004,   /* Disable asynchronous processing and perform all processing on the calling thread instead. */
         DEFERRED_CALLBACKS      = 0x00000008,   /* Defer timeline callbacks until the main update. See Studio::EventInstance::setCallback for more information. */
         LOAD_FROM_UPDATE        = 0x00000010,   /* No additional threads are created for bank and resource loading.  Loading is driven from Studio::System::update.  Mainly used in non-realtime situations. */
+        MEMORY_TRACKING         = 0x00000020,   /* Enable detailed memory allocation tracking. */
     }
 
     [Flags]
@@ -290,6 +291,7 @@ namespace FMOD.Studio
         SCHEDULE_LOOKAHEAD,     /* Schedule look-ahead on the timeline in DSP clocks, or -1 for default. */
         MINIMUM_DISTANCE,       /* Override the event's 3D minimum distance, or -1 for default. */
         MAXIMUM_DISTANCE,       /* Override the event's 3D maximum distance, or -1 for default. */
+        COOLDOWN,               /* Override the event's cooldown, or -1 for default. */
         MAX
     };
 
@@ -354,6 +356,14 @@ namespace FMOD.Studio
         public INSTANCETYPE outputtype;                                    /* The type of object that this command outputs, if any */
         public UInt32 instancehandle;                                      /* The original handle value of the instance.  This will no longer correspond to any actual object in playback. */
         public UInt32 outputhandle;                                        /* The original handle value of the command output.  This will no longer correspond to any actual object in playback. */
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MEMORY_USAGE
+    {
+        public int exclusive;            /* Memory allocated by this object. */
+        public int inclusive;            /* Memory allocated by this object and all nested objects. */
+        public int sampledata;           /* Memory allocated for sample data referenced by this object and all nested objects. */
     }
 
     public struct Util
@@ -726,6 +736,11 @@ namespace FMOD.Studio
             return FMOD_Studio_System_SetUserData(this.handle, userdata);
         }
 
+        public RESULT getMemoryUsage(out MEMORY_USAGE memoryusage)
+        {
+            return FMOD_Studio_System_GetMemoryUsage(this.handle, out memoryusage);
+        }
+
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_Create                  (out IntPtr system, uint headerversion);
@@ -829,6 +844,8 @@ namespace FMOD.Studio
         private static extern RESULT FMOD_Studio_System_GetUserData             (IntPtr system, out IntPtr userdata);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_System_SetUserData             (IntPtr system, IntPtr userdata);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_System_GetMemoryUsage          (IntPtr system, out MEMORY_USAGE memoryusage);
         #endregion
 
         #region wrapperinternal
@@ -1262,7 +1279,10 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_EventInstance_GetCPUUsage(this.handle, out exclusive, out inclusive);
         }
-
+        public RESULT getMemoryUsage(out MEMORY_USAGE memoryusage)
+        {
+            return FMOD_Studio_EventInstance_GetMemoryUsage(this.handle, out memoryusage);
+        }
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
         private static extern bool   FMOD_Studio_EventInstance_IsValid                     (IntPtr _event);
@@ -1332,6 +1352,8 @@ namespace FMOD.Studio
         private static extern RESULT FMOD_Studio_EventInstance_SetUserData                 (IntPtr _event, IntPtr userdata);
         [DllImport (STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_EventInstance_GetCPUUsage                 (IntPtr _event, out uint exclusive, out uint inclusive);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_EventInstance_GetMemoryUsage              (IntPtr _event, out MEMORY_USAGE memoryusage);
         #endregion
 
         #region wrapperinternal
@@ -1430,6 +1452,10 @@ namespace FMOD.Studio
         {
             return FMOD_Studio_Bus_GetCPUUsage(this.handle, out exclusive, out inclusive);
         }
+        public RESULT getMemoryUsage(out MEMORY_USAGE memoryusage)
+        {
+            return FMOD_Studio_Bus_GetMemoryUsage(this.handle, out memoryusage);
+        }
 
         #region importfunctions
         [DllImport(STUDIO_VERSION.dll)]
@@ -1460,6 +1486,8 @@ namespace FMOD.Studio
         private static extern RESULT FMOD_Studio_Bus_GetChannelGroup      (IntPtr bus, out IntPtr group);
         [DllImport(STUDIO_VERSION.dll)]
         private static extern RESULT FMOD_Studio_Bus_GetCPUUsage          (IntPtr bus, out uint exclusive, out uint inclusive);
+        [DllImport(STUDIO_VERSION.dll)]
+        private static extern RESULT FMOD_Studio_Bus_GetMemoryUsage       (IntPtr bus, out MEMORY_USAGE memoryusage);
         #endregion
 
         #region wrapperinternal

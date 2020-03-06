@@ -1,6 +1,6 @@
 /* ======================================================================================== */
 /* FMOD Core API - DSP header file.                                                         */
-/* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2019.                               */
+/* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2020.                               */
 /*                                                                                          */
 /* Use this header if you are wanting to develop your own DSP plugin to use with FMODs      */
 /* dsp system.  With this header you can make your own DSP plugin that FMOD can             */
@@ -216,9 +216,9 @@ namespace FMOD
     {
         public DSP_PARAMETER_TYPE   type;            /* [w] Type of this parameter. */
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public char[]               name;            /* [w] Name of the parameter to be displayed (ie "Cutoff frequency"). */
+        public byte[]               name;            /* [w] Name of the parameter to be displayed (ie "Cutoff frequency"). */
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public char[]               label;           /* [w] Short string to be put next to value to denote the unit type (ie "hz"). */
+        public byte[]               label;           /* [w] Short string to be put next to value to denote the unit type (ie "hz"). */
         public string               description;     /* [w] Description of the parameter to be displayed as a help item / tooltip for this parameter. */
 
         public DSP_PARAMETER_DESC_UNION desc;

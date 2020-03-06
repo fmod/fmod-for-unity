@@ -53,13 +53,13 @@ namespace FMODUnity
                 if (string.IsNullOrEmpty(settings.SourceProjectPath))
                 {
                     valid = false;
-                    reason = "FMOD Studio Project path not set";
+                    reason = "The FMOD Studio project path must be set to an .fspro file.";
                     return;
                 }
                 if (!File.Exists(settings.SourceProjectPath))
                 {
                     valid = false;
-                    reason = "FMOD Studio Project not found";
+                    reason = string.Format("The FMOD Studio project path '{0}' does not exist.", settings.SourceProjectPath);
                     return;
                 }
 
@@ -72,7 +72,7 @@ namespace FMODUnity
                     )
                 {
                     valid = false;
-                    reason = "FMOD Studio Project does not contain any built data. Please build your project in FMOD Studio.";
+                    reason = string.Format("The FMOD Studio project '{0}' does not contain any built banks. Please build your project in FMOD Studio.", settings.SourceProjectPath);
                     return;
                 }
             }
@@ -81,13 +81,13 @@ namespace FMODUnity
                 if (String.IsNullOrEmpty(settings.SourceBankPath))
                 {
                     valid = false;
-                    reason = "Build path not set";
+                    reason = "The build path has not been set.";
                     return;
                 }
                 if (!Directory.Exists(settings.SourceBankPath))
                 {
                     valid = false;
-                    reason = "Build path doesn't exist";
+                    reason = string.Format("The build path '{0}' does not exist.", settings.SourceBankPath);
                     return;
                 }
 
@@ -96,7 +96,7 @@ namespace FMODUnity
                     if (Directory.GetDirectories(settings.SourceBankPath).Length == 0)
                     {
                         valid = false;
-                        reason = "Build path doesn't contain any platform folders";
+                        reason = string.Format("Build path '{0}' does not contain any platform sub-directories. Please check that the build path is correct.", settings.SourceBankPath);
                         return;
                     }
                 }
@@ -105,7 +105,7 @@ namespace FMODUnity
                     if (Directory.GetFiles(settings.SourceBankPath, "*.strings.bank").Length == 0)
                     {
                         valid = false;
-                        reason = "Build path doesn't contain the contents of an FMOD Studio Build";
+                        reason = string.Format("Build path '{0}' does not contain any built banks.", settings.SourceBankPath);
                         return;
                     }
                 }
@@ -323,7 +323,7 @@ namespace FMODUnity
             uint version;
             CheckResult(lowlevel.getVersion(out version));
 
-            EditorUtility.DisplayDialog("FMOD Studio Unity Integration", "Version: " + VerionNumberToString(version) + "\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2019 \n\nSee LICENSE.TXT for additional license information.", "OK");
+            EditorUtility.DisplayDialog("FMOD Studio Unity Integration", "Version: " + VerionNumberToString(version) + "\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2020 \n\nSee LICENSE.TXT for additional license information.", "OK");
         }
 
         [MenuItem("FMOD/Consolidate Plugin Files")]
