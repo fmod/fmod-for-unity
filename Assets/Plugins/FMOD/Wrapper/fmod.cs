@@ -1,6 +1,6 @@
 /* ========================================================================================== */
 /*                                                                                            */
-/* FMOD Studio - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2019.          */
+/* FMOD Studio - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2020.          */
 /*                                                                                            */
 /* ========================================================================================== */
 
@@ -17,7 +17,7 @@ namespace FMOD
     */
     public class VERSION
     {
-        public const int    number = 0x00011012;
+        public const int    number = 0x00011020;
 #if   (UNITY_IPHONE || UNITY_TVOS || UNITY_SWITCH || UNITY_WEBGL) && !UNITY_EDITOR
         public const string dll    = "__Internal";
 #elif (UNITY_PS4 && DEVELOPMENT_BUILD)
@@ -29,7 +29,7 @@ namespace FMOD
 #elif (UNITY_PSP2 || UNITY_WIIU) && !UNITY_EDITOR
         public const string dll    = "libfmodstudio";
 /* Linux defines moved before the Windows define, otherwise Linux Editor tries to use Win lib when selected as build target.*/
-#elif (UNITY_EDITOR_LINUX) || ((UNITY_STANDALONE_LINUX || UNITY_ANDROID || UNITY_XBOXONE) && DEVELOPMENT_BUILD)
+#elif (UNITY_EDITOR_LINUX) || ((UNITY_STANDALONE_LINUX || UNITY_ANDROID || UNITY_XBOXONE || UNITY_STADIA) && DEVELOPMENT_BUILD)
         public const string dll    = "fmodL";
 #elif (UNITY_EDITOR_OSX || UNITY_EDITOR_WIN) || ((UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN) && DEVELOPMENT_BUILD)
         public const string dll    = "fmodstudioL";
@@ -3983,7 +3983,14 @@ namespace FMOD
         }
         public RESULT getParameterInfo(int index, out DSP_PARAMETER_DESC desc)
         {
-            return FMOD5_DSP_GetParameterInfo(this.handle, index, out desc);
+            IntPtr descPtr;
+            RESULT result = FMOD5_DSP_GetParameterInfo(this.handle, index, out descPtr);
+            #if (UNITY_5 || UNITY_2017_1_OR_NEWER) && !NET_4_6
+            desc = (DSP_PARAMETER_DESC)Marshal.PtrToStructure(descPtr, typeof(DSP_PARAMETER_DESC));
+            #else
+            desc = Marshal.PtrToStructure<DSP_PARAMETER_DESC>(descPtr);
+            #endif // (UNITY_5 || UNITY_2017_1_OR_NEWER) && !NET_4_6
+            return result;
         }
         public RESULT getDataParameterIndex(int datatype, out int index)
         {
@@ -4111,7 +4118,7 @@ namespace FMOD
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_DSP_GetNumParameters          (IntPtr dsp, out int numparams);
         [DllImport(VERSION.dll)]
-        private static extern RESULT FMOD5_DSP_GetParameterInfo          (IntPtr dsp, int index, out DSP_PARAMETER_DESC desc);
+        private static extern RESULT FMOD5_DSP_GetParameterInfo          (IntPtr dsp, int index, out IntPtr desc);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_DSP_GetDataParameterIndex     (IntPtr dsp, int datatype, out int index);
         [DllImport(VERSION.dll)]

@@ -89,6 +89,26 @@ namespace FMODUnity
             HandleGameEvent(EmitterGameEvent.CollisionExit2D);
         }
 
+        void OnMouseEnter()
+        {
+            HandleGameEvent(EmitterGameEvent.MouseEnter);
+        }
+
+        void OnMouseExit()
+        {
+            HandleGameEvent(EmitterGameEvent.MouseExit);
+        }
+
+        void OnMouseDown()
+        {
+            HandleGameEvent(EmitterGameEvent.MouseDown);
+        }
+
+        void OnMouseUp()
+        {
+            HandleGameEvent(EmitterGameEvent.MouseUp);
+        }
+
         void HandleGameEvent(EmitterGameEvent gameEvent)
         {
             if (TriggerEvent == gameEvent)

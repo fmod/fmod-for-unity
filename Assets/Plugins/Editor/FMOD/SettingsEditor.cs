@@ -31,6 +31,13 @@ namespace FMODUnity
         bool hasBankSourceChanged = false;
         string targetAssetPath;
         bool focused = false;
+        
+        enum SourceType : uint
+        {
+            Project = 0,
+            Single,
+            Multi
+        }
 
         string PlatformLabel(FMODPlatform platform)
         {
@@ -70,6 +77,8 @@ namespace FMODUnity
                     return "High-End Mobile";
                 case FMODPlatform.MobileLow:
                     return "Low-End Mobile";
+                case FMODPlatform.Stadia:
+                    return "Stadia";
             }
             return "Unknown";
         }
@@ -390,13 +399,13 @@ namespace FMODUnity
 
             GUI.skin.FindStyle("HelpBox").richText = true;
 
-            int sourceType = settings.HasSourceProject ? 0 : (settings.HasPlatforms ? 2 : 1);
+            SourceType sourceType = settings.HasSourceProject ? SourceType.Project : (settings.HasPlatforms ? SourceType.Multi : SourceType.Single);
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.BeginVertical();
-            sourceType = GUILayout.Toggle(sourceType == 0, "Project", "Button") ? 0 : sourceType;
-            sourceType = GUILayout.Toggle(sourceType == 1, "Single Platform Build", "Button") ? 1 : sourceType;
-            sourceType = GUILayout.Toggle(sourceType == 2, "Multiple Platform Build", "Button") ? 2 : sourceType;
+            sourceType = GUILayout.Toggle(sourceType == SourceType.Project, "Project", "Button") ? 0 : sourceType;
+            sourceType = GUILayout.Toggle(sourceType == SourceType.Single, "Single Platform Build", "Button") ? SourceType.Single : sourceType;
+            sourceType = GUILayout.Toggle(sourceType == SourceType.Multi, "Multiple Platform Build", "Button") ? SourceType.Multi : sourceType;
             EditorGUILayout.EndVertical();
             EditorGUILayout.BeginVertical();
 
@@ -412,17 +421,20 @@ namespace FMODUnity
             EditorGUILayout.Space();
 
             
-            if (sourceType == 0)
+            if (sourceType == SourceType.Project)
             {
                 EditorGUILayout.BeginHorizontal();
-                string oldPath = settings.SourceProjectPathUnformatted;
+                string oldPath = settings.SourceProjectPath;
                 EditorGUILayout.PrefixLabel("Studio Project Path", GUI.skin.textField, style);
 
                 EditorGUI.BeginChangeCheck();
-                settings.SourceProjectPathUnformatted = EditorGUILayout.TextField(GUIContent.none, settings.SourceProjectPathUnformatted);
+                string newPath = EditorGUILayout.TextField(GUIContent.none, settings.SourceProjectPath);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    settings.SourceProjectPath = settings.SourceProjectPathUnformatted;
+                    if (newPath.EndsWith(".fspro"))
+                    {
+                        settings.SourceProjectPath = newPath;
+                    }
                 }
 
                 if (GUILayout.Button("Browse", GUILayout.ExpandWidth(false)))
@@ -431,39 +443,36 @@ namespace FMODUnity
                     string path = EditorUtility.OpenFilePanel("Locate Studio Project", oldPath, "fspro");
                     if (!String.IsNullOrEmpty(path))
                     {
-                        path = MakePathRelativeToProject(path);
-                        settings.SourceProjectPathUnformatted = path;
-                        settings.SourceProjectPath = path;
+                        settings.SourceProjectPath = MakePathRelative(path);
                         this.Repaint();
                     }
                 }
                 EditorGUILayout.EndHorizontal();
 
                 // Cache in settings for runtime access in play-in-editor mode
-                string bankPath = EditorUtils.GetBankDirectoryUnformatted();
-                settings.SourceBankPathUnformatted = bankPath;
+                string bankPath = EditorUtils.GetBankDirectory();
                 settings.SourceBankPath = bankPath;
                 settings.HasPlatforms = true;
                 settings.HasSourceProject = true;
 
                 // First time project path is set or changes, copy to streaming assets
-                if (settings.SourceProjectPathUnformatted != oldPath)
+                if (settings.SourceProjectPath != oldPath)
                 {
                     hasBankSourceChanged = true;
                 }
             }
 
-            if (sourceType == 1 || sourceType == 2)
+            if (sourceType == SourceType.Single || sourceType == SourceType.Multi)
             {
                 EditorGUILayout.BeginHorizontal();
-                string oldPath = settings.SourceBankPathUnformatted;
+                string oldPath = settings.SourceBankPath;
                 EditorGUILayout.PrefixLabel("Build Path", GUI.skin.textField, style);
 
                 EditorGUI.BeginChangeCheck();
-                settings.SourceBankPathUnformatted = EditorGUILayout.TextField(GUIContent.none, settings.SourceBankPathUnformatted);
+                string newPath = EditorGUILayout.TextField(GUIContent.none, settings.SourceBankPath);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    settings.SourceBankPath = settings.SourceBankPathUnformatted;
+                    settings.SourceBankPath = newPath;
                 }
 
                 if (GUILayout.Button("Browse", GUILayout.ExpandWidth(false)))
@@ -472,29 +481,20 @@ namespace FMODUnity
                     var path = EditorUtility.OpenFolderPanel("Locate Build Folder", oldPath, null);
                     if (!String.IsNullOrEmpty(path))
                     {
-                        path = MakePathRelativeToProject(path);
-                        settings.SourceBankPathUnformatted = path;
+                        path = MakePathRelative(path);
                         settings.SourceBankPath = path;
                     }
                 }
                 EditorGUILayout.EndHorizontal();
 
-                settings.HasPlatforms = (sourceType == 2);
+                settings.HasPlatforms = (sourceType == SourceType.Multi);
                 settings.HasSourceProject = false;
 
                 // First time project path is set or changes, copy to streaming assets
-                if (settings.SourceBankPathUnformatted != oldPath)
+                if (settings.SourceBankPath != oldPath)
                 {
                     hasBankSourceChanged = true;
                 }
-            }
-
-            if ((settings.HasSourceProject && !settings.SourceProjectPathUnformatted.Equals(settings.SourceProjectPath)) ||
-                    (sourceType >= 1 && !settings.SourceBankPathUnformatted.Equals(settings.SourceBankPath)))
-            {
-                EditorGUI.BeginDisabledGroup(true);
-                EditorGUILayout.TextField("Platform specific path", sourceType >= 1 ? settings.SourceBankPath : settings.SourceProjectPath);
-                EditorGUI.EndDisabledGroup();
             }
 
             bool validBanks;
@@ -515,34 +515,45 @@ namespace FMODUnity
             {
                 hasBankTargetChanged = true;
                 settings.ImportType = importType;
+
+                bool deleteBanks = EditorUtility.DisplayDialog(
+                    "FMOD Bank Import Type Changed", "Do you want to delete the " + (importType == ImportType.AssetBundle ? "StreamingAssets" : "AssetBundle") + " banks in " + (importType == ImportType.AssetBundle ? Application.streamingAssetsPath : Application.dataPath + '/' + settings.TargetAssetPath)
+                    , "Yes", "No");
+                if (deleteBanks)
+                {
+                    // Delete the old banks
+                    EventManager.removeBanks = true;
+                    EventManager.RefreshBanks();
+                }
             }
 
             // ----- Text Assets -------------
-            EditorGUI.BeginDisabledGroup(settings.ImportType != ImportType.AssetBundle);
-            GUI.SetNextControlName("targetAssetPath");
-            targetAssetPath = EditorGUILayout.TextField("FMOD Asset Folder", string.IsNullOrEmpty(targetAssetPath) ? settings.TargetAssetPath : targetAssetPath);
-            if (GUI.GetNameOfFocusedControl() == "targetAssetPath")
+            if (settings.ImportType == ImportType.AssetBundle)
             {
-                focused = true;
-                if (Event.current.isKey)
+                GUI.SetNextControlName("targetAssetPath");
+                targetAssetPath = EditorGUILayout.TextField("FMOD Asset Folder", string.IsNullOrEmpty(targetAssetPath) ? settings.TargetAssetPath : targetAssetPath);
+                if (GUI.GetNameOfFocusedControl() == "targetAssetPath")
                 {
-                    switch (Event.current.keyCode)
+                    focused = true;
+                    if (Event.current.isKey)
                     {
-                        case KeyCode.Return:
-                        case KeyCode.KeypadEnter:
-                            settings.TargetAssetPath = targetAssetPath;
-                            hasBankTargetChanged = true;
-                            break;
+                        switch (Event.current.keyCode)
+                        {
+                            case KeyCode.Return:
+                            case KeyCode.KeypadEnter:
+                                settings.TargetAssetPath = targetAssetPath;
+                                hasBankTargetChanged = true;
+                                break;
+                        }
                     }
                 }
+                else if (focused)
+                {
+                    settings.TargetAssetPath = targetAssetPath;
+                    hasBankTargetChanged = true;
+                    focused = false;
+                }
             }
-            else if (focused)
-            {
-                settings.TargetAssetPath = targetAssetPath;
-                hasBankTargetChanged = true;
-                focused = false;
-            }
-            EditorGUI.EndDisabledGroup();
 
             // ----- Logging -----------------
             EditorGUILayout.Separator();
@@ -668,7 +679,7 @@ namespace FMODUnity
             // ----- Windows ----------------------------------------------
             DisplayPlatform(FMODPlatform.Desktop, null);
             DisplayPlatform(FMODPlatform.Mobile, new FMODPlatform[] { FMODPlatform.MobileHigh, FMODPlatform.MobileLow, FMODPlatform.PSVita, FMODPlatform.AppleTV });
-            DisplayPlatform(FMODPlatform.Console, new FMODPlatform[] { FMODPlatform.XboxOne, FMODPlatform.PS4, FMODPlatform.WiiU });
+            DisplayPlatform(FMODPlatform.Console, new FMODPlatform[] { FMODPlatform.XboxOne, FMODPlatform.PS4, FMODPlatform.WiiU, FMODPlatform.Stadia });
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -685,11 +696,61 @@ namespace FMODUnity
             }
         }
 
-        private string MakePathRelativeToProject(string path)
+        private string MakePathRelative(string path)
         {
+            if (string.IsNullOrEmpty(path))
+                return "";
             string fullPath = Path.GetFullPath(path);
             string fullProjectPath = Path.GetFullPath(Environment.CurrentDirectory + Path.DirectorySeparatorChar);
-            return fullPath.Replace(fullProjectPath, "");
+
+            // If the path contains the Unity project path remove it and return the result
+            if (fullPath.Contains(fullProjectPath))
+            {
+                return fullPath.Replace(fullProjectPath, "");
+            }
+            // If not, attempt to find a relative path on the same drive
+            else if (Path.GetPathRoot(fullPath) == Path.GetPathRoot(fullProjectPath))
+            {
+                // Remove trailing slash from project path for split count simplicity
+                if (fullProjectPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.CurrentCulture)) fullProjectPath = fullProjectPath.Substring(0, fullProjectPath.Length - 1);
+
+                string[] fullPathSplit = fullPath.Split(Path.DirectorySeparatorChar);
+                string[] projectPathSplit = fullProjectPath.Split(Path.DirectorySeparatorChar);
+                int minNumSplits = Mathf.Min(fullPathSplit.Length, projectPathSplit.Length);
+                int numCommonElements = 0;
+                for (int i = 0; i < minNumSplits; i++)
+                {
+                    if (fullPathSplit[i] == projectPathSplit[i])
+                    {
+                        numCommonElements++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                string result = "";
+                int fullPathSplitLength = fullPathSplit.Length;
+                for (int i = numCommonElements; i < fullPathSplitLength; i++)
+                {
+                    result += fullPathSplit[i];
+                    if (i < fullPathSplitLength - 1)
+                    {
+                        result += '/';
+                    }
+                }
+
+                int numAdditionalElementsInProjectPath = projectPathSplit.Length - numCommonElements;
+                for (int i = 0; i < numAdditionalElementsInProjectPath; i++)
+                {
+                    result = "../" + result;
+                }
+
+                return result;
+
+            }
+            // Otherwise return the full path
+            return fullPath;
         }
     }
 }

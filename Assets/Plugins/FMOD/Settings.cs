@@ -34,6 +34,7 @@ namespace FMODUnity
         UWP,
         Switch,
         WebGL,
+        Stadia,
         Count,
     }
 
@@ -138,40 +139,30 @@ namespace FMODUnity
         {
             get
             {
-                if (String.IsNullOrEmpty(sourceProjectPath) && !String.IsNullOrEmpty(SourceProjectPathUnformatted))
-                {
-                    sourceProjectPath = GetPlatformSpecificPath(SourceProjectPathUnformatted);
-                }
                 return sourceProjectPath;
             }
             set
             {
-                sourceProjectPath = GetPlatformSpecificPath(value);
+                sourceProjectPath = value;
             }
         }
 
         [SerializeField]
-        public string SourceProjectPathUnformatted;
-
         private string sourceBankPath;
         public string SourceBankPath
         {
             get
             {
-                if (String.IsNullOrEmpty(sourceBankPath) && !String.IsNullOrEmpty(SourceBankPathUnformatted))
-                {
-                    sourceBankPath = GetPlatformSpecificPath(SourceBankPathUnformatted);
-                }
                 return sourceBankPath;
             }
             set
             {
-            	sourceBankPath = GetPlatformSpecificPath(value);
+            	sourceBankPath = value;
             }
         }
 
         [SerializeField]
-        public string SourceBankPathUnformatted;
+        public string SourceBankPathUnformatted; // Kept as to not break existing projects
 
         [SerializeField]
         public bool AutomaticEventLoading;
@@ -245,6 +236,7 @@ namespace FMODUnity
                 case FMODPlatform.XboxOne:
                 case FMODPlatform.PS4:
                 case FMODPlatform.WiiU:
+                case FMODPlatform.Stadia:
                     return FMODPlatform.Console;
                 case FMODPlatform.Desktop:
                 case FMODPlatform.Console:
@@ -404,21 +396,25 @@ namespace FMODUnity
             AutomaticEventLoading = true;
             AutomaticSampleLoading = false;
             TargetAssetPath = "";
+
+            // Kept as to not break existing projects
+            if (!string.IsNullOrEmpty(SourceBankPathUnformatted))
+            {
+                SourceBankPath = SourceBankPathUnformatted;
+                SourceBankPathUnformatted = null;
+            }
         }
 
-        private string GetPlatformSpecificPath(string path)
+        #if UNITY_EDITOR
+        private void OnEnable()
         {
-            if (String.IsNullOrEmpty(path))
+            // Remove the FMODStudioCache if in the old location
+            string oldCache = "Assets/FMODStudioCache.asset";
+            if (File.Exists(oldCache))
             {
-                return path;
+                AssetDatabase.DeleteAsset(oldCache);
             }
-
-            if (Path.DirectorySeparatorChar == '/')
-            {
-                return path.Replace('\\', '/');
-            }
-            return path.Replace('/', '\\');
         }
+        #endif
     }
-
 }

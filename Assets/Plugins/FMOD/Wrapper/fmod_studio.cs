@@ -1,6 +1,6 @@
 /* ========================================================================================== */
 /*                                                                                            */
-/* FMOD System - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2019.      */
+/* FMOD System - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2020.      */
 /*                                                                                            */
 /* ========================================================================================== */
 
@@ -19,7 +19,7 @@ namespace FMOD.Studio
         public const string dll     = "libfmodstudioL";
 #elif (UNITY_PS4 || UNITY_WIIU || UNITY_PSP2) && !UNITY_EDITOR
         public const string dll     = "libfmodstudio";
-#elif UNITY_EDITOR || ((UNITY_STANDALONE || UNITY_ANDROID || UNITY_XBOXONE) && DEVELOPMENT_BUILD)
+#elif UNITY_EDITOR || ((UNITY_STANDALONE || UNITY_ANDROID || UNITY_XBOXONE || UNITY_STADIA) && DEVELOPMENT_BUILD)
         public const string dll     = "fmodstudioL";
 #else
         public const string dll     = "fmodstudio";

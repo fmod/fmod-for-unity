@@ -28,6 +28,9 @@ namespace FMODUnity
 
         private bool hasTriggered = false;
         private bool isQuitting = false;
+        private bool isOneshot = false;
+
+        private const string SnapshotString = "snapshot";
 
         void Start() 
         {
@@ -65,6 +68,11 @@ namespace FMODUnity
                 if (instance.isValid())
                 {
                     RuntimeManager.DetachInstanceFromGameObject(instance);
+                    if (eventDescription.isValid() && isOneshot)
+                    {
+                        instance.release();
+                        instance.clearHandle();
+                    }
                 }
 
                 if (Preload)
@@ -136,6 +144,26 @@ namespace FMODUnity
             HandleGameEvent(EmitterGameEvent.CollisionExit2D);
         }
 
+        void OnMouseEnter()
+        {
+            HandleGameEvent(EmitterGameEvent.MouseEnter);
+        }
+
+        void OnMouseExit()
+        {
+            HandleGameEvent(EmitterGameEvent.MouseExit);
+        }
+
+        void OnMouseDown()
+        {
+            HandleGameEvent(EmitterGameEvent.MouseDown);
+        }
+
+        void OnMouseUp()
+        {
+            HandleGameEvent(EmitterGameEvent.MouseUp);
+        }
+
         void HandleGameEvent(EmitterGameEvent gameEvent)
         {
             if (PlayEvent == gameEvent)
@@ -170,8 +198,7 @@ namespace FMODUnity
                 Lookup();
             }
 
-            bool isOneshot = false;
-            if (!Event.StartsWith("snapshot", StringComparison.CurrentCultureIgnoreCase))
+            if (!Event.StartsWith(SnapshotString, StringComparison.CurrentCultureIgnoreCase))
             {
                 eventDescription.isOneshot(out isOneshot);
             }
@@ -247,16 +274,24 @@ namespace FMODUnity
                 instance.setParameterValue(name, value);
             }
         }
-        
+
+        public void SetParameter(int index, float value)
+        {
+            if (instance.isValid())
+            {
+                instance.setParameterValueByIndex(index, value);
+            }
+        }
+
         public bool IsPlaying()
         {
-            if (instance.isValid() && instance.isValid())
+            if (instance.isValid())
             {
                 FMOD.Studio.PLAYBACK_STATE playbackState;
                 instance.getPlaybackState(out playbackState);
                 return (playbackState != FMOD.Studio.PLAYBACK_STATE.STOPPED);
             }
             return false;
-        }        
+        }
     }
 }

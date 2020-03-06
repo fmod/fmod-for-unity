@@ -94,7 +94,11 @@ namespace FMODUnity
         CollisionEnter2D,
         CollisionExit2D,
         ObjectEnable,
-        ObjectDisable
+        ObjectDisable,
+        MouseEnter,
+        MouseExit,
+        MouseDown,
+        MouseUp,
     }
 
     public enum LoaderGameEvent
@@ -296,7 +300,9 @@ namespace FMODUnity
             #elif UNITY_SWITCH
             return FMODPlatform.Switch;
             #elif UNITY_WEBGL
-            return FMODPlatform.WebGL;            
+            return FMODPlatform.WebGL;
+            #elif UNITY_STADIA
+            return FMODPlatform.Stadia;
             #endif
         }
 
@@ -407,9 +413,11 @@ namespace FMODUnity
                 case BuildTarget.PSP2:
                     return FMODPlatform.PSVita;
                 #endif
+                #if !UNITY_2019_2_OR_NEWER
                 case BuildTarget.StandaloneLinux:
-                case BuildTarget.StandaloneLinux64:
+                #endif
                 case BuildTarget.StandaloneLinuxUniversal:
+                case BuildTarget.StandaloneLinux64:
                     return FMODPlatform.Linux;
                 #if UNITY_2017_3_OR_NEWER
                 case BuildTarget.StandaloneOSX:
@@ -455,6 +463,10 @@ namespace FMODUnity
                 #if UNITY_WEBGL
                 case BuildTarget.WebGL:
                     return FMODPlatform.WebGL;
+                #endif
+                #if UNITY_STADIA
+                case BuildTarget.Stadia:
+                    return FMODPlatform.Stadia;
                 #endif
                 default:
                     return FMODPlatform.None;

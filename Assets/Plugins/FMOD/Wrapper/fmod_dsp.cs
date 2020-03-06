@@ -1,6 +1,6 @@
 /*$ preserve start $*/
 /* ========================================================================================== */
-/* FMOD Studio - DSP header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2019.  */
+/* FMOD Studio - DSP header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2020.  */
 /*                                                                                            */
 /* Use this header if you are interested in delving deeper into the FMOD software mixing /    */
 /* DSP engine.  In this header you can find parameter structures for FMOD system registered   */
@@ -439,9 +439,9 @@ namespace FMOD
     {
         public DSP_PARAMETER_TYPE   type;            /* [w] Type of this parameter. */
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public char[]               name;            /* [w] Name of the parameter to be displayed (ie "Cutoff frequency"). */
+        public byte[]               name;            /* [w] Name of the parameter to be displayed (ie "Cutoff frequency"). */
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public char[]               label;           /* [w] Short string to be put next to value to denote the unit type (ie "hz"). */
+        public byte[]               label;           /* [w] Short string to be put next to value to denote the unit type (ie "hz"). */
         public string               description;     /* [w] Description of the parameter to be displayed as a help item / tooltip for this parameter. */
 
         public DSP_PARAMETER_DESC_UNION desc;
@@ -610,7 +610,7 @@ namespace FMOD
         
         [MarshalAs(UnmanagedType.ByValArray,SizeConst=32)]
         private IntPtr[] spectrum_internal;                           /* [r] Per channel spectrum arrays.  See remarks for more. */
-        
+
         public float[][] spectrum
         {
             get
@@ -625,6 +625,21 @@ namespace FMOD
                 
                 return buffer;
             }
+        }
+
+        public void getSpectrum(ref float[][] buffer)
+        {
+            int bufferLength = Math.Min(buffer.Length, numchannels);
+            for (int i = 0; i < bufferLength; ++i)
+            {
+                getSpectrum(i, ref buffer[i]);
+            }
+        }
+
+        public void getSpectrum(int channel, ref float[] buffer)
+        {
+            int bufferLength = Math.Min(buffer.Length, length);
+            Marshal.Copy(spectrum_internal[channel], buffer, 0, bufferLength);
         }
     }
 
@@ -776,18 +791,18 @@ namespace FMOD
     [StructLayout(LayoutKind.Sequential)]
     public struct DSP_STATE_FUNCTIONS
     {
-        DSP_ALLOC_FUNC                  alloc;                  /* [r] Memory allocation callback. Use this for all dynamic memory allocation within the plugin. */
-        DSP_REALLOC_FUNC                realloc;                /* [r] Memory reallocation callback. */
-        DSP_FREE_FUNC                   free;                   /* [r] Memory free callback. */
-        DSP_GETSAMPLERATE_FUNC          getsamplerate;          /* [r] Callback for getting the system samplerate. */
-        DSP_GETBLOCKSIZE_FUNC           getblocksize;           /* [r] Callback for getting the system's block size.  DSPs will be requested to process blocks of varying length up to this size.*/
-        IntPtr                          dft;                    /* [r] Struct containing callbacks for performing FFTs and inverse FFTs. */
-        IntPtr                          pan;                    /* [r] Pointer to a structure of callbacks for calculating pan, up-mix and down-mix matrices. */
-        DSP_GETSPEAKERMODE_FUNC         getspeakermode;         /* [r] Callback for getting the system's speaker modes.  One is the mixer's default speaker mode, the other is the output mode the system is downmixing or upmixing to.*/
-        DSP_GETCLOCK_FUNC               getclock;               /* [r] Callback for getting the clock of the current DSP, as well as the subset of the input buffer that contains the signal */
-        DSP_GETLISTENERATTRIBUTES_FUNC  getlistenerattributes;  /* [r] Callback for getting the absolute listener attributes set via the API (returned as left-handed co-ordinates). */
-        DSP_LOG_FUNC                    log;                    /* [r] Function to write to the FMOD logging system. */
-        DSP_GETUSERDATA_FUNC            getuserdata;            /* [r] Function to get the user data attached to this DSP. See FMOD_DSP_DESCRIPTION::userdata. */
+        public DSP_ALLOC_FUNC                  alloc;                  /* [r] Memory allocation callback. Use this for all dynamic memory allocation within the plugin. */
+        public DSP_REALLOC_FUNC                realloc;                /* [r] Memory reallocation callback. */
+        public DSP_FREE_FUNC                   free;                   /* [r] Memory free callback. */
+        public DSP_GETSAMPLERATE_FUNC          getsamplerate;          /* [r] Callback for getting the system samplerate. */
+        public DSP_GETBLOCKSIZE_FUNC           getblocksize;           /* [r] Callback for getting the system's block size.  DSPs will be requested to process blocks of varying length up to this size.*/
+        public IntPtr                          dft;                    /* [r] Struct containing callbacks for performing FFTs and inverse FFTs. */
+        public IntPtr                          pan;                    /* [r] Pointer to a structure of callbacks for calculating pan, up-mix and down-mix matrices. */
+        public DSP_GETSPEAKERMODE_FUNC         getspeakermode;         /* [r] Callback for getting the system's speaker modes.  One is the mixer's default speaker mode, the other is the output mode the system is downmixing or upmixing to.*/
+        public DSP_GETCLOCK_FUNC               getclock;               /* [r] Callback for getting the clock of the current DSP, as well as the subset of the input buffer that contains the signal */
+        public DSP_GETLISTENERATTRIBUTES_FUNC  getlistenerattributes;  /* [r] Callback for getting the absolute listener attributes set via the API (returned as left-handed co-ordinates). */
+        public DSP_LOG_FUNC                    log;                    /* [r] Function to write to the FMOD logging system. */
+        public DSP_GETUSERDATA_FUNC            getuserdata;            /* [r] Function to get the user data attached to this DSP. See FMOD_DSP_DESCRIPTION::userdata. */
     }
 
     /*
@@ -1847,13 +1862,14 @@ namespace FMOD
     */
     public enum DSP_CHANNELMIX_OUTPUT : int
     {
-        DEFAULT,      /*  Output channel count = input channel count.  Mapping: See FMOD_SPEAKER enumeration. */
-        ALLMONO,      /*  Output channel count = 1.  Mapping: Mono, Mono, Mono, Mono, Mono, Mono, ... (each channel all the way up to FMOD_MAX_CHANNEL_WIDTH channels are treated as if they were mono) */
-        ALLSTEREO,    /*  Output channel count = 2.  Mapping: Left, Right, Left, Right, Left, Right, ... (each pair of channels is treated as stereo all the way up to FMOD_MAX_CHANNEL_WIDTH channels) */
-        ALLQUAD,      /*  Output channel count = 4.  Mapping: Repeating pattern of Front Left, Front Right, Surround Left, Surround Right. */
-        ALL5POINT1,   /*  Output channel count = 6.  Mapping: Repeating pattern of Front Left, Front Right, Center, LFE, Surround Left, Surround Right. */
-        ALL7POINT1,   /*  Output channel count = 8.  Mapping: Repeating pattern of Front Left, Front Right, Center, LFE, Surround Left, Surround Right, Back Left, Back Right.  */
-        ALLLFE        /*  Output channel count = 6.  Mapping: Repeating pattern of LFE in a 5.1 output signal.  */
+        DEFAULT,            /*  Output channel count = input channel count.  Mapping: See FMOD_SPEAKER enumeration. */
+        ALLMONO,            /*  Output channel count = 1.  Mapping: Mono, Mono, Mono, Mono, Mono, Mono, ... (each channel all the way up to FMOD_MAX_CHANNEL_WIDTH channels are treated as if they were mono) */
+        ALLSTEREO,          /*  Output channel count = 2.  Mapping: Left, Right, Left, Right, Left, Right, ... (each pair of channels is treated as stereo all the way up to FMOD_MAX_CHANNEL_WIDTH channels) */
+        ALLQUAD,            /*  Output channel count = 4.  Mapping: Repeating pattern of Front Left, Front Right, Surround Left, Surround Right. */
+        ALL5POINT1,         /*  Output channel count = 6.  Mapping: Repeating pattern of Front Left, Front Right, Center, LFE, Surround Left, Surround Right. */
+        ALL7POINT1,         /*  Output channel count = 8.  Mapping: Repeating pattern of Front Left, Front Right, Center, LFE, Surround Left, Surround Right, Back Left, Back Right.  */
+        ALLLFE,             /*  Output channel count = 6.  Mapping: Repeating pattern of LFE in a 5.1 output signal.  */
+        ALL7POINT1POINT4    /*  Output channel count = 12. Mapping: Repeating pattern of Front Left, Front Right, Center, LFE, Surround Left, Surround Right, Back Left, Back Right, Top Front Left, Top Front Right, Top Back Left, Top Back Right.  */
     }
 
 
@@ -1917,7 +1933,39 @@ namespace FMOD
         GAIN_CH28,          /* (Type:float) - Channel #28 gain in dB.  -80.0 to 10.0.  Default = 0. */
         GAIN_CH29,          /* (Type:float) - Channel #29 gain in dB.  -80.0 to 10.0.  Default = 0. */
         GAIN_CH30,          /* (Type:float) - Channel #30 gain in dB.  -80.0 to 10.0.  Default = 0. */
-        GAIN_CH31           /* (Type:float) - Channel #31 gain in dB.  -80.0 to 10.0.  Default = 0. */
+        GAIN_CH31,           /* (Type:float) - Channel #31 gain in dB.  -80.0 to 10.0.  Default = 0. */
+        OUTPUT_CH0,         /* (Type:int)   - Input channel #0  Output channel.   0 to 31.  Default = 0. */
+        OUTPUT_CH1,         /* (Type:int)   - Input channel #1  Output channel.   0 to 31.  Default = 1. */
+        OUTPUT_CH2,         /* (Type:int)   - Input channel #2  Output channel.   0 to 31.  Default = 2. */
+        OUTPUT_CH3,         /* (Type:int)   - Input channel #3  Output channel.   0 to 31.  Default = 3. */
+        OUTPUT_CH4,         /* (Type:int)   - Input channel #4  Output channel.   0 to 31.  Default = 4. */
+        OUTPUT_CH5,         /* (Type:int)   - Input channel #5  Output channel.   0 to 31.  Default = 5. */
+        OUTPUT_CH6,         /* (Type:int)   - Input channel #6  Output channel.   0 to 31.  Default = 6. */
+        OUTPUT_CH7,         /* (Type:int)   - Input channel #7  Output channel.   0 to 31.  Default = 7. */
+        OUTPUT_CH8,         /* (Type:int)   - Input channel #8  Output channel.   0 to 31.  Default = 8. */
+        OUTPUT_CH9,         /* (Type:int)   - Input channel #9  Output channel.   0 to 31.  Default = 9. */
+        OUTPUT_CH10,        /* (Type:int)   - Input channel #10 Output channel.   0 to 31.  Default = 10. */
+        OUTPUT_CH11,        /* (Type:int)   - Input channel #11 Output channel.   0 to 31.  Default = 11. */
+        OUTPUT_CH12,        /* (Type:int)   - Input channel #12 Output channel.   0 to 31.  Default = 12. */
+        OUTPUT_CH13,        /* (Type:int)   - Input channel #13 Output channel.   0 to 31.  Default = 13. */
+        OUTPUT_CH14,        /* (Type:int)   - Input channel #14 Output channel.   0 to 31.  Default = 14. */
+        OUTPUT_CH15,        /* (Type:int)   - Input channel #15 Output channel.   0 to 31.  Default = 15. */
+        OUTPUT_CH16,        /* (Type:int)   - Input channel #16 Output channel.   0 to 31.  Default = 16. */
+        OUTPUT_CH17,        /* (Type:int)   - Input channel #17 Output channel.   0 to 31.  Default = 17. */
+        OUTPUT_CH18,        /* (Type:int)   - Input channel #18 Output channel.   0 to 31.  Default = 18. */
+        OUTPUT_CH19,        /* (Type:int)   - Input channel #19 Output channel.   0 to 31.  Default = 19. */
+        OUTPUT_CH20,        /* (Type:int)   - Input channel #20 Output channel.   0 to 31.  Default = 20. */
+        OUTPUT_CH21,        /* (Type:int)   - Input channel #21 Output channel.   0 to 31.  Default = 21. */
+        OUTPUT_CH22,        /* (Type:int)   - Input channel #22 Output channel.   0 to 31.  Default = 22. */
+        OUTPUT_CH23,        /* (Type:int)   - Input channel #23 Output channel.   0 to 31.  Default = 23. */
+        OUTPUT_CH24,        /* (Type:int)   - Input channel #24 Output channel.   0 to 31.  Default = 24. */
+        OUTPUT_CH25,        /* (Type:int)   - Input channel #25 Output channel.   0 to 31.  Default = 25. */
+        OUTPUT_CH26,        /* (Type:int)   - Input channel #26 Output channel.   0 to 31.  Default = 26. */
+        OUTPUT_CH27,        /* (Type:int)   - Input channel #27 Output channel.   0 to 31.  Default = 27. */
+        OUTPUT_CH28,        /* (Type:int)   - Input channel #28 Output channel.   0 to 31.  Default = 28. */
+        OUTPUT_CH29,        /* (Type:int)   - Input channel #29 Output channel.   0 to 31.  Default = 29. */
+        OUTPUT_CH30,        /* (Type:int)   - Input channel #30 Output channel.   0 to 31.  Default = 30. */
+        OUTPUT_CH31,        /* (Type:int)   - Input channel #31 Output channel.   0 to 31.  Default = 31. */
     }
 
 

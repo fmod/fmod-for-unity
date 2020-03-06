@@ -35,37 +35,11 @@ namespace FMODUnity
             {
                 string projectPath = Settings.Instance.SourceProjectPath;
                 string projectFolder = Path.GetDirectoryName(projectPath);
-                return Path.Combine(projectFolder, BuildFolder);            
+                return Path.Combine(projectFolder, BuildFolder);
             }
             else if (!String.IsNullOrEmpty(Settings.Instance.SourceBankPath))
             {
                 return Settings.Instance.SourceBankPath;
-            }
-            return null;
-        }
-
-        public static string GetBankDirectoryUnformatted()
-        {
-            if (Settings.Instance.HasSourceProject && !String.IsNullOrEmpty(Settings.Instance.SourceProjectPathUnformatted))
-            {
-                string projectPath = Settings.Instance.SourceProjectPathUnformatted;
-                char directorySeparator = '\\';
-                var folderIndex = projectPath.LastIndexOf(directorySeparator);
-                if (folderIndex < 0)
-                {
-                    directorySeparator = '/';
-                    folderIndex = projectPath.LastIndexOf(directorySeparator);
-                }
-                string projectFolder = "";
-                if (folderIndex > 0)
-                {
-                    projectFolder = projectPath.Substring(0, folderIndex);
-                }
-                return projectFolder + directorySeparator + BuildFolder;
-            }
-            else if (!String.IsNullOrEmpty(Settings.Instance.SourceBankPathUnformatted))
-            {
-                return Settings.Instance.SourceBankPathUnformatted;
             }
             return null;
         }
@@ -174,6 +148,7 @@ namespace FMODUnity
         {
             EditorApplication.update += Update;
             #if UNITY_2017_2_OR_NEWER
+            AssemblyReloadEvents.beforeAssemblyReload += HandleBeforeAssemblyReload;
             EditorApplication.playModeStateChanged += HandleOnPlayModeChanged;
             EditorApplication.pauseStateChanged += HandleOnPausedModeChanged;
             #else
@@ -182,6 +157,11 @@ namespace FMODUnity
         }
 
         #if UNITY_2017_2_OR_NEWER
+        static void HandleBeforeAssemblyReload()
+        {
+            DestroySystem();
+        }
+
         static void HandleOnPausedModeChanged(PauseState state)
         {
             if (RuntimeManager.IsInitialized && RuntimeManager.HasBanksLoaded)
@@ -224,6 +204,7 @@ namespace FMODUnity
 
         static void Update()
         {
+            #if !UNITY_2017_2_OR_NEWER
             // Compilation will cause scripts to reload, losing all state
             // This is the last chance to clean up FMOD and avoid a leak.
             if (EditorApplication.isCompiling)
@@ -231,6 +212,7 @@ namespace FMODUnity
                 DestroySystem();
                 RuntimeManager.Destroy();
             }
+            #endif
 
             // Update the editor system
             if (system.isValid())
@@ -378,7 +360,7 @@ namespace FMODUnity
             uint version;
             CheckResult(lowlevel.getVersion(out version));
 
-            EditorUtility.DisplayDialog("FMOD Studio Unity Integration", "Version: " + VerionNumberToString(version) + "\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2019 \n\nSee LICENSE.TXT for additional license information.", "OK");
+            EditorUtility.DisplayDialog("FMOD Studio Unity Integration", "Version: " + VerionNumberToString(version) + "\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2020 \n\nSee LICENSE.TXT for additional license information.", "OK");
         }
 
         static List<FMOD.Studio.Bank> masterBanks = new List<FMOD.Studio.Bank>();

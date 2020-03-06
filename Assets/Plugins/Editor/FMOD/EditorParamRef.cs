@@ -17,5 +17,7 @@ namespace FMODUnity
         public float Max;
         [SerializeField]
         public float Default;
+
+        public bool Exists;
     }
 }
