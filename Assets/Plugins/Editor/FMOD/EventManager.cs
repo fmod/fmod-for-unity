@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEditor.Callbacks;
-#if UNITY_2017_1_OR_NEWER
+#if UNITY_5_6_OR_NEWER
 using UnityEditor.Build;
 #endif
 #if UNITY_2018_1_OR_NEWER
@@ -785,7 +785,7 @@ namespace FMODUnity
                 BuildTargetChanged();
             }
         }
-        #else
+        #elif UNITY_5_6_OR_NEWER
         public class PreprocessBuild : IPreprocessBuild
         {
             public int callbackOrder { get { return 0; } }

@@ -189,7 +189,7 @@ namespace FMODUnity
                 #if UNITY_2017_2_OR_NEWER
             AssemblyReloadEvents.beforeAssemblyReload += HandleBeforeAssemblyReload;
             EditorApplication.playModeStateChanged += HandlePlayModeStateChange;
-                #elif UNITY_2017_1_OR_NEWER
+                #else
             EditorApplication.playmodeStateChanged += HandleOnPlayModeChanged;
                 #endif // UNITY_2017_2_OR_NEWER
             #endif // UNITY_EDITOR
@@ -563,7 +563,7 @@ retry:
             instance = null;
         }
 
-#if UNITY_EDITOR
+        #if UNITY_EDITOR
         public static void Destroy()
         {
             if (instance)
@@ -592,7 +592,7 @@ retry:
                 Destroy();
             }
         }
-        #elif UNITY_2017_1_OR_NEWER
+        #else
         void HandleOnPlayModeChanged()
         {
             if (!EditorApplication.isPlaying)
