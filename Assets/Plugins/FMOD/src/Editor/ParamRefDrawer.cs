@@ -68,9 +68,9 @@ namespace FMODUnity
 
             if (GUI.Button(searchRect, new GUIContent(browseIcon, "Search"), buttonStyle))
             {
-                var eventBrowser = EventBrowser.CreateInstance<EventBrowser>();
+                var eventBrowser = ScriptableObject.CreateInstance<EventBrowser>();
 
-                eventBrowser.SelectParameter(property);
+                eventBrowser.ChooseParameter(property);
                 var windowRect = position;
                 windowRect.position = GUIUtility.GUIToScreenPoint(windowRect.position);
                 windowRect.height = openRect.height + 1;

@@ -6,6 +6,16 @@ namespace FMODUnity
     {
         public string CollisionTag = "";
 
+        protected virtual void Start()
+        {
+            HandleGameEvent(EmitterGameEvent.ObjectStart);
+        }
+
+        protected virtual void OnDestroy()
+        {
+            HandleGameEvent(EmitterGameEvent.ObjectDestroy);
+        }
+
         void OnEnable()
         {
             HandleGameEvent(EmitterGameEvent.ObjectEnable);
@@ -16,9 +26,10 @@ namespace FMODUnity
             HandleGameEvent(EmitterGameEvent.ObjectDisable);
         }
 
+        #if UNITY_PHYSICS_EXIST || !UNITY_2019_1_OR_NEWER
         void OnTriggerEnter(Collider other)
         {
-            if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
+            if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag) || (other.attachedRigidbody && other.attachedRigidbody.CompareTag(CollisionTag)))
             {
                 HandleGameEvent(EmitterGameEvent.TriggerEnter);
             }
@@ -26,12 +37,14 @@ namespace FMODUnity
 
         void OnTriggerExit(Collider other)
         {
-            if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
+            if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag) || (other.attachedRigidbody && other.attachedRigidbody.CompareTag(CollisionTag)))
             {
                 HandleGameEvent(EmitterGameEvent.TriggerExit);
             }
         }
+        #endif
 
+        #if UNITY_PHYSICS2D_EXIST || !UNITY_2019_1_OR_NEWER
         void OnTriggerEnter2D(Collider2D other)
         {
             if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
@@ -47,6 +60,7 @@ namespace FMODUnity
                 HandleGameEvent(EmitterGameEvent.TriggerExit2D);
             }
         }
+        #endif
 
         void OnCollisionEnter()
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEditor;
@@ -15,7 +16,7 @@ namespace FMODUnity
             Texture openIcon = EditorGUIUtility.Load("FMOD/BrowserIcon.png") as Texture;
             Texture addIcon = EditorGUIUtility.Load("FMOD/AddIcon.png") as Texture;
 
-            EditorGUI.BeginProperty(position, label, property);
+            label = EditorGUI.BeginProperty(position, label, property);
             SerializedProperty pathProperty = property;
 
             Event e = Event.current;
@@ -59,9 +60,9 @@ namespace FMODUnity
 
             if (GUI.Button(searchRect, new GUIContent(browseIcon, "Search"), buttonStyle))
             {
-                var eventBrowser = EventBrowser.CreateInstance<EventBrowser>();
+                var eventBrowser = ScriptableObject.CreateInstance<EventBrowser>();
                 
-                eventBrowser.SelectEvent(property);
+                eventBrowser.ChooseEvent(property);
                 var windowRect = position;
                 windowRect.position = GUIUtility.GUIToScreenPoint(windowRect.position);
                 windowRect.height = openRect.height + 1;
@@ -84,9 +85,9 @@ namespace FMODUnity
                 EventManager.EventFromPath(pathProperty.stringValue) != null
                 )
             {
-                EventBrowser.ShowEventBrowser();
-                var eventBrowser = EditorWindow.GetWindow<EventBrowser>();
-                eventBrowser.JumpToEvent(pathProperty.stringValue);
+                EventBrowser.ShowWindow();
+                EventBrowser eventBrowser = EditorWindow.GetWindow<EventBrowser>();
+                eventBrowser.FrameEvent(pathProperty.stringValue);
             }
             
             if (!string.IsNullOrEmpty(pathProperty.stringValue) && EventManager.EventFromPath(pathProperty.stringValue) != null)
@@ -116,9 +117,7 @@ namespace FMODUnity
                     valueRect.y += baseHeight;
 
                     GUI.Label(labelRect, new GUIContent("<b>Banks</b>"), style);
-                    StringBuilder builder = new StringBuilder();
-                    eventRef.Banks.ForEach((x) => { builder.Append(Path.GetFileNameWithoutExtension(x.Path)); builder.Append(", "); });
-                    GUI.Label(valueRect, builder.ToString(0, builder.Length - 2));
+                    GUI.Label(valueRect, string.Join(", ", eventRef.Banks.Select(x => x.Name).ToArray()));
                     labelRect.y += baseHeight;
                     valueRect.y += baseHeight;
 

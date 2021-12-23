@@ -49,6 +49,9 @@ PluginImporter:
     tvOS:
       enabled: 1
       settings: {}
+    Switch:
+      enabled: 1
+      settings: {}
   userData: 
   assetBundleName: 
   assetBundleVariant: 

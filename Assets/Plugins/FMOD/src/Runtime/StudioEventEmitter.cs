@@ -1,5 +1,6 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace FMODUnity
 {
@@ -27,10 +28,33 @@ namespace FMODUnity
         private bool hasTriggered = false;
         private bool isQuitting = false;
         private bool isOneshot = false;
+        private List<ParamRef> cachedParams = new List<ParamRef>();
 
         private const string SnapshotString = "snapshot";
 
-        void Start() 
+        public bool IsActive { get; private set; }
+
+        public float MaxDistance
+        {
+            get
+            {
+                if (OverrideAttenuation)
+                {
+                    return OverrideMaxDistance;
+                }
+
+                if (!eventDescription.isValid())
+                {
+                    Lookup();
+                }
+
+                float maxDistance;
+                eventDescription.getMaximumDistance(out maxDistance);
+                return maxDistance;
+            }
+        }
+
+        protected override void Start() 
         {
             RuntimeUtils.EnforceLibraryOrder();
             if (Preload)
@@ -58,11 +82,12 @@ namespace FMODUnity
             isQuitting = true;
         }
 
-        void OnDestroy()
+        protected override void OnDestroy()
         {
             if (!isQuitting)
             {
                 HandleGameEvent(EmitterGameEvent.ObjectDestroy);
+
                 if (instance.isValid())
                 {
                     RuntimeManager.DetachInstanceFromGameObject(instance);
@@ -72,6 +97,8 @@ namespace FMODUnity
                         instance.clearHandle();
                     }
                 }
+
+                RuntimeManager.DeregisterActiveEmitter(this);
 
                 if (Preload)
                 {
@@ -119,6 +146,8 @@ namespace FMODUnity
                 return;
             }
 
+            cachedParams.Clear();
+
             if (!eventDescription.isValid())
             {
                 Lookup();
@@ -128,9 +157,25 @@ namespace FMODUnity
             {
                 eventDescription.isOneshot(out isOneshot);
             }
+
             bool is3D;
             eventDescription.is3D(out is3D);
 
+            IsActive = true;
+
+            if (is3D && !isOneshot && Settings.Instance.StopEventsOutsideMaxDistance)
+            {
+                RuntimeManager.RegisterActiveEmitter(this);
+                RuntimeManager.UpdateActiveEmitter(this, true);
+            }
+            else
+            {
+                PlayInstance();
+            }
+        }
+        
+        public void PlayInstance()
+        {
             if (!instance.isValid())
             {
                 instance.clearHandle();
@@ -143,6 +188,9 @@ namespace FMODUnity
                 instance.clearHandle();
             }
 
+            bool is3D;
+            eventDescription.is3D(out is3D);
+
             if (!instance.isValid())
             {
                 eventDescription.createInstance(out instance);
@@ -150,25 +198,40 @@ namespace FMODUnity
                 // Only want to update if we need to set 3D attributes
                 if (is3D)
                 {
-                    var rigidBody = GetComponent<Rigidbody>();
-                    var rigidBody2D = GetComponent<Rigidbody2D>();
                     var transform = GetComponent<Transform>();
-                    if (rigidBody)
+                    #if UNITY_PHYSICS_EXIST || !UNITY_2019_1_OR_NEWER
+                    if (GetComponent<Rigidbody>())
                     {
+                        Rigidbody rigidBody = GetComponent<Rigidbody>();
                         instance.set3DAttributes(RuntimeUtils.To3DAttributes(gameObject, rigidBody));
                         RuntimeManager.AttachInstanceToGameObject(instance, transform, rigidBody);
                     }
                     else
+                    #endif
+                    #if UNITY_PHYSICS2D_EXIST || !UNITY_2019_1_OR_NEWER
+                    if (GetComponent<Rigidbody2D>())
                     {
+                        var rigidBody2D = GetComponent<Rigidbody2D>();
                         instance.set3DAttributes(RuntimeUtils.To3DAttributes(gameObject, rigidBody2D));
                         RuntimeManager.AttachInstanceToGameObject(instance, transform, rigidBody2D);
+                    }
+                    else
+                    #endif
+                    {
+                        instance.set3DAttributes(RuntimeUtils.To3DAttributes(gameObject));
+                        RuntimeManager.AttachInstanceToGameObject(instance, transform);
                     }
                 }
             }
 
-            foreach(var param in Params)
+            foreach (var param in Params)
             {
                 instance.setParameterByID(param.ID, param.Value);
+            }
+
+            foreach (var cachedParam in cachedParams)
+            {
+                instance.setParameterByID(cachedParam.ID, cachedParam.Value);
             }
 
             if (is3D && OverrideAttenuation)
@@ -184,6 +247,19 @@ namespace FMODUnity
 
         public void Stop()
         {
+            RuntimeManager.DeregisterActiveEmitter(this);
+            IsActive = false;
+            cachedParams.Clear();
+            StopInstance();
+        }
+
+        public void StopInstance()
+        {
+            if (TriggerOnce && hasTriggered)
+            {
+                RuntimeManager.DeregisterActiveEmitter(this);
+            }
+
             if (instance.isValid())
             {
                 instance.stop(AllowFadeout ? FMOD.Studio.STOP_MODE.ALLOWFADEOUT : FMOD.Studio.STOP_MODE.IMMEDIATE);
@@ -194,6 +270,24 @@ namespace FMODUnity
 
         public void SetParameter(string name, float value, bool ignoreseekspeed = false)
         {
+            if (Settings.Instance.StopEventsOutsideMaxDistance && IsActive)
+            {
+                ParamRef cachedParam = cachedParams.Find(x => x.Name == name);
+
+                if (cachedParam == null)
+                {
+                    FMOD.Studio.PARAMETER_DESCRIPTION paramDesc;
+                    eventDescription.getParameterDescriptionByName(name, out paramDesc);
+
+                    cachedParam = new ParamRef();
+                    cachedParam.ID = paramDesc.id;
+                    cachedParam.Name = paramDesc.name;
+                    cachedParams.Add(cachedParam);
+                }
+
+                cachedParam.Value = value;
+            }
+
             if (instance.isValid())
             {
                 instance.setParameterByName(name, value, ignoreseekspeed);
@@ -202,6 +296,24 @@ namespace FMODUnity
 
         public void SetParameter(FMOD.Studio.PARAMETER_ID id, float value, bool ignoreseekspeed = false)
         {
+            if (Settings.Instance.StopEventsOutsideMaxDistance && IsActive)
+            {
+                ParamRef cachedParam = cachedParams.Find(x => x.ID.Equals(id));
+
+                if (cachedParam == null)
+                {
+                    FMOD.Studio.PARAMETER_DESCRIPTION paramDesc;
+                    eventDescription.getParameterDescriptionByID(id, out paramDesc);
+
+                    cachedParam = new ParamRef();
+                    cachedParam.ID = paramDesc.id;
+                    cachedParam.Name = paramDesc.name;
+                    cachedParams.Add(cachedParam);
+                }
+
+                cachedParam.Value = value;
+            }
+
             if (instance.isValid())
             {
                 instance.setParameterByID(id, value, ignoreseekspeed);

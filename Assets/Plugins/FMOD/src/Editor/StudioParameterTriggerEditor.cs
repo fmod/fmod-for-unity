@@ -103,7 +103,7 @@ namespace FMODUnity
                             EditorGUILayout.TextField("Path:", eventRef.Path);
                             EditorGUI.EndDisabledGroup();
                         }
-                        foreach (var paramRef in eventRef.Parameters)
+                        foreach (var paramRef in eventRef.LocalParameters)
                         {
                             bool set = false;
                             int index = -1;

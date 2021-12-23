@@ -45,6 +45,7 @@ namespace FMODUnity
             }
         }
 
+        #if UNITY_PHYSICS_EXIST || !UNITY_2019_1_OR_NEWER
         void OnTriggerEnter(Collider other)
         {
             if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
@@ -60,7 +61,9 @@ namespace FMODUnity
                 HandleGameEvent(LoaderGameEvent.TriggerExit);
             }
         }
+        #endif
 
+        #if UNITY_PHYSICS2D_EXIST || !UNITY_2019_1_OR_NEWER
         void OnTriggerEnter2D(Collider2D other)
         {
             if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
@@ -75,6 +78,17 @@ namespace FMODUnity
             {
                 HandleGameEvent(LoaderGameEvent.TriggerExit2D);
             }
+        }
+        #endif
+
+        void OnEnable()
+        {
+            HandleGameEvent(LoaderGameEvent.ObjectEnable);
+        }
+
+        void OnDisable()
+        {
+            HandleGameEvent(LoaderGameEvent.ObjectDisable);
         }
 
         public void Load()

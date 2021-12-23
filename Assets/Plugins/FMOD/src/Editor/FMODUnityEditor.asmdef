@@ -1,0 +1,39 @@
+{
+    "name": "FMODUnityEditor",
+    "references": [
+        "FMODUnity",
+        "Unity.Timeline.Editor",
+        "Unity.Timeline",
+        "Unity.VisualScripting.Core",
+        "Unity.VisualScripting.Core.Editor",
+        "Unity.VisualScripting.Flow.Editor",
+        "Unity.ScriptableBuildPipeline.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.timeline",
+            "expression": "1.0.0",
+            "define": "UNITY_TIMELINE_EXIST"
+        },
+        {
+            "name": "com.unity.addressables",
+            "expression": "1.0.0",
+            "define": "UNITY_ADDRESSABLES_EXIST"
+        },
+        {
+            "name": "com.unity.visualscripting",
+            "expression": "1.0.0",
+            "define": "UNITY_VISUALSCRIPTING_EXIST"
+        }
+    ],
+    "noEngineReferences": false
+}
