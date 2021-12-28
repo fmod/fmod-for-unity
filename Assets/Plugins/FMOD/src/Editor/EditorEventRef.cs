@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
@@ -11,12 +12,7 @@ namespace FMODUnity
         public string Path;
 
         [SerializeField]
-        byte[] guid = new byte[16];
-        public Guid Guid
-        {
-            get { return new Guid(guid); }
-            set { Array.Copy(value.ToByteArray(), guid, 16); }
-        }
+        public FMOD.GUID Guid;
 
         [SerializeField]
         public List<EditorBankRef> Banks;
@@ -34,5 +30,15 @@ namespace FMODUnity
         public float MaxDistance;
         [SerializeField]
         public int Length;
-	}
+
+        public List<EditorParamRef> LocalParameters
+        {
+            get { return Parameters.Where(p => p.IsGlobal == false).OrderBy(p => p.Name).ToList(); }
+        }
+
+        public List<EditorParamRef> GlobalParameters
+        {
+            get { return Parameters.Where(p => p.IsGlobal == true).OrderBy(p => p.Name).ToList(); }
+        }
+    }
 }

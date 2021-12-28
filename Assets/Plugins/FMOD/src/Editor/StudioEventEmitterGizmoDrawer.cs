@@ -8,7 +8,7 @@ namespace FMODUnity
         [DrawGizmo(GizmoType.Selected | GizmoType.Active | GizmoType.NotInSelectionHierarchy | GizmoType.Pickable)]
         static void DrawGizmo(StudioEventEmitter studioEmitter, GizmoType gizmoType)
         {
-            Gizmos.DrawIcon(studioEmitter.transform.position, "FMOD/FMODEmitter.tiff", true);
+            Gizmos.DrawIcon(studioEmitter.transform.position, "AudioSource Gizmo", true, Color.yellow);
         }
     }
 }

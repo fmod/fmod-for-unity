@@ -91,19 +91,14 @@ namespace FMODUnity
                     emitterProperty.FindPropertyRelative("Target").objectReferenceValue = emitter;
                 }
 
-                if (!string.IsNullOrEmpty(emitter.Event))
+                if (!emitter.EventReference.IsNull)
                 {
-                    expanded[emitterIndex] = EditorGUILayout.Foldout(expanded[emitterIndex], emitter.Event);
+                    expanded[emitterIndex] = EditorGUILayout.Foldout(expanded[emitterIndex], emitter.EventReference.Path);
                     if (expanded[emitterIndex])
                     {
-                        var eventRef = EventManager.EventFromPath(emitter.Event);
-                        if (emitter.Event.StartsWith("{"))
-                        {
-                            EditorGUI.BeginDisabledGroup(true);
-                            EditorGUILayout.TextField("Path:", eventRef.Path);
-                            EditorGUI.EndDisabledGroup();
-                        }
-                        foreach (var paramRef in eventRef.Parameters)
+                        var eventRef = EventManager.EventFromGUID(emitter.EventReference.Guid);
+
+                        foreach (var paramRef in eventRef.LocalParameters)
                         {
                             bool set = false;
                             int index = -1;
@@ -131,17 +126,21 @@ namespace FMODUnity
                                 emitterProperty.FindPropertyRelative("Params").DeleteArrayElementAtIndex(index);
                             }
                             set = newSet;
-                            EditorGUI.BeginDisabledGroup(!set);
+
                             if (set)
                             {
-                                var valueProperty = emitterProperty.FindPropertyRelative("Params").GetArrayElementAtIndex(index).FindPropertyRelative("Value");
-                                valueProperty.floatValue = EditorGUILayout.Slider(valueProperty.floatValue, paramRef.Min, paramRef.Max);
+                                var valueProperty = emitterProperty.FindPropertyRelative("Params")
+                                    .GetArrayElementAtIndex(index).FindPropertyRelative("Value");
+                                valueProperty.floatValue =
+                                    EditorUtils.DrawParameterValueLayout(valueProperty.floatValue, paramRef);
                             }
                             else
                             {
-                                EditorGUILayout.Slider(0, paramRef.Min, paramRef.Max);
+                                using (new EditorGUI.DisabledScope(true))
+                                {
+                                    EditorUtils.DrawParameterValueLayout(0, paramRef);
+                                }
                             }
-                            EditorGUI.EndDisabledGroup();
                             EditorGUILayout.EndHorizontal();
                         }
                     }

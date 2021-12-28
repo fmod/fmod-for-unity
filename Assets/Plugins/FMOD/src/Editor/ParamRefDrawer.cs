@@ -20,9 +20,9 @@ namespace FMODUnity
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            Texture browseIcon = EditorGUIUtility.Load("FMOD/SearchIconBlack.png") as Texture;
-            Texture openIcon = EditorGUIUtility.Load("FMOD/BrowserIcon.png") as Texture;
-            Texture addIcon = EditorGUIUtility.Load("FMOD/AddIcon.png") as Texture;
+            Texture browseIcon = EditorUtils.LoadImage("SearchIconBlack.png");
+            Texture openIcon = EditorUtils.LoadImage("BrowserIcon.png");
+            Texture addIcon = EditorUtils.LoadImage("AddIcon.png");
 
             EditorGUI.BeginProperty(position, label, property);
             SerializedProperty pathProperty = property;
@@ -68,9 +68,9 @@ namespace FMODUnity
 
             if (GUI.Button(searchRect, new GUIContent(browseIcon, "Search"), buttonStyle))
             {
-                var eventBrowser = EventBrowser.CreateInstance<EventBrowser>();
+                var eventBrowser = ScriptableObject.CreateInstance<EventBrowser>();
 
-                eventBrowser.SelectParameter(property);
+                eventBrowser.ChooseParameter(property);
                 var windowRect = position;
                 windowRect.position = GUIUtility.GUIToScreenPoint(windowRect.position);
                 windowRect.height = openRect.height + 1;

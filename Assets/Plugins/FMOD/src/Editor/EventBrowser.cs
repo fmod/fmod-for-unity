@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using System.IO;
 
@@ -9,658 +11,1110 @@ namespace FMODUnity
 {
     class EventBrowser : EditorWindow, ISerializationCallbackReceiver
     {
-        public enum TreeType : int
-        {
-            Events,
-            Snapshots,
-            Banks,
-            GlobalParameters,
-        }
+        [SerializeField]
+        private bool isStandaloneWindow;
 
-        [MenuItem("FMOD/Event Browser", priority = 1)]
-        public static void ShowEventBrowser()
+        [NonSerialized]
+        float nextRepaintTime;
+
+        [NonSerialized]
+        float[] cachedMetering;
+
+        const float RepaintInterval = 1 / 30.0f;
+
+        private Texture2D borderIcon;
+        private GUIStyle borderStyle;
+
+        [NonSerialized]
+        TreeView treeView;
+
+        [NonSerialized]
+        SearchField searchField;
+
+        [SerializeField]
+        PreviewArea previewArea = new PreviewArea();
+
+        [SerializeField]
+        TreeView.State treeViewState;
+
+        [NonSerialized]
+        DateTime LastKnownCacheTime;
+
+        private SerializedProperty outputProperty;
+
+        [MenuItem("FMOD/Event Browser", priority = 2)]
+        public static void ShowWindow()
         {
             EventBrowser eventBrowser = GetWindow<EventBrowser>("FMOD Events");
-            eventBrowser.minSize = new Vector2(280, 600);
-            eventBrowser.Show();
+            eventBrowser.minSize = new Vector2(380, 600);
+
+            eventBrowser.BeginStandaloneWindow();
+
+            EditorUtils.LoadPreviewBanks();
         }
 
-        void OnDestroy()
+        public static bool IsOpen
         {
-            EditorUtils.PreviewStop();
+            get; private set;
         }
 
-        List<bool> expandedState;
-        int selectedIndex = -1;
         public void OnBeforeSerialize()
         {
-            expandedState = new List<bool>();
-            Action<TreeItem> isExpanded = null;
-            isExpanded = (x) => { selectedIndex = (x == selectedItem) ? expandedState.Count : selectedIndex; expandedState.Add(x.Expanded); x.Children.ForEach(isExpanded); };
-            treeItems.ForEach(isExpanded);
+            treeViewState = treeView.state;
         }
 
         public void OnAfterDeserialize()
         {
         }
 
-        class TreeItem
-        {
-            public string Name;
-            public bool Expanded = false;
-            public EditorEventRef EventRef = null;
-            public EditorBankRef BankRef = null;
-            public EditorParamRef ParamRef = null;
-            public List<TreeItem> Children = new List<TreeItem>();
-            public TreeItem Next = null;
-            public TreeItem Prev = null;
-            public Rect Rect;
-            public bool Exists;
-        }
-
-        [NonSerialized]
-        List<TreeItem> treeItems;
-
-        Texture searchIcon;
-        Texture eventIcon;
-        Texture folderOpenIcon;
-        Texture folderClosedIcon;
-        Texture bankIcon;
-        Texture snapshotIcon;
-        Texture2D borderIcon;
-        GUIStyle eventStyle;
-
-        [NonSerialized]
-        TreeItem selectedItem = null;
-
-        Dictionary<string, float> previewParamValues = new Dictionary<string, float>();
-        float previewDistance = 0;
-        float previewOrientation = 0;
-
-        string searchString = "";
-
-        private SerializedProperty outputProperty;
-
-        bool fromInspector = false;
-        bool showEvents = true;
-        bool showBanks = true;
-        bool showParameters = true;
-
-        Vector2 treeScroll;
-        Vector2 paramScroll;
-
-        [NonSerialized]
-        TreeItem lastDrawnItem;
-        [NonSerialized]
-        int itemCount;
-        [NonSerialized]
-        bool forceRepaint;
-        [NonSerialized]
-        float lastRepaintTime;
-
         void Update()
         {
-            if (forceRepaint && lastRepaintTime < Time.time + (1/30.0f))
+            bool forceRepaint = false;
+
+            float[] currentMetering = EditorUtils.GetMetering();
+            if (cachedMetering == null || !cachedMetering.SequenceEqual(currentMetering))
+            {
+                cachedMetering = currentMetering;
+                forceRepaint = true;
+            }
+
+            if (LastKnownCacheTime != EventManager.CacheTime)
+            {
+                ReadEventCache();
+                forceRepaint = true;
+            }
+            
+            if (forceRepaint || (previewArea != null && previewArea.forceRepaint && nextRepaintTime < Time.realtimeSinceStartup))
             {
                 Repaint();
-                lastRepaintTime = Time.time;
+                nextRepaintTime = Time.time + RepaintInterval;
             }
         }
 
-        void SetPreviewEvent(EditorEventRef eventRef)
+        void ReadEventCache()
         {
-            forceRepaint = false;
-            EditorUtils.PreviewStop();
-            previewParamValues.Clear();
+            LastKnownCacheTime = EventManager.CacheTime;
+            treeView.Reload();
+        }
 
-            previewDistance = 0;
-            previewOrientation = 0;
+        class TreeView : UnityEditor.IMGUI.Controls.TreeView
+        {
+            private static readonly Texture2D folderOpenIcon = EditorUtils.LoadImage("FolderIconOpen.png");
+            private static readonly Texture2D folderClosedIcon = EditorUtils.LoadImage("FolderIconClosed.png");
+            private static readonly Texture2D eventIcon = EditorUtils.LoadImage("EventIcon.png");
+            private static readonly Texture2D snapshotIcon = EditorUtils.LoadImage("SnapshotIcon.png");
+            private static readonly Texture2D bankIcon = EditorUtils.LoadImage("BankIcon.png");
+            private static readonly Texture2D continuousParameterIcon = EditorUtils.LoadImage("ContinuousParameterIcon.png");
+            private static readonly Texture2D discreteParameterIcon = EditorUtils.LoadImage("DiscreteParameterIcon.png");
+            private static readonly Texture2D labeledParameterIcon = EditorUtils.LoadImage("LabeledParameterIcon.png");
 
-            if (eventRef != null)
+            private Dictionary<string, int> itemIDs = new Dictionary<string, int>();
+
+            private const string EventPrefix = "event:/";
+            private const string SnapshotPrefix = "snapshot:/";
+            private const string BankPrefix = "bank:/";
+            private const string ParameterPrefix = "parameter:/";
+
+            bool expandNextFolderSet = false;
+            string nextFramedItemPath;
+            private string[] searchStringSplit;
+
+            IList<int> noSearchExpandState;
+
+            float oldBaseIndent;
+
+            public TreeView(State state) : base(state.baseState)
             {
-                foreach (var paramRef in eventRef.Parameters)
+                noSearchExpandState = state.noSearchExpandState;
+                SelectedObject = state.selectedObject;
+                TypeFilter = state.typeFilter;
+                DragEnabled = state.dragEnabled;
+
+                for (int i = 0; i < state.itemPaths.Count; ++i)
                 {
-                    previewParamValues.Add(paramRef.Name, paramRef.Default);
+                    itemIDs.Add(state.itemPaths[i], state.itemIDs[i]);
                 }
             }
-            eventPosition = new Vector2(0, 0);
-        }
 
-        void SetSelectedItem(TreeItem item)
-        {
-            //if (item != selectedItem)
+            public void JumpToEvent(string path)
             {
-                selectedItem = item;
-                
-                if (item != null)
+                JumpToItem(path);
+            }
+
+            public void JumpToBank(string name)
+            {
+                JumpToItem(BankPrefix + name);
+            }
+
+            private void JumpToItem(string path)
+            {
+                nextFramedItemPath = path;
+                Reload();
+
+                int itemID;
+                if (itemIDs.TryGetValue(path, out itemID))
                 {
-                    SetPreviewEvent(item.EventRef);
+                    SetSelection(new List<int> { itemID },
+                        TreeViewSelectionOptions.RevealAndFrame | TreeViewSelectionOptions.FireSelectionChanged);
                 }
                 else
                 {
-                    SetPreviewEvent(null);
+                    SetSelection(new List<int>());
                 }
             }
-        }
 
-        void ShowEventFolder(TreeItem item, Predicate<TreeItem> filter)
-        {
-            eventStyle.padding.left += 17;
+            private class LeafItem : TreeViewItem
             {
-                // Highlight first found item
-                if (item.EventRef != null || item.BankRef != null)
+                public LeafItem(int id, int depth, ScriptableObject data)
+                    : base(id, depth)
                 {
-                    if (!String.IsNullOrEmpty(searchString) &&
-                        itemCount == 0 &&
-                        selectedItem == null                       
-                        )
+                    Data = data;
+                }
+
+                public ScriptableObject Data;
+            }
+
+            class FolderItem : TreeViewItem
+            {
+                public FolderItem(int id, int depth, string displayName)
+                    : base(id, depth, displayName)
+                {
+                }
+            }
+
+            private FolderItem CreateFolderItem(string name, string path, bool hasChildren, bool forceExpanded,
+                TreeViewItem parent)
+            {
+                FolderItem item = new FolderItem(AffirmItemID("folder:" + path), 0, name);
+
+                bool expanded;
+
+                if (!hasChildren)
+                {
+                    expanded = false;
+                }
+                else if (forceExpanded || expandNextFolderSet
+                    || (nextFramedItemPath != null && nextFramedItemPath.StartsWith(path)))
+                {
+                    SetExpanded(item.id, true);
+                    expanded = true;
+                }
+                else
+                {
+                    expanded = IsExpanded(item.id);
+                }
+
+                if (expanded)
+                {
+                    item.icon = folderOpenIcon;
+                }
+                else
+                {
+                    item.icon = folderClosedIcon;
+
+                    if (hasChildren)
                     {
-                        SetSelectedItem(item);
+                        item.children = CreateChildListForCollapsedParent();
                     }
-
-                    itemCount++;
                 }
 
-                item.Next = null;
-                item.Prev = lastDrawnItem;
-                if (lastDrawnItem != null)
-                {
-                    lastDrawnItem.Next = item;
-                }
-                lastDrawnItem = item;
+                parent.AddChild(item);
+
+                return item;
             }
 
-            if (item.EventRef != null)
+            protected override TreeViewItem BuildRoot()
             {
-                // Rendering and GUI event handling to show an event
-                GUIContent content = new GUIContent(item.Name, item.EventRef.Path.StartsWith("snapshot") ? snapshotIcon : eventIcon);
-
-                eventStyle.normal.background = selectedItem == item ? EditorGUIUtility.Load("FMOD/Selected.png") as Texture2D : null;
-                GUILayout.Label(content, eventStyle, GUILayout.ExpandWidth(true));
-                
-                Event e = Event.current;
-
-                Rect rect = GUILayoutUtility.GetLastRect();
-                if (e.type == EventType.MouseDown &&
-                    e.button == 0 &&
-                    rect.Contains(e.mousePosition))
-                {
-                    e.Use();
-
-                    if (fromInspector && e.clickCount >= 2)
-                    {
-                        outputProperty.stringValue = "";
-                        outputProperty.stringValue = item.EventRef.Path;
-                        EditorUtils.UpdateParamsOnEmitter(outputProperty.serializedObject, item.EventRef.Path);
-                        outputProperty.serializedObject.ApplyModifiedProperties();
-                        Close();
-                    }
-
-                    SetSelectedItem(item);
-                }
-                if (e.type == EventType.MouseDrag && rect.Contains(e.mousePosition) && !fromInspector)
-                {
-                    DragAndDrop.PrepareStartDrag();
-                    DragAndDrop.objectReferences = new UnityEngine.Object[] { Instantiate(item.EventRef) };
-                    DragAndDrop.StartDrag("New FMOD Studio Emitter");
-                    e.Use();
-                }
-                if (Event.current.type == EventType.Repaint)
-                {
-                    item.Rect = rect;
-                }
+                return new TreeViewItem(-1, -1);
             }
-            else if (item.BankRef != null)
+
+            private int AffirmItemID(string path)
             {
-                // Rendering and event handling for a bank
-                GUIContent content = new GUIContent(item.Name, bankIcon);
+                int id;
 
-                eventStyle.normal.background = selectedItem == item ? EditorGUIUtility.Load("FMOD/Selected.png") as Texture2D : null;
-                GUILayout.Label(content, eventStyle, GUILayout.ExpandWidth(true));
-
-                Event e = Event.current;
-
-                Rect rect = GUILayoutUtility.GetLastRect();
-                if (e.type == EventType.MouseDown &&
-                    e.button == 0 &&
-                    rect.Contains(e.mousePosition))
+                if (!itemIDs.TryGetValue(path, out id))
                 {
-                    e.Use();
+                    id = itemIDs.Count;
+                    itemIDs.Add(path, id);
+                }
 
-                    if (fromInspector && e.clickCount >= 2)
-                    {
-                        outputProperty.stringValue = item.BankRef.Name;
-                        outputProperty.serializedObject.ApplyModifiedProperties();
-                        Close();
-                    }
-
-                    SetSelectedItem(item);
-                }
-                if (e.type == EventType.MouseDrag && rect.Contains(e.mousePosition) && !fromInspector)
-                {
-                    DragAndDrop.PrepareStartDrag();
-                    DragAndDrop.objectReferences = new UnityEngine.Object[] { Instantiate(item.BankRef) };
-                    DragAndDrop.StartDrag("New FMOD Studio Bank Loader");
-                    e.Use();
-                }
-                if (Event.current.type == EventType.Repaint)
-                {
-                    item.Rect = rect;
-                }
+                return id;
             }
-            else if (item.ParamRef != null)
+
+            public TypeFilter TypeFilter { get; set; }
+            public bool DragEnabled { get; set; }
+
+            protected override IList<TreeViewItem> BuildRows(TreeViewItem root)
             {
-                // Rendering and event handling for a bank
-                GUIContent content = new GUIContent(item.Name, eventIcon);
-
-                eventStyle.normal.background = selectedItem == item ? EditorGUIUtility.Load("FMOD/Selected.png") as Texture2D : null;
-                GUILayout.Label(content, eventStyle, GUILayout.ExpandWidth(true));
-
-                Event e = Event.current;
-
-                Rect rect = GUILayoutUtility.GetLastRect();
-                if (e.type == EventType.MouseDown &&
-                    e.button == 0 &&
-                    rect.Contains(e.mousePosition))
+                if (hasSearch)
                 {
-                    e.Use();
+                    searchStringSplit = searchString.Split(' ');
+                }
 
-                    if (fromInspector && e.clickCount >= 2)
-                    {
-                        outputProperty.stringValue = item.ParamRef.Name;
-                        outputProperty.serializedObject.ApplyModifiedProperties();
-                        Close();
-                    }
+                if (rootItem.children != null)
+                {
+                    rootItem.children.Clear();
+                }
 
-                    SetSelectedItem(item);
-                }
-                if (e.type == EventType.MouseDrag && rect.Contains(e.mousePosition) && !fromInspector)
+                if ((TypeFilter & TypeFilter.Event) != 0)
                 {
-                    DragAndDrop.PrepareStartDrag();
-                    DragAndDrop.objectReferences = new UnityEngine.Object[] { Instantiate(item.ParamRef) };
-                    DragAndDrop.StartDrag("New FMOD Studio Global Parameter Trigger");
-                    e.Use();
+                    CreateSubTree("Events", EventPrefix,
+                        EventManager.Events.Where(e => e.Path.StartsWith(EventPrefix)), e => e.Path);
+
+                    CreateSubTree("Snapshots", SnapshotPrefix,
+                        EventManager.Events.Where(e => e.Path.StartsWith(SnapshotPrefix)), s => s.Path);
                 }
-                if (Event.current.type == EventType.Repaint)
+
+                if ((TypeFilter & TypeFilter.Bank) != 0)
                 {
-                    item.Rect = rect;
+                    CreateSubTree("Banks", BankPrefix, EventManager.Banks, b => b.StudioPath);
                 }
+
+                if ((TypeFilter & TypeFilter.Parameter) != 0)
+                {
+                    CreateSubTree("Global Parameters", ParameterPrefix,
+                        EventManager.Parameters, p => p.StudioPath);
+                }
+
+                List<TreeViewItem> rows = new List<TreeViewItem>();
+
+                AddChildrenInOrder(rows, rootItem);
+
+                SetupDepthsFromParentsAndChildren(rootItem);
+
+                expandNextFolderSet = false;
+                nextFramedItemPath = null;
+
+                return rows;
             }
-            else
+
+            private static NaturalComparer naturalComparer = new NaturalComparer();
+
+            private void CreateSubTree<T>(string rootName, string rootPath,
+                IEnumerable<T> sourceRecords, Func<T, string> GetPath,
+                Func<string, T, string> MakeUniquePath = null)
+                where T : ScriptableObject
             {
-                eventStyle.normal.background = selectedItem == item ? EditorGUIUtility.Load("FMOD/Selected.png") as Texture2D : null;
+                var records = sourceRecords.Select(r => new { source = r, path = GetPath(r) });
 
-                bool expanded = item.Expanded || !string.IsNullOrEmpty(searchString);
-                GUIContent content = new GUIContent(item.Name, expanded ? folderOpenIcon : folderClosedIcon);
-                GUILayout.Label(content, eventStyle, GUILayout.ExpandWidth(true));
-
-                Rect rect = GUILayoutUtility.GetLastRect();
-                if (Event.current.type == EventType.MouseDown && 
-                    Event.current.button == 0 && 
-                    rect.Contains(Event.current.mousePosition))
+                if (hasSearch)
                 {
-                    Event.current.Use();
-                    item.Expanded = !item.Expanded;
-                    SetSelectedItem(item);
-                }
-
-                if (item.Expanded || !string.IsNullOrEmpty(searchString))
-                {
-                    item.Children.Sort((a, b) => a.Name.CompareTo(b.Name));
-                    if (item.Name.ToLower().Contains(searchString.ToLower()))
-                    {
-                        foreach(var childFolder in item.Children)
+                    records = records.Where(r => {
+                        foreach (var word in searchStringSplit)
                         {
-                            ShowEventFolder(childFolder, (x) => true);
+                            if (word.Length > 0 && r.path.IndexOf(word, StringComparison.OrdinalIgnoreCase) < 0)
+                            {
+                                return false;
+                            }
                         }
+                        return true;
+                    });
+                }
+
+                records = records.OrderBy(r => r.path, naturalComparer);
+
+                TreeViewItem root =
+                    CreateFolderItem(rootName, rootPath, records.Any(), TypeFilter != TypeFilter.All, rootItem);
+
+                List<TreeViewItem> currentFolderItems = new List<TreeViewItem>();
+
+                foreach (var record in records)
+                {
+                    string leafName;
+                    TreeViewItem parent = CreateFolderItems(record.path, currentFolderItems, root, out leafName);
+
+                    if (parent != null)
+                    {
+                        string uniquePath;
+
+                        if (MakeUniquePath != null)
+                        {
+                            uniquePath = MakeUniquePath(record.path, record.source);
+                        }
+                        else
+                        {
+                            uniquePath = record.path;
+                        }
+
+                        TreeViewItem leafItem = new LeafItem(AffirmItemID(uniquePath), 0, record.source);
+                        leafItem.displayName = leafName;
+                        leafItem.icon = IconForRecord(record.source);
+
+                        parent.AddChild(leafItem);
+                    }
+                }
+            }
+
+            private Texture2D IconForRecord(ScriptableObject record)
+            {
+                EditorEventRef eventRef = record as EditorEventRef;
+                if (eventRef != null)
+                {
+                    if (eventRef.Path.StartsWith(SnapshotPrefix))
+                    {
+                        return snapshotIcon;
                     }
                     else
                     {
-                        foreach (var childFolder in item.Children.FindAll(filter))
-                        {
-                            ShowEventFolder(childFolder, filter);
-                        }
+                        return eventIcon;
                     }
                 }
 
-                if (Event.current.type == EventType.Repaint)
+                EditorBankRef bankRef = record as EditorBankRef;
+                if (bankRef != null)
                 {
-                    item.Rect = rect;
+                    return bankIcon;
+                }
+
+                EditorParamRef paramRef = record as EditorParamRef;
+                if (paramRef != null)
+                {
+                    switch(paramRef.Type)
+                    {
+                        case ParameterType.Continuous:
+                            return continuousParameterIcon;
+                        case ParameterType.Discrete:
+                            return discreteParameterIcon;
+                        case ParameterType.Labeled:
+                            return labeledParameterIcon;
+                    }
+                }
+
+                return null;
+            }
+
+            private TreeViewItem CreateFolderItems(string path, List<TreeViewItem> currentFolderItems,
+                TreeViewItem root, out string leafName)
+            {
+                TreeViewItem parent = root;
+
+                char separator = '/';
+
+                // Skip the type prefix at the start of the path
+                int elementStart = path.IndexOf(separator) + 1;
+
+                for (int i = 0; ; ++i)
+                {
+                    if (!IsExpanded(parent.id))
+                    {
+                        leafName = null;
+                        return null;
+                    }
+
+                    int elementEnd = path.IndexOf(separator, elementStart);
+
+                    if (elementEnd < 0)
+                    {
+                        // No more folders; elementStart points to the event name
+                        break;
+                    }
+
+                    string folderName = path.Substring(elementStart, elementEnd - elementStart);
+
+                    if (i < currentFolderItems.Count && folderName != currentFolderItems[i].displayName)
+                    {
+                        currentFolderItems.RemoveRange(i, currentFolderItems.Count - i);
+                    }
+
+                    if (i == currentFolderItems.Count)
+                    {
+                        FolderItem folderItem =
+                            CreateFolderItem(folderName, path.Substring(0, elementEnd), true, false, parent);
+
+                        currentFolderItems.Add(folderItem);
+                    }
+
+                    elementStart = elementEnd + 1;
+                    parent = currentFolderItems[i];
+                }
+
+                leafName = path.Substring(elementStart);
+                return parent;
+            }
+
+            private static void AddChildrenInOrder(List<TreeViewItem> list, TreeViewItem item)
+            {
+                if (item.children != null)
+                {
+                    foreach (TreeViewItem child in item.children.Where(child => child is FolderItem))
+                    {
+                        list.Add(child);
+
+                        AddChildrenInOrder(list, child);
+                    }
+
+                    foreach (TreeViewItem child in item.children.Where(child => !(child == null || child is FolderItem)))
+                    {
+                        list.Add(child);
+                    }
                 }
             }
-            eventStyle.padding.left -= 17;
+
+            protected override bool CanMultiSelect(TreeViewItem item)
+            {
+                return false;
+            }
+
+            protected override bool CanChangeExpandedState(TreeViewItem item)
+            {
+                return item.hasChildren;
+            }
+
+            protected override bool CanStartDrag(CanStartDragArgs args)
+            {
+                if (DragEnabled && args.draggedItem is LeafItem)
+                {
+                    return IsDraggable((args.draggedItem as LeafItem).Data);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            protected override void SetupDragAndDrop(SetupDragAndDropArgs args)
+            {
+                IList<TreeViewItem> items = FindRows(args.draggedItemIDs);
+
+                if (items[0] is LeafItem)
+                {
+                    LeafItem item = items[0] as LeafItem;
+
+                    DragAndDrop.PrepareStartDrag();
+                    DragAndDrop.objectReferences = new UnityEngine.Object[] { Instantiate(item.Data) };
+
+                    string title = string.Empty;
+
+                    if (item.Data is EditorEventRef)
+                    {
+                        title = "New FMOD Studio Emitter";
+                    }
+                    else if (item.Data is EditorBankRef)
+                    {
+                        title = "New FMOD Studio Bank Loader";
+                    }
+                    else if (item.Data is EditorParamRef)
+                    {
+                        title = "New FMOD Studio Global Parameter Trigger";
+                    }
+
+                    DragAndDrop.StartDrag(title);
+                }
+            }
+
+            protected override DragAndDropVisualMode HandleDragAndDrop(DragAndDropArgs args)
+            {
+                return DragAndDropVisualMode.None;
+            }
+
+            protected override void SearchChanged(string newSearch)
+            {
+                if (!string.IsNullOrEmpty(newSearch.Trim()))
+                {
+                    expandNextFolderSet = true;
+
+                    if (noSearchExpandState == null)
+                    {
+                        // A new search is beginning
+                        noSearchExpandState = GetExpanded();
+                        SetExpanded(new List<int>());
+                    }
+                }
+                else
+                {
+                    if (noSearchExpandState != null)
+                    {
+                        // A search is ending
+                        SetExpanded(noSearchExpandState);
+                        noSearchExpandState = null;
+                    }
+                }
+            }
+
+            public ScriptableObject SelectedObject { get; private set; }
+            public ScriptableObject DoubleClickedObject { get; private set; }
+
+            protected override void SelectionChanged(IList<int> selectedIDs)
+            {
+                SelectedObject = null;
+
+                if (selectedIDs.Count > 0)
+                {
+                    TreeViewItem item = FindItem(selectedIDs[0], rootItem);
+
+                    if (item is LeafItem)
+                    {
+                        SelectedObject = (item as LeafItem).Data;
+                    }
+                }
+            }
+
+            protected override void DoubleClickedItem(int id)
+            {
+                TreeViewItem item = FindItem(id, rootItem);
+
+                if (item is LeafItem)
+                {
+                    DoubleClickedObject = (item as LeafItem).Data;
+                }
+            }
+
+            protected override void BeforeRowsGUI()
+            {
+                oldBaseIndent = baseIndent;
+                DoubleClickedObject = null;
+            }
+
+            protected override void RowGUI(RowGUIArgs args)
+            {
+                if (hasSearch)
+                {
+                    // Hack to undo TreeView flattening the hierarchy when searching
+                    baseIndent = oldBaseIndent + args.item.depth * depthIndentWidth;
+                }
+
+                base.RowGUI(args);
+
+                TreeViewItem item = args.item;
+
+                if (Event.current.type == EventType.MouseUp && item is FolderItem && item.hasChildren)
+                {
+                    Rect rect = args.rowRect;
+                    rect.xMin = GetContentIndent(item);
+
+                    if (rect.Contains(Event.current.mousePosition))
+                    {
+                        SetExpanded(item.id, !IsExpanded(item.id));
+                        Event.current.Use();
+                    }
+                }
+            }
+
+            protected override void AfterRowsGUI()
+            {
+                baseIndent = oldBaseIndent;
+            }
+
+            [Serializable]
+            public class State
+            {
+                public TreeViewState baseState;
+                public List<int> noSearchExpandState;
+                public ScriptableObject selectedObject;
+                public List<string> itemPaths = new List<string>();
+                public List<int> itemIDs = new List<int>();
+                public TypeFilter typeFilter = TypeFilter.All;
+                public bool dragEnabled = true;
+
+                public State() : this(new TreeViewState())
+                {
+                }
+
+                public State(TreeViewState baseState)
+                {
+                    this.baseState = baseState;
+                }
+            }
+
+            new public State state
+            {
+                get
+                {
+                    State result = new State(base.state);
+
+                    if (noSearchExpandState != null)
+                    {
+                        result.noSearchExpandState = new List<int>(noSearchExpandState);
+                    }
+
+                    result.selectedObject = SelectedObject;
+
+                    foreach (var entry in itemIDs)
+                    {
+                        result.itemPaths.Add(entry.Key);
+                        result.itemIDs.Add(entry.Value);
+                    }
+
+                    result.typeFilter = TypeFilter;
+                    result.dragEnabled = true;
+
+                    return result;
+                }
+            }
         }
 
-        Vector2 eventPosition;
+        private void AffirmResources()
+        {
+            if (borderIcon == null)
+            {
+                borderIcon = EditorUtils.LoadImage("Border.png");
+
+                borderStyle = new GUIStyle(GUI.skin.box);
+                borderStyle.normal.background = borderIcon;
+                borderStyle.margin = new RectOffset();
+            }
+        }
+
+        bool InChooserMode { get { return outputProperty != null; } }
 
         void OnGUI()
         {
-            if (EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isPlaying)
+            AffirmResources();
+
+            if (InChooserMode)
             {
-                // Brute force hack to stop us calling DLL functions while Unity is starting up
-                // playing in editor mode and will cause us to leak system objects
-                ShowNotification(new GUIContent("Playing In Editor Starting"));
-                return;
+                GUILayout.BeginVertical(borderStyle, GUILayout.ExpandWidth(true));
             }
 
-            if (!EventManager.IsValid)
+            treeView.searchString = searchField.OnGUI(treeView.searchString);
+
+            Rect treeRect = GUILayoutUtility.GetRect(0, 0, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+            treeRect.y += 2;
+            treeRect.height -= 2;
+
+            treeView.OnGUI(treeRect);
+
+            if (InChooserMode)
             {
-                ShowNotification(new GUIContent("No FMOD Studio banks loaded. Please check your settings."));
-                return;
+                GUILayout.EndVertical();
+                HandleChooserModeEvents();
             }
-
-            if (Event.current.type == EventType.Layout)
+            else
             {
-                RebuildDisplayFromCache();
+                previewArea.treeView = treeView;
+                previewArea.OnGUI(cachedMetering != null ? cachedMetering : EditorUtils.GetMetering());
             }
+        }
 
-            //if (eventStyle == null)
+        void HandleChooserModeEvents()
+        {
+            if (Event.current.isKey)
             {
-                eventStyle = new GUIStyle(GUI.skin.button);
-                eventStyle.normal.background = null;
-                eventStyle.focused.background = null;
-                eventStyle.active.background = null;
-                eventStyle.onFocused.background = null;
-                eventStyle.onNormal.background = null;
-                eventStyle.onHover.background = null;
-                eventStyle.onActive.background = null;
-                eventStyle.stretchWidth = false;
-                eventStyle.padding.left = 0;
-                eventStyle.stretchHeight = false;
-                eventStyle.fixedHeight = eventStyle.lineHeight + eventStyle.margin.top + eventStyle.margin.bottom;
-                eventStyle.alignment = TextAnchor.MiddleLeft;
+                KeyCode keyCode = Event.current.keyCode;
 
-                eventIcon = EditorGUIUtility.Load("FMOD/EventIcon.png") as Texture;
-                folderOpenIcon = EditorGUIUtility.Load("FMOD/FolderIconOpen.png") as Texture;
-                folderClosedIcon = EditorGUIUtility.Load("FMOD/FolderIconClosed.png") as Texture;
-                searchIcon = EditorGUIUtility.Load("FMOD/SearchIcon.png") as Texture;
-                bankIcon = EditorGUIUtility.Load("FMOD/BankIcon.png") as Texture;
-                snapshotIcon = EditorGUIUtility.Load("FMOD/SnapshotIcon.png") as Texture;
-                borderIcon = EditorGUIUtility.Load("FMOD/Border.png") as Texture2D;
-            }
-
-            if (fromInspector)
-            {
-                var border = new GUIStyle(GUI.skin.box);
-                border.normal.background = borderIcon;
-                GUI.Box(new Rect(1, 1, position.width - 1, position.height - 1), GUIContent.none, border);
-            }
-
-            // Split the window int search box, tree view, preview pane (only if full browser)
-            Rect searchRect, listRect, previewRect;
-            SplitWindow(out searchRect, out listRect, out previewRect);
-
-            // Scroll the selected item in the tree view - put above the search box otherwise it will take
-            // our key presses
-            if (selectedItem != null && Event.current.type == EventType.KeyDown)
-            {
-                if (Event.current.keyCode == KeyCode.UpArrow)
+                if ((keyCode == KeyCode.Return || keyCode == KeyCode.KeypadEnter) && treeView.SelectedObject != null)
                 {
-                    if (selectedItem.Prev != null)
-                    {
-                        SetSelectedItem(selectedItem.Prev);
+                    SetOutputProperty(treeView.SelectedObject);
+                    Event.current.Use();
+                    Close();
+                }
+                else if (keyCode == KeyCode.Escape)
+                {
+                    Event.current.Use();
+                    Close();
+                }
+            }
+            else if (treeView.DoubleClickedObject != null)
+            {
+                SetOutputProperty(treeView.DoubleClickedObject);
+                Close();
+            }
+        }
 
-                        // make sure it's visible
-                        if (selectedItem.Rect.y < treeScroll.y)
+        private void SetOutputProperty(ScriptableObject data)
+        {
+            if (data is EditorEventRef)
+            {
+                EditorEventRef eventRef = data as EditorEventRef;
+
+                outputProperty.SetEventReference(eventRef.Guid, eventRef.Path);
+
+                EditorUtils.UpdateParamsOnEmitter(outputProperty.serializedObject, eventRef.Path);
+            }
+            else if (data is EditorBankRef)
+            {
+                outputProperty.stringValue = (data as EditorBankRef).Name;
+            }
+            else if (data is EditorParamRef)
+            {
+                outputProperty.stringValue = (data as EditorParamRef).Name;
+            }
+
+            outputProperty.serializedObject.ApplyModifiedProperties();
+        }
+
+        [Serializable]
+        class PreviewArea
+        {
+            [NonSerialized]
+            public TreeView treeView;
+
+            [NonSerialized]
+            private EditorEventRef currentEvent;
+
+            [SerializeField]
+            DetailsView detailsView = new DetailsView();
+
+            [SerializeField]
+            TransportControls transportControls = new TransportControls();
+
+            [SerializeField]
+            Event3DPreview event3DPreview = new Event3DPreview();
+
+            [SerializeField]
+            PreviewMeters meters = new PreviewMeters();
+
+            [SerializeField]
+            EventParameterControls parameterControls = new EventParameterControls();
+
+            private GUIStyle mainStyle;
+
+            private bool isNarrow;
+
+            public bool forceRepaint { get { return transportControls.forceRepaint; } }
+
+            void SetEvent(EditorEventRef eventRef)
+            {
+                if (eventRef != currentEvent)
+                {
+                    currentEvent = eventRef;
+
+                    EditorUtils.PreviewStop();
+                    transportControls.Reset();
+                    event3DPreview.Reset();
+                    parameterControls.Reset();
+                }
+            }
+
+            private void AffirmResources()
+            {
+                if (mainStyle ==  null)
+                {
+                    mainStyle = new GUIStyle(GUI.skin.box);
+                    mainStyle.margin = new RectOffset();
+                }
+            }
+
+            public void OnGUI(float[] metering)
+            {
+                AffirmResources();
+
+                ScriptableObject selectedObject = treeView.SelectedObject;
+
+                if (selectedObject is EditorEventRef)
+                {
+                    SetEvent(selectedObject as EditorEventRef);
+                }
+                else
+                {
+                    SetEvent(null);
+                }
+
+                if (selectedObject != null)
+                {
+                    GUILayout.BeginVertical(mainStyle, GUILayout.ExpandWidth(true));
+
+                    if (selectedObject is EditorEventRef)
+                    {
+                        EditorEventRef eventRef = selectedObject as EditorEventRef;
+
+                        if (eventRef.Path.StartsWith("event:"))
                         {
-                            treeScroll.y = selectedItem.Rect.y;
+                            DrawEventPreview(eventRef, metering);
+                        }
+                        else if (eventRef.Path.StartsWith("snapshot:"))
+                        {
+                            detailsView.DrawSnapshot(eventRef);
                         }
                     }
-                    Event.current.Use();
-                }
-                if (Event.current.keyCode == KeyCode.DownArrow)
-                {
-                    if (selectedItem.Next != null)
+                    else if (selectedObject is EditorBankRef)
                     {
-                        SetSelectedItem(selectedItem.Next);
-                        // make sure it's visible
-                        if (selectedItem.Rect.y + selectedItem.Rect.height > treeScroll.y + listRect.height)
-                        {
-                            treeScroll.y += (selectedItem.Rect.y + selectedItem.Rect.height) - listRect.height;
-                        }
+                        detailsView.DrawBank(selectedObject as EditorBankRef);
                     }
-                    Event.current.Use();
-                }
-                if (Event.current.keyCode == KeyCode.RightArrow)
-                {
-                    selectedItem.Expanded = true;
-                    Event.current.Use();
-                }
-                if (Event.current.keyCode == KeyCode.LeftArrow)
-                {
-                    selectedItem.Expanded = false;
-                    Event.current.Use();
+                    else if (selectedObject is EditorParamRef)
+                    {
+                        detailsView.DrawParameter(selectedObject as EditorParamRef);
+                    }
+
+                    GUILayout.EndVertical();
+
+                    if (Event.current.type == EventType.Repaint)
+                    {
+                        Rect rect = GUILayoutUtility.GetLastRect();
+                        isNarrow = rect.width < 600;
+                    }
                 }
             }
 
-            // Show the search box at the top
-            GUILayout.BeginArea(searchRect);
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(new GUIContent(searchIcon), GUILayout.ExpandWidth(false));
-            GUI.SetNextControlName("SearchBox");
-            searchString = EditorGUILayout.TextField(searchString);
-            GUILayout.EndHorizontal();
-            GUILayout.EndArea();
-
-            if (fromInspector)
+            private void DrawSeparatorLine()
             {
-                EditorGUI.FocusTextInControl("SearchBox");
+                GUILayout.Box(GUIContent.none, GUILayout.Height(1), GUILayout.ExpandWidth(true));
+            }
 
-                if (selectedItem != null && Event.current.isKey && Event.current.keyCode == KeyCode.Return
-                    && !(selectedItem.EventRef == null && selectedItem.BankRef == null))
+            private void DrawEventPreview(EditorEventRef eventRef, float[] metering)
+            {
+                detailsView.DrawEvent(eventRef, isNarrow);
+
+                DrawSeparatorLine();
+
+                // Playback controls, 3D Preview and meters
+                EditorGUILayout.BeginHorizontal(GUILayout.Height(event3DPreview.Height));
+                GUILayout.FlexibleSpace();
+
+                EditorGUILayout.BeginVertical();
+
+                if (!isNarrow)
                 {
-                    Event.current.Use();
+                    GUILayout.FlexibleSpace();
+                }
 
-                    if (selectedItem.EventRef != null)
+                transportControls.OnGUI(eventRef, parameterControls.ParameterValues);
+
+                if (isNarrow)
+                {
+                    EditorGUILayout.Separator();
+                    meters.OnGUI(true, metering);
+                }
+                else
+                {
+                    GUILayout.FlexibleSpace();
+                }
+
+                EditorGUILayout.EndVertical();
+
+                event3DPreview.OnGUI(eventRef);
+
+                if (!isNarrow)
+                {
+                    meters.OnGUI(false, metering);
+                }
+
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.EndHorizontal();
+
+                DrawSeparatorLine();
+
+                parameterControls.OnGUI(eventRef);
+            }
+        }
+
+        [Serializable]
+        class DetailsView
+        {
+            private Texture copyIcon;
+            private GUIStyle textFieldNameStyle;
+
+            private void AffirmResources()
+            {
+                if (copyIcon == null)
+                {
+                    copyIcon = EditorUtils.LoadImage("CopyIcon.png");
+
+                    textFieldNameStyle = new GUIStyle(EditorStyles.label);
+                    textFieldNameStyle.fontStyle = FontStyle.Bold;
+                }
+            }
+
+            public void DrawEvent(EditorEventRef selectedEvent, bool isNarrow)
+            {
+                AffirmResources();
+
+                DrawCopyableTextField("Full Path", selectedEvent.Path);
+
+                DrawTextField("Banks", string.Join(", ", selectedEvent.Banks.Select(x => x.Name).ToArray()));
+
+                EditorGUILayout.BeginHorizontal();
+                DrawTextField("Panning", selectedEvent.Is3D ? "3D" : "2D");
+                DrawTextField("Oneshot", selectedEvent.IsOneShot.ToString());
+
+                TimeSpan t = TimeSpan.FromMilliseconds(selectedEvent.Length);
+                DrawTextField("Length", selectedEvent.Length > 0 ? string.Format("{0:D2}:{1:D2}:{2:D3}", t.Minutes, t.Seconds, t.Milliseconds) : "N/A");
+
+                if (!isNarrow) DrawTextField("Streaming", selectedEvent.IsStream.ToString());
+                EditorGUILayout.EndHorizontal();
+                if (isNarrow) DrawTextField("Streaming", selectedEvent.IsStream.ToString());
+            }
+
+            public void DrawSnapshot(EditorEventRef eventRef)
+            {
+                AffirmResources();
+
+                DrawCopyableTextField("Full Path", eventRef.Path);
+            }
+
+            public void DrawBank(EditorBankRef bank)
+            {
+                AffirmResources();
+
+                DrawCopyableTextField("Full Path", "bank:/" + bank.Name);
+
+                string[] SizeSuffix = { "B", "KB", "MB", "GB" };
+
+                GUILayout.Label("Platform Bank Sizes", textFieldNameStyle);
+
+                EditorGUI.indentLevel++;
+
+                foreach (var sizeInfo in bank.FileSizes)
+                {
+                    int order = 0;
+                    long size = sizeInfo.Value;
+
+                    while (size >= 1024 && order + 1 < SizeSuffix.Length)
                     {
-                        outputProperty.stringValue = "";
-                        outputProperty.stringValue = selectedItem.EventRef.Path;
-                        EditorUtils.UpdateParamsOnEmitter(outputProperty.serializedObject, selectedItem.EventRef.Path);
+                        order++;
+                        size /= 1024;
+                    }
+
+                    EditorGUILayout.LabelField(sizeInfo.Name, string.Format("{0} {1}", size, SizeSuffix[order]));
+                }
+
+                EditorGUI.indentLevel--;
+            }
+
+            public void DrawParameter(EditorParamRef parameter)
+            {
+                AffirmResources();
+
+                DrawCopyableTextField("Name", parameter.Name);
+                DrawCopyableTextField("ID",
+                    string.Format("{{ data1 = 0x{0:x8}, data2 = 0x{1:x8} }}", parameter.ID.data1, parameter.ID.data2));
+                DrawTextField("Minimum", parameter.Min.ToString());
+                DrawTextField("Maximum", parameter.Max.ToString());
+            }
+
+            private void DrawCopyableTextField(string name, string value)
+            {
+                EditorGUILayout.BeginHorizontal();
+                DrawTextField(name, value);
+                if (GUILayout.Button(copyIcon, GUILayout.ExpandWidth(false)))
+                {
+                    EditorGUIUtility.systemCopyBuffer = value;
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+
+            private void DrawTextField(string name, string content)
+            {
+                EditorGUILayout.BeginHorizontal();
+
+                GUILayout.Label(name, textFieldNameStyle, GUILayout.Width(75));
+                GUILayout.Label(content);
+
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+
+        [Serializable]
+        class TransportControls
+        {
+            private Texture playOff;
+            private Texture playOn;
+            private Texture stopOff;
+            private Texture stopOn;
+            private Texture openIcon;
+            private GUIStyle buttonStyle;
+
+            public bool forceRepaint { get; private set; }
+
+            public void Reset()
+            {
+                forceRepaint = false;
+            }
+
+            private void AffirmResources()
+            {
+                if (playOff == null)
+                {
+                    playOff = EditorUtils.LoadImage("TransportPlayButtonOff.png");
+                    playOn = EditorUtils.LoadImage("TransportPlayButtonOn.png");
+                    stopOff = EditorUtils.LoadImage("TransportStopButtonOff.png");
+                    stopOn = EditorUtils.LoadImage("TransportStopButtonOn.png");
+                    openIcon = EditorUtils.LoadImage("transportOpen.png");
+
+                    buttonStyle = new GUIStyle();
+                    buttonStyle.padding.left = 4;
+                    buttonStyle.padding.top = 10;
+                }
+            }
+
+            public void OnGUI(EditorEventRef selectedEvent, Dictionary<string, float> parameterValues)
+            {
+                AffirmResources();
+
+                var previewState = EditorUtils.PreviewState;
+                bool playing = previewState == PreviewState.Playing;
+                bool paused = previewState == PreviewState.Paused;
+                bool stopped = previewState == PreviewState.Stopped;
+
+                EditorGUILayout.BeginHorizontal();
+
+                if (GUILayout.Button(stopped || paused ? stopOn : stopOff, buttonStyle, GUILayout.ExpandWidth(false)))
+                {
+                    forceRepaint = false;
+
+                    if (paused)
+                    {
+                        EditorUtils.PreviewStop();
+                    }
+                    if (playing)
+                    {
+                        EditorUtils.PreviewPause();
+                    }
+                }
+                if (GUILayout.Button(playing ? playOn : playOff, buttonStyle, GUILayout.ExpandWidth(false)))
+                {
+                    if (playing || stopped)
+                    {
+                        EditorUtils.PreviewEvent(selectedEvent, parameterValues);
                     }
                     else
                     {
-                        outputProperty.stringValue = selectedItem.BankRef.Name;
+                        EditorUtils.PreviewPause();
                     }
-                    outputProperty.serializedObject.ApplyModifiedProperties();
-                    Close();
+
+                    forceRepaint = true;
                 }
-                if (Event.current.isKey && Event.current.keyCode == KeyCode.Escape)
+                if (GUILayout.Button(new GUIContent(openIcon, "Show Event in FMOD Studio"), buttonStyle, GUILayout.ExpandWidth(false)))
                 {
-                    Close();
-                }
-            }
-
-            // Show the tree view
-            Predicate<TreeItem> searchFilter = null;
-            searchFilter = (x) => (x.Name.ToLower().Contains(searchString.ToLower()) || x.Children.Exists(searchFilter));
-
-            // Check if our selected item still matches the search string
-            if (selectedItem != null && !String.IsNullOrEmpty(searchString) && selectedItem.Children.Count == 0)
-            {
-                Predicate<TreeItem> containsSelected = null;
-                containsSelected = (x) => (x == selectedItem || x.Children.Exists(containsSelected));
-                Predicate<TreeItem> matchForSelected = null;
-                matchForSelected = (x) => (x.Name.ToLower().Contains(searchString.ToLower()) && (x == selectedItem || x.Children.Exists(containsSelected))) || x.Children.Exists(matchForSelected);
-                if (!treeItems.Exists(matchForSelected))
-                {
-                  SetSelectedItem(null);
-                }
-            }
-
-            GUILayout.BeginArea(listRect);
-            treeScroll = GUILayout.BeginScrollView(treeScroll, GUILayout.ExpandHeight(true));
-
-            lastDrawnItem = null;
-            itemCount = 0;
-
-            if (showEvents)
-            {
-                treeItems[(int)TreeType.Events].Expanded = fromInspector ? true : treeItems[(int)TreeType.Events].Expanded;
-                ShowEventFolder(treeItems[(int)TreeType.Events], searchFilter);
-                ShowEventFolder(treeItems[(int)TreeType.Snapshots], searchFilter);
-            }
-            if (showBanks)
-            {
-                treeItems[(int)TreeType.Banks].Expanded = fromInspector ? true : treeItems[(int)TreeType.Banks].Expanded;
-                ShowEventFolder(treeItems[(int)TreeType.Banks], searchFilter);
-            }
-            if (showParameters)
-            {
-                treeItems[(int)TreeType.GlobalParameters].Expanded = fromInspector ? true : treeItems[(int)TreeType.GlobalParameters].Expanded;
-                ShowEventFolder(treeItems[(int)TreeType.GlobalParameters], searchFilter);
-            }
-
-            GUILayout.EndScrollView();
-            GUILayout.EndArea();
-
-            // If the standalone event browser show a preview of the selected item
-            if (!fromInspector)
-            {
-                GUI.Box(previewRect, GUIContent.none);
-
-                if (selectedItem != null && selectedItem.EventRef != null && selectedItem.EventRef.Path.StartsWith("event:"))
-                {
-                    PreviewEvent(previewRect, selectedItem.EventRef);
+                    string cmd = string.Format("studio.window.navigateTo(studio.project.lookup(\"{0}\"))", selectedEvent.Guid);
+                    EditorUtils.SendScriptCommand(cmd);
                 }
 
-                if (selectedItem != null && selectedItem.EventRef != null && selectedItem.EventRef.Path.StartsWith("snapshot:"))
-                {
-                    PreviewSnapshot(previewRect, selectedItem.EventRef);
-                }
-
-                if (selectedItem != null && selectedItem.BankRef != null)
-                {
-                    PreviewBank(previewRect, selectedItem.BankRef);
-                }
-
-                if (selectedItem != null && selectedItem.ParamRef != null)
-                {
-                    PreviewParameter(previewRect, selectedItem.ParamRef);
-                }
+                EditorGUILayout.EndHorizontal();
             }
         }
 
-        private void SplitWindow(out Rect searchRect, out Rect listRect, out Rect previewRect)
+        [Serializable]
+        class Event3DPreview
         {
-            searchRect = new Rect(4, 4, position.width - 8, 16);
-            float previewBoxHeight = fromInspector ? 0 : 300;
-            listRect = new Rect(0, searchRect.height + 6, position.width, position.height - previewBoxHeight - searchRect.height - 15);
-            previewRect = new Rect(0, position.height - previewBoxHeight, position.width, previewBoxHeight);
-        }
+            private bool isDragging;
+            private Rect arenaRect;
 
-        Rect previewCustomRect;
-        Rect previewPathRect;
+            private Vector2 eventPosition;
+            private float eventDistance = 0;
+            private float eventOrientation = 0;
 
-        private void PreviewEvent(Rect previewRect, EditorEventRef selectedEvent)
-        {
-            GUILayout.BeginArea(previewRect);
+            private Texture arena;
+            private Texture emitter;
 
-            bool isNarrow = previewRect.width < 400;
-
-            var style = new GUIStyle(EditorStyles.label);
-            EditorStyles.label.fontStyle = FontStyle.Bold;
-            EditorGUIUtility.labelWidth = 75;
-
-            var copyIcon = EditorGUIUtility.Load("FMOD/CopyIcon.png") as Texture;
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Full Path", selectedEvent.Path, style, GUILayout.ExpandWidth(true));
-            if (GUILayout.Button(copyIcon, GUILayout.ExpandWidth(false)))
+            public void Reset()
             {
-                EditorGUIUtility.systemCopyBuffer = selectedEvent.Path;
+                eventPosition = new Vector2(0, 0);
+                eventDistance = 0;
+                eventOrientation = 0;
             }
-            EditorGUILayout.EndHorizontal();
 
-            StringBuilder builder = new StringBuilder();
-            selectedEvent.Banks.ForEach((x) => { builder.Append(Path.GetFileNameWithoutExtension(x.Path)); builder.Append(", "); });
-            EditorGUILayout.LabelField("Banks", builder.ToString(0, Math.Max(0, builder.Length - 2)), style);
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Panning", selectedEvent.Is3D ? "3D" : "2D", style);
-            EditorGUILayout.LabelField("Oneshot", selectedEvent.IsOneShot.ToString(), style);
-
-            TimeSpan t = TimeSpan.FromMilliseconds(selectedEvent.Length);
-            EditorGUILayout.LabelField("Length", selectedEvent.Length > 0 ? string.Format("{0:D2}:{1:D2}:{2:D3}", t.Minutes, t.Seconds, t.Milliseconds) : "N/A", style);
-
-            if (!isNarrow) EditorGUILayout.LabelField("Streaming", selectedEvent.IsStream.ToString(), style);
-            EditorGUILayout.EndHorizontal();
-            if (isNarrow) EditorGUILayout.LabelField("Streaming", selectedEvent.IsStream.ToString(), style);
-
-            EditorGUIUtility.labelWidth = 0;
-            EditorStyles.label.fontStyle = FontStyle.Normal;
-
-            if (Event.current.type == EventType.Repaint)
+            private void AffirmResources()
             {
-                var lastRect = GUILayoutUtility.GetLastRect();
-                if (!isNarrow)
+                if (arena == null)
                 {
-                    previewCustomRect = new Rect(lastRect.width / 2 - 200, lastRect.yMax + 10, 400, 150);
-                }
-                else
-                {
-                    previewCustomRect = new Rect(lastRect.width / 2 - 130, lastRect.yMax + 10, 260, 150);
+                    arena = EditorUtils.LoadImage("Preview.png");
+                    emitter = EditorUtils.LoadImage("PreviewEmitter.png");
                 }
             }
 
-            GUI.Box(new Rect(0, previewCustomRect.yMin, previewRect.width, 1), GUIContent.none);
-            GUI.Box(new Rect(0, previewCustomRect.yMax, previewRect.width, 1), GUIContent.none);
-
-            GUILayout.BeginArea(previewCustomRect);
-
-            Texture playOff = EditorGUIUtility.Load("FMOD/TransportPlayButtonOff.png") as Texture;
-            Texture playOn = EditorGUIUtility.Load("FMOD/TransportPlayButtonOn.png") as Texture;
-            Texture stopOff = EditorGUIUtility.Load("FMOD/TransportStopButtonOff.png") as Texture;
-            Texture stopOn = EditorGUIUtility.Load("FMOD/TransportStopButtonOn.png") as Texture;
-            Texture openIcon = EditorGUIUtility.Load("FMOD/transportOpen.png") as Texture;
-
-            var transportButtonStyle = new GUIStyle();
-            transportButtonStyle.padding.left = 4;
-            transportButtonStyle.padding.top = 10;
-
-            var previewState = EditorUtils.PreviewState;
-            bool playing = previewState == PreviewState.Playing;
-            bool paused = previewState == PreviewState.Paused;
-            bool stopped = previewState == PreviewState.Stopped;
-            EditorGUILayout.BeginVertical();
-            if (!isNarrow) GUILayout.FlexibleSpace();
-            EditorGUILayout.BeginHorizontal();
-
-            if (GUILayout.Button(stopped || paused ? stopOn : stopOff, transportButtonStyle, GUILayout.ExpandWidth(false)))
+            public float Height
             {
-                forceRepaint = false;
-                if (paused)
+                get
                 {
-                    EditorUtils.PreviewStop();
-                }
-                if (playing)
-                {
-                    EditorUtils.PreviewPause();
+                    AffirmResources();
+                    return GUI.skin.label.CalcSize(new GUIContent(arena)).y;
                 }
             }
-            if (GUILayout.Button(playing ? playOn : playOff, transportButtonStyle, GUILayout.ExpandWidth(false)))
-            {
-                if (playing || stopped)
-                {
-                    EditorUtils.PreviewEvent(selectedEvent, previewParamValues);
-                }
-                else
-                {
-                    EditorUtils.PreviewPause();
-                }
-                forceRepaint = true;
-            }
-            if (GUILayout.Button(new GUIContent(openIcon, "Show Event in FMOD Studio"), transportButtonStyle, GUILayout.ExpandWidth(false)))
-            {
-                string cmd = string.Format("studio.window.navigateTo(studio.project.lookup(\"{0}\"))", selectedEvent.Guid.ToString("b"));
-                EditorUtils.SendScriptCommand(cmd);
-            }
 
-            EditorGUILayout.EndHorizontal();
-            if (!isNarrow) GUILayout.FlexibleSpace();
-            EditorGUILayout.EndVertical();
-
+            public void OnGUI(EditorEventRef selectedEvent)
             {
-                Texture circle = EditorGUIUtility.Load("FMOD/preview.png") as Texture;
-                Texture circle2 = EditorGUIUtility.Load("FMOD/previewemitter.png") as Texture;
+                AffirmResources();
 
                 var originalColour = GUI.color;
                 if (!selectedEvent.Is3D)
@@ -668,455 +1122,549 @@ namespace FMODUnity
                     GUI.color = new Color(1.0f, 1.0f, 1.0f, 0.1f);
                 }
                 
-                Rect rect = new Rect(isNarrow ? 120 : 150, 10, 128, 128);
-                GUI.DrawTexture(rect, circle);
+                GUILayout.Label(arena, GUILayout.ExpandWidth(false));
 
-                Vector2 centre = rect.center;
-                Rect rect2 = new Rect(rect.center.x + eventPosition.x - 6, rect.center.y + eventPosition.y - 6, 12, 12);
-                GUI.DrawTexture(rect2, circle2);
+                if (Event.current.type == EventType.Repaint)
+                {
+                    arenaRect = GUILayoutUtility.GetLastRect();
+                }
+
+                Vector2 center = arenaRect.center;
+                Rect rect2 = new Rect(center.x + eventPosition.x - 6, center.y + eventPosition.y - 6, 12, 12);
+                GUI.DrawTexture(rect2, emitter);
 
                 GUI.color = originalColour;
 
-                if (selectedEvent.Is3D && (Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag) && rect.Contains(Event.current.mousePosition))
+                if (selectedEvent.Is3D)
                 {
-                    var newPosition = Event.current.mousePosition;
-                    Vector2 delta = (newPosition - centre);
-                    float distance = delta.magnitude;
-                    if (distance < 60)
+                    bool useGUIEvent = false;
+
+                    switch (Event.current.type)
                     {
-                        eventPosition = newPosition - rect.center;
-                        previewDistance = distance / 60.0f * selectedEvent.MaxDistance;
+                        case EventType.MouseDown:
+                            if (arenaRect.Contains(Event.current.mousePosition))
+                            {
+                                isDragging = true;
+                                useGUIEvent = true;
+                            }
+                            break;
+                        case EventType.MouseUp:
+                            if (isDragging)
+                            {
+                                isDragging = false;
+                                useGUIEvent = true;
+                            }
+                            break;
+                        case EventType.MouseDrag:
+                            if (isDragging)
+                            {
+                                useGUIEvent = true;
+                            }
+                            break;
+                    }
+
+                    if (useGUIEvent)
+                    {
+                        Vector2 newPosition = Event.current.mousePosition;
+                        Vector2 delta = newPosition - center;
+
+                        float maximumDistance = (arena.width - emitter.width) / 2;
+                        float distance = Math.Min(delta.magnitude, maximumDistance);
+
                         delta.Normalize();
+                        eventPosition = delta * distance;
+                        eventDistance = distance / maximumDistance * selectedEvent.MaxDistance;
+
                         float angle = Mathf.Atan2(delta.y, delta.x);
-                        previewOrientation = angle + Mathf.PI * 0.5f;
+                        eventOrientation = angle + Mathf.PI * 0.5f;
+
+                        Event.current.Use();
                     }
-                    Event.current.Use();
                 }
 
-                EditorUtils.PreviewUpdatePosition(previewDistance, previewOrientation);
+                EditorUtils.PreviewUpdatePosition(eventDistance, eventOrientation);
+            }
+        }
+
+        [Serializable]
+        class EventParameterControls
+        {
+            [NonSerialized]
+            private Dictionary<string, float> parameterValues = new Dictionary<string, float>();
+
+            [NonSerialized]
+            private Vector2 scrollPosition;
+
+            [NonSerialized]
+            private bool showGlobalParameters;
+
+            public Dictionary<string, float> ParameterValues { get { return parameterValues; } }
+
+            public void Reset()
+            {
+                parameterValues.Clear();
             }
 
-            float hoffset = isNarrow ? 15 : 300;
-            float voffset = isNarrow ? 50 : 10;
-            Texture meterOn = EditorGUIUtility.Load("FMOD/LevelMeter.png") as Texture;
-            Texture meterOff = EditorGUIUtility.Load("FMOD/LevelMeterOff.png") as Texture;
-            float[] metering = EditorUtils.GetMetering();
-            int meterHeight = isNarrow ? 86 : 128;
-            int meterWidth = (int)((128 / (float)meterOff.height) * meterOff.width);
-            foreach (float rms in metering)
+            public void OnGUI(EditorEventRef selectedEvent)
             {
-                GUI.DrawTexture(new Rect(hoffset, voffset, meterWidth, meterHeight), meterOff);
+                scrollPosition = GUILayout.BeginScrollView(scrollPosition,
+                    GUILayout.Height(EditorGUIUtility.singleLineHeight * 7f));
+
+                foreach (EditorParamRef paramRef in selectedEvent.LocalParameters)
+                {
+                    if (!parameterValues.ContainsKey(paramRef.Name))
+                    {
+                        parameterValues[paramRef.Name] = paramRef.Default;
+                    }
+
+                    CreateParamRefSlider(paramRef);
+                }
+
+                showGlobalParameters = selectedEvent.GlobalParameters.Count > 0 &&
+                    EditorGUI.Foldout(EditorGUILayout.GetControlRect(), showGlobalParameters, "Global Parameters");
+
+                foreach (EditorParamRef paramRef in selectedEvent.GlobalParameters)
+                {
+                    if (!parameterValues.ContainsKey(paramRef.Name))
+                    {
+                        parameterValues[paramRef.Name] = paramRef.Default;
+                    }
+
+                    if (showGlobalParameters)
+                    {
+                        CreateParamRefSlider(paramRef, true);
+                    }
+                }
+
+                GUILayout.EndScrollView();
+            }
+
+            public void CreateParamRefSlider(EditorParamRef paramRef, bool isGlobal = false)
+            {
+                if (paramRef.Type == ParameterType.Labeled)
+                {
+                    parameterValues[paramRef.Name] = EditorGUILayout.IntPopup(
+                        paramRef.Name, (int)parameterValues[paramRef.Name], paramRef.Labels, null);
+                }
+                else if (paramRef.Type == ParameterType.Discrete)
+                {
+                    parameterValues[paramRef.Name] = EditorGUILayout.IntSlider(
+                        paramRef.Name, (int)parameterValues[paramRef.Name], (int)paramRef.Min, (int)paramRef.Max);
+                }
+                else
+                {
+                    parameterValues[paramRef.Name] = EditorGUILayout.Slider(
+                        paramRef.Name, parameterValues[paramRef.Name], paramRef.Min, paramRef.Max);
+                }
+
+                if (isGlobal)
+                {
+                    EditorUtils.System.setParameterByID(paramRef.ID, parameterValues[paramRef.Name]);
+                }
+                else
+                {
+                    EditorUtils.PreviewUpdateParameter(paramRef.ID, parameterValues[paramRef.Name]);
+                }
+            }
+        }
+
+        [Serializable]
+        class PreviewMeters
+        {
+            private Texture meterOn;
+            private Texture meterOff;
+
+            private void AffirmResources()
+            {
+                if (meterOn == null)
+                {
+                    meterOn = EditorUtils.LoadImage("LevelMeter.png");
+                    meterOff = EditorUtils.LoadImage("LevelMeterOff.png");
+                }
+            }
+
+            public void OnGUI(bool minimized, float[] metering)
+            {
+                AffirmResources();
+
+                int meterHeight = minimized ? 86 : 128;
+                int meterWidth = (int)((128 / (float)meterOff.height) * meterOff.width);
                 
-                float db = 20.0f * Mathf.Log10(rms * Mathf.Sqrt(2.0f));
-                db = Mathf.Clamp(db, -80.0f, 10.0f);
-                float visible = 0;
-                int[] segmentPixels = new int[] { 0, 18, 38, 60, 89, 130, 187, 244, 300 };
-                float[] segmentDB = new float[] { -80.0f, -60.0f, -50.0f, -40.0f, -30.0f, -20.0f, -10.0f, 0, 10.0f };
-                int segment = 1;
-                while (segmentDB[segment] < db)
+                List<float> meterPositions = meterPositionsForSpeakerMode(speakerModeForChannelCount(metering.Length), meterWidth, 2, 6);
+
+                const int MeterCountMaximum = 16;
+
+                int minimumWidth = meterWidth * MeterCountMaximum;
+
+                Rect fullRect = GUILayoutUtility.GetRect(minimumWidth, meterHeight,
+                    GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+
+                float baseX = fullRect.x + (fullRect.width - (meterWidth * metering.Length)) / 2;
+
+                for(int i = 0; i < metering.Length; i++)
                 {
-                    segment++;
-                }
-                visible = segmentPixels[segment - 1] + ((db - segmentDB[segment - 1]) / (segmentDB[segment] - segmentDB[segment - 1])) * (segmentPixels[segment] - segmentPixels[segment - 1]);
+                    Rect meterRect = new Rect(baseX + meterPositions[i], fullRect.y, meterWidth, fullRect.height);
 
-                visible *= meterHeight / (float)meterOff.height;
-
-                Rect levelPosRect = new Rect(hoffset, meterHeight - visible + voffset, meterWidth, visible);
-                Rect levelUVRect = new Rect(0, 0, 1.0f, visible / meterHeight);
-                GUI.DrawTextureWithTexCoords(levelPosRect, meterOn, levelUVRect);
-                hoffset += meterWidth + 5.0f;
-            }
-
-            GUILayout.EndArea();
-            
-            Rect paramRect = new Rect(0, previewCustomRect.yMax + 10, previewRect.width, previewRect.height - (previewCustomRect.yMax + 10));
-            GUILayout.BeginArea(paramRect);
-
-            paramScroll = GUILayout.BeginScrollView(paramScroll, false, false);
-            foreach (var paramRef in selectedEvent.Parameters)
-            {
-                if (!previewParamValues.ContainsKey(paramRef.Name))
-                {
-                    previewParamValues[paramRef.Name] = paramRef.Default;
-                }
-                previewParamValues[paramRef.Name] = EditorGUILayout.Slider(paramRef.Name, previewParamValues[paramRef.Name], paramRef.Min, paramRef.Max);
-                EditorUtils.PreviewUpdateParameter(paramRef.ID, previewParamValues[paramRef.Name]);
-            }
-            GUILayout.EndScrollView();
-
-            GUILayout.EndArea();
-            GUILayout.EndArea();
-        }
-
-        private void PreviewBank(Rect previewRect, EditorBankRef selectedBank)
-        {
-            GUILayout.BeginArea(previewRect);
-            EditorGUIUtility.labelWidth = 75;
-            string[] SizeSuffix = { "B", "KB", "MB", "GB" };
-            EditorStyles.label.fontStyle = FontStyle.Bold;
-            EditorGUILayout.LabelField("Platform Bank Sizes");
-            EditorStyles.label.fontStyle = FontStyle.Normal;
-            EditorGUI.indentLevel++;
-            foreach (var sizeInfo in selectedBank.FileSizes)
-            {
-                int order = 0;
-                long len = sizeInfo.Value;
-                while (len >= 1024 && order + 1 < SizeSuffix.Length)
-                {
-                    order++;
-                    len /= 1024;
-                }
-                EditorGUILayout.LabelField(sizeInfo.Name, string.Format("{0} {1}", len, SizeSuffix[order]));
-            }
-            EditorGUI.indentLevel--;
-            EditorGUIUtility.labelWidth = 0;
-            GUILayout.EndArea();
-        }
-
-        private void PreviewParameter(Rect previewRect, EditorParamRef selectedParam)
-        {
-            GUILayout.BeginArea(previewRect);
-            var style = new GUIStyle(EditorStyles.label);
-            EditorStyles.label.fontStyle = FontStyle.Bold;
-            EditorGUIUtility.labelWidth = 75;
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Name", selectedParam.Name, style, GUILayout.ExpandWidth(true));
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.LabelField("Min", selectedParam.Min.ToString(), style, GUILayout.ExpandWidth(true));
-            EditorGUILayout.LabelField("Max", selectedParam.Max.ToString(), style, GUILayout.ExpandWidth(true));
-
-            EditorGUI.indentLevel--;
-            EditorGUIUtility.labelWidth = 0;
-            GUILayout.EndArea();
-        }
-
-        private void PreviewSnapshot(Rect previewRect, EditorEventRef selectedEvent)
-        {
-            GUILayout.BeginArea(previewRect);
-            var style = new GUIStyle(EditorStyles.label);
-            EditorStyles.label.fontStyle = FontStyle.Bold;
-            EditorGUIUtility.labelWidth = 75;
-
-            EditorGUILayout.LabelField("Full Path", selectedEvent.Path, style);
-
-            EditorGUIUtility.labelWidth = 0;
-            EditorStyles.label.fontStyle = FontStyle.Normal;
-            GUILayout.EndArea();
-        }
-
-        private void RebuildDisplayFromCache()
-        {
-            Action<TreeItem> nullEvents = null;
-            nullEvents = (x) => { x.Exists = false; x.Children.ForEach(nullEvents); };
-            Predicate<TreeItem> isStale = (x) => !x.Exists;
-            Action<TreeItem> removeStaleChildren = null;
-            removeStaleChildren = (x) => { x.Children.RemoveAll(isStale); x.Children.ForEach(removeStaleChildren); };
-
-            if (showEvents)
-            {
-                var editorEvents = EventManager.Events;
-
-                treeItems[(int)TreeType.Events].Children.ForEach(nullEvents);
-                treeItems[(int)TreeType.Snapshots].Children.ForEach(nullEvents);
-
-                foreach (var editorEvent in editorEvents)
-                {
-                    string[] split = editorEvent.Path.Split('/');
-                    var level = split[0] == "snapshot:" ? treeItems[(int)TreeType.Snapshots].Children : treeItems[(int)TreeType.Events].Children;
-                    for (int i = 1; i < split.Length; i++)
+                    GUI.DrawTexture(meterRect, meterOff);
+                    
+                    float db = 20.0f * Mathf.Log10(metering[i] * Mathf.Sqrt(2.0f));
+                    db = Mathf.Clamp(db, -80.0f, 10.0f);
+                    float visible = 0;
+                    int[] segmentPixels = new int[] { 0, 18, 38, 60, 89, 130, 187, 244, 300 };
+                    float[] segmentDB = new float[] { -80.0f, -60.0f, -50.0f, -40.0f, -30.0f, -20.0f, -10.0f, 0, 10.0f };
+                    int segment = 1;
+                    while (segmentDB[segment] < db)
                     {
-                        TreeItem item = level.Find((x) => x.Name == split[i]);
-                        if (item != null)
-                        {
-                            if (i == (split.Length - 1))
-                            {
-                                item.EventRef = editorEvent;
-                            }
-                            else
-                            {
-                                level = item.Children;
-                            }
-                        }
-                        else
-                        {
-                            item = new TreeItem();
-                            if (i == (split.Length - 1))
-                            {
-                                item.EventRef = editorEvent;
-                            }
-                            item.Name = split[i];
-                            level.Add(item);
-                            level.Sort((a, b) => a.EventRef != b.EventRef ? (a.EventRef != null ? 1 : -1) : a.Name.CompareTo(b.Name));
-                            level = item.Children;
-                        }
-                        item.Exists = true;
+                        segment++;
                     }
-                }
+                    visible = segmentPixels[segment - 1] + ((db - segmentDB[segment - 1]) / (segmentDB[segment] - segmentDB[segment - 1])) * (segmentPixels[segment] - segmentPixels[segment - 1]);
 
-                removeStaleChildren(treeItems[(int)TreeType.Events]);
-                removeStaleChildren(treeItems[(int)TreeType.Snapshots]);
+                    visible *= fullRect.height / (float)meterOff.height;
+
+                    Rect levelPosRect = new Rect(meterRect.x, fullRect.height - visible + meterRect.y, meterWidth, visible);
+                    Rect levelUVRect = new Rect(0, 0, 1.0f, visible / fullRect.height);
+                    GUI.DrawTextureWithTexCoords(levelPosRect, meterOn, levelUVRect);
+                }
             }
 
-            if (showBanks)
+            private FMOD.SPEAKERMODE speakerModeForChannelCount(int channelCount)
             {
-                var editorBanks = EventManager.Banks;
-                var children = treeItems[(int)TreeType.Banks].Children;
-
-                children.ForEach(nullEvents);
-
-                foreach (var editorBank in editorBanks)
+                switch(channelCount)
                 {
-                    TreeItem item = children.Find((x) => x.Name == editorBank.Name);
-                    if (item == null)
+                case 1:
+                    return FMOD.SPEAKERMODE.MONO;
+                case 4:
+                    return FMOD.SPEAKERMODE.QUAD;
+                case 5:
+                    return FMOD.SPEAKERMODE.SURROUND;
+                case 6:
+                    return FMOD.SPEAKERMODE._5POINT1;
+                case 8:
+                    return FMOD.SPEAKERMODE._7POINT1;
+                case 12:
+                    return FMOD.SPEAKERMODE._7POINT1POINT4;
+                default:
+                    return FMOD.SPEAKERMODE.STEREO;
+                }
+            }
+
+            private List<float> meterPositionsForSpeakerMode(FMOD.SPEAKERMODE mode, float meterWidth, float groupGap, float lfeGap)
+            {
+                List<float> offsets = new List<float>();
+
+                switch(mode)
+                {
+                case FMOD.SPEAKERMODE.MONO: // M
+                    offsets.Add(0);
+                    break;
+
+                case FMOD.SPEAKERMODE.STEREO: // L R
+                    offsets.Add(0);
+                    offsets.Add(meterWidth);
+                    break;
+
+                case FMOD.SPEAKERMODE.QUAD:
+                    switch(Settings.Instance.MeterChannelOrdering)
                     {
-                        item = new TreeItem();
-                        item.Name = editorBank.Name;
-                        item.BankRef = editorBank;
-                        children.Add(item);
+                    case MeterChannelOrderingType.Standard:
+                    case MeterChannelOrderingType.SeparateLFE: // L R | LS RS
+                        offsets.Add(0); // L
+                        offsets.Add(meterWidth*1); // R
+                        offsets.Add(meterWidth*2 + groupGap); // LS
+                        offsets.Add(meterWidth*3 + groupGap); // RS
+                        break;
+                    case MeterChannelOrderingType.Positional: // LS | L R | RS
+                        offsets.Add(meterWidth*1 + groupGap); // L
+                        offsets.Add(meterWidth*2 + groupGap); // R
+                        offsets.Add(0); // LS
+                        offsets.Add(meterWidth*3 + groupGap*2); // RS
+                        break;
                     }
-                    item.Exists = true;
-                }
-                children.Sort((a, b) => a.Name.CompareTo(b.Name));
+                    break;
 
-                removeStaleChildren(treeItems[(int)TreeType.Banks]);
-            }
-
-            if (showParameters)
-            {
-                var editorParams = EventManager.Parameters;
-                var children = treeItems[(int)TreeType.GlobalParameters].Children;
-
-                children.ForEach(nullEvents);
-
-                foreach (var editorParam in editorParams)
-                {
-                    var name = editorParam.Name;
-                    TreeItem item = children.Find((x) => x.Name == name);
-                    if (item == null)
+                case FMOD.SPEAKERMODE.SURROUND:
+                    switch(Settings.Instance.MeterChannelOrdering)
                     {
-                        item = new TreeItem();
-                        item.Name = name;
-                        item.ParamRef = editorParam;
-                        children.Add(item);
+                    case MeterChannelOrderingType.Standard:
+                    case MeterChannelOrderingType.SeparateLFE: // L R | C | LS RS
+                        offsets.Add(0); // L
+                        offsets.Add(meterWidth*1); // R
+                        offsets.Add(meterWidth*2 + groupGap); // C
+                        offsets.Add(meterWidth*3 + groupGap*2); // LS
+                        offsets.Add(meterWidth*4 + groupGap*2); // RS
+                        break;
+                    case MeterChannelOrderingType.Positional: // LS | L C R | RS
+                        offsets.Add(meterWidth*1 + groupGap); // L
+                        offsets.Add(meterWidth*3 + groupGap); // R
+                        offsets.Add(meterWidth*2 + groupGap); // C
+                        offsets.Add(0); // LS
+                        offsets.Add(meterWidth*4 + groupGap*2); // RS
+                        break;
                     }
-                    item.Exists = true;
-                }
-                children.Sort((a, b) => a.Name.CompareTo(b.Name));
+                    break;
 
-                removeStaleChildren(treeItems[(int)TreeType.GlobalParameters]);
-            }
+                case FMOD.SPEAKERMODE._5POINT1:
+                    switch(Settings.Instance.MeterChannelOrdering)
+                    {
+                    case MeterChannelOrderingType.Standard: // L R | C | LFE | LS RS
+                        offsets.Add(0); // L
+                        offsets.Add(meterWidth*1); // R
+                        offsets.Add(meterWidth*2 + groupGap); // C
+                        offsets.Add(meterWidth*3 + groupGap*2); // LFE
+                        offsets.Add(meterWidth*4 + groupGap*3); // LS
+                        offsets.Add(meterWidth*5 + groupGap*3); // RS
+                        break;
+                    case MeterChannelOrderingType.SeparateLFE: // L R | C | LS RS || LFE
+                        offsets.Add(0); // L
+                        offsets.Add(meterWidth*1); // R
+                        offsets.Add(meterWidth*2 + groupGap); // C
+                        offsets.Add(meterWidth*5 + groupGap*2 + lfeGap); // LFE
+                        offsets.Add(meterWidth*3 + groupGap*2); // LS
+                        offsets.Add(meterWidth*4 + groupGap*2); // RS
+                        break;
+                    case MeterChannelOrderingType.Positional: // LS | L C R | RS || LFE
+                        offsets.Add(meterWidth*1 + groupGap); // L
+                        offsets.Add(meterWidth*3 + groupGap); // R
+                        offsets.Add(meterWidth*2 + groupGap); // C
+                        offsets.Add(meterWidth*5 + groupGap*2 + lfeGap); // LFE
+                        offsets.Add(0); // LS
+                        offsets.Add(meterWidth*4 + groupGap*2); // RS
+                        break;
+                    }
+                    break;
 
-            if (expandedState != null && EventManager.IsLoaded)
-            {
-                int i = 0;
-                Action<TreeItem> setExpanded = null;
-                setExpanded = (x) => { selectedItem = (i == selectedIndex) ? x : selectedItem; x.Expanded = expandedState[i++]; x.Children.ForEach(setExpanded); };
-                try
-                {
-                    treeItems.ForEach(setExpanded);
-                }
-                catch
-                {
+                case FMOD.SPEAKERMODE._7POINT1:
+                    switch(Settings.Instance.MeterChannelOrdering)
+                    {
+                    case MeterChannelOrderingType.Standard: // L R | C | LFE | LS RS | LSR RSR
+                        offsets.Add(0); // L
+                        offsets.Add(meterWidth*1); // R
+                        offsets.Add(meterWidth*2 + groupGap); // C
+                        offsets.Add(meterWidth*3 + groupGap*2); // LFE
+                        offsets.Add(meterWidth*4 + groupGap*3); // LS
+                        offsets.Add(meterWidth*5 + groupGap*3); // RS
+                        offsets.Add(meterWidth*6 + groupGap*4); // LSR
+                        offsets.Add(meterWidth*7 + groupGap*4); // RSR
+                        break;
+                    case MeterChannelOrderingType.SeparateLFE: // L R | C | LS RS | LSR RSR || LFE
+                        offsets.Add(0); // L
+                        offsets.Add(meterWidth*1); // R
+                        offsets.Add(meterWidth*2 + groupGap); // C
+                        offsets.Add(meterWidth*7 + groupGap*3 + lfeGap); // LFE
+                        offsets.Add(meterWidth*3 + groupGap*2); // LS
+                        offsets.Add(meterWidth*4 + groupGap*2); // RS
+                        offsets.Add(meterWidth*5 + groupGap*3); // LSR
+                        offsets.Add(meterWidth*6 + groupGap*3); // RSR
+                        break;
+                    case MeterChannelOrderingType.Positional: // LSR LS | L C R | RS RSR || LFE
+                        offsets.Add(meterWidth*2 + groupGap); // L
+                        offsets.Add(meterWidth*4 + groupGap); // R
+                        offsets.Add(meterWidth*3 + groupGap); // C
+                        offsets.Add(meterWidth*7 + groupGap*2 + lfeGap); // LFE
+                        offsets.Add(meterWidth*1); // LS
+                        offsets.Add(meterWidth*5 + groupGap*2); // RS
+                        offsets.Add(0); // LSR
+                        offsets.Add(meterWidth*6 + groupGap*2); // RSR
+                        break;
+                    }
+                    break;
+
+                case FMOD.SPEAKERMODE._7POINT1POINT4:
+                    switch(Settings.Instance.MeterChannelOrdering)
+                    {
+                    case MeterChannelOrderingType.Standard: // L R | C | LFE | LS RS | LSR RSR | TFL TFR TBL TBR
+                        offsets.Add(0); // L
+                        offsets.Add(meterWidth*1); // R
+                        offsets.Add(meterWidth*2 + groupGap); // C
+                        offsets.Add(meterWidth*3 + groupGap*2); // LFE
+                        offsets.Add(meterWidth*4 + groupGap*3); // LS
+                        offsets.Add(meterWidth*5 + groupGap*3); // RS
+                        offsets.Add(meterWidth*6 + groupGap*4); // LSR
+                        offsets.Add(meterWidth*7 + groupGap*4); // RSR
+                        offsets.Add(meterWidth*8 + groupGap*5); // TFL
+                        offsets.Add(meterWidth*9 + groupGap*5); // TFR
+                        offsets.Add(meterWidth*10 + groupGap*5); // TBL
+                        offsets.Add(meterWidth*11 + groupGap*5); // TBR
+                        break;
+                    case MeterChannelOrderingType.SeparateLFE: // L R | C | LS RS | LSR RSR | TFL TFR TBL TBR || LFE
+                        offsets.Add(0); // L
+                        offsets.Add(meterWidth*1); // R
+                        offsets.Add(meterWidth*2 + groupGap); // C
+                        offsets.Add(meterWidth*11 + groupGap*4 + lfeGap); // LFE
+                        offsets.Add(meterWidth*3 + groupGap*2); // LS
+                        offsets.Add(meterWidth*4 + groupGap*2); // RS
+                        offsets.Add(meterWidth*5 + groupGap*3); // LSR
+                        offsets.Add(meterWidth*6 + groupGap*3); // RSR
+                        offsets.Add(meterWidth*7 + groupGap*4); // TFL
+                        offsets.Add(meterWidth*8 + groupGap*4); // TFR
+                        offsets.Add(meterWidth*9 + groupGap*4); // TBL
+                        offsets.Add(meterWidth*10 + groupGap*4); // TBR
+                        break;
+                    case MeterChannelOrderingType.Positional: // LSR LS | L C R | RS RSR | TBL TFL TFR TBR || LFE
+                        offsets.Add(meterWidth*2 + groupGap); // L
+                        offsets.Add(meterWidth*4 + groupGap); // R
+                        offsets.Add(meterWidth*3 + groupGap); // C
+                        offsets.Add(meterWidth*11 + groupGap*3 + lfeGap); // LFE
+                        offsets.Add(meterWidth*1); // LS
+                        offsets.Add(meterWidth*5 + groupGap*2); // RS
+                        offsets.Add(0); // LSR
+                        offsets.Add(meterWidth*6 + groupGap*2); // RSR
+                        offsets.Add(meterWidth*8 + groupGap*3); // TFL
+                        offsets.Add(meterWidth*9 + groupGap*3); // TFR
+                        offsets.Add(meterWidth*7 + groupGap*3); // TBL
+                        offsets.Add(meterWidth*10 + groupGap*3); // TBR
+                        break;
+                    }
+                    break;
                 }
 
-                expandedState = null;
-
-                if (selectedItem != null)
-                {
-                    SetPreviewEvent(selectedItem.EventRef);
-                }
-                else
-                {
-                    SetPreviewEvent(null);
-                }
+                return offsets;
             }
         }
 
-        internal void SelectEvent(SerializedProperty property)
+        [Flags]
+        enum TypeFilter
         {
-            fromInspector = true;
-            showBanks = false;
-            showParameters = false;
+            Event = 1,
+            Bank = 2,
+            Parameter = 4,
+            All = Event | Bank | Parameter,
+        }
+
+        public void ChooseEvent(SerializedProperty property)
+        {
+            BeginInspectorPopup(property, TypeFilter.Event);
+
+            SerializedProperty pathProperty = property.FindPropertyRelative("Path");
+
+            if (!string.IsNullOrEmpty(pathProperty.stringValue))
+            {
+                treeView.JumpToEvent(pathProperty.stringValue);
+            }
+        }
+
+        public void ChooseBank(SerializedProperty property)
+        {
+            BeginInspectorPopup(property, TypeFilter.Bank);
+
+            if (!string.IsNullOrEmpty(property.stringValue))
+            {
+                treeView.JumpToBank(property.stringValue);
+            }
+        }
+
+        public void ChooseParameter(SerializedProperty property)
+        {
+            BeginInspectorPopup(property, TypeFilter.Parameter);
+        }
+
+        public void FrameEvent(string path)
+        {
+            treeView.JumpToEvent(path);
+        }
+
+        private void BeginInspectorPopup(SerializedProperty property, TypeFilter typeFilter)
+        {
+            treeView.TypeFilter = typeFilter;
             outputProperty = property;
-            JumpToEvent(outputProperty.stringValue);
+            searchField.SetFocus();
+            treeView.DragEnabled = false;
+            ReadEventCache();
         }
 
-        internal void SelectBank(SerializedProperty property)
+        private void BeginStandaloneWindow()
         {
-            fromInspector = true;
-            showEvents = false;
-            showParameters = false;
-            outputProperty = property;
-            JumpToBank(outputProperty.stringValue);
+            treeView.TypeFilter = TypeFilter.All;
+            outputProperty = null;
+            searchField.SetFocus();
+            treeView.DragEnabled = true;
+            isStandaloneWindow = true;
         }
-
-        internal void SelectParameter(SerializedProperty property)
-        {
-            fromInspector = true;
-            showBanks = false;
-            showEvents = false;
-            outputProperty = property;
-            JumpToParameter(outputProperty.stringValue);
-        }
-
-        public void JumpToEvent(string eventPath)
-        {
-            if (!string.IsNullOrEmpty(eventPath))
-            {
-                searchString = "";
-                RebuildDisplayFromCache();
-                TreeItem currentItem = null;
-                if (eventPath.StartsWith("event:/"))
-                {
-                    currentItem = treeItems[(int)TreeType.Events];
-                    eventPath = eventPath.Replace("event:/", "");
-                }
-                else if (eventPath.StartsWith("snapshot:/"))
-                {
-                    currentItem = treeItems[(int)TreeType.Snapshots];
-                    eventPath = eventPath.Replace("snapshot:/", "");
-                }
-                else
-                {
-                    return;
-                }
-
-                currentItem.Expanded = true;
-                var pathElements = eventPath.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var pathElement in pathElements)
-                {
-                    var nextItem = currentItem.Children.Find(x => x.Name.Equals(pathElement, StringComparison.CurrentCultureIgnoreCase));
-                    if (nextItem == null)
-                    {
-                        return;
-                    }
-                    nextItem.Expanded = true;
-                    if (nextItem.EventRef)
-                    {
-                        SetSelectedItem(nextItem);
-
-                        Rect searchRect, listRect, previewRect;
-                        SplitWindow(out searchRect, out listRect, out previewRect);
-                        if (selectedItem.Rect.y < treeScroll.y)
-                        {
-                            treeScroll.y = selectedItem.Rect.y;
-                        }
-                        else if (selectedItem.Rect.y + selectedItem.Rect.height > treeScroll.y + listRect.height)
-                        {
-                            treeScroll.y += (selectedItem.Rect.y + selectedItem.Rect.height) - listRect.height;
-                        }
-                        return;
-                    }
-                    currentItem = nextItem;
-                }
-            }
-        }
-
-        void JumpToBank(string bankName)
-        {
-            if (!string.IsNullOrEmpty(bankName))
-            {
-                RebuildDisplayFromCache();
-                TreeItem currentItem = treeItems[(int)TreeType.Banks];
-
-                currentItem.Expanded = true;
-                var nextItem = currentItem.Children.Find(x => x.Name.Equals(bankName, StringComparison.CurrentCultureIgnoreCase));
-                if (nextItem == null)
-                {
-                    return;
-                }
-                if (nextItem.BankRef)
-                {
-                    SetSelectedItem(nextItem);
-                    return;
-                }
-            }
-        }
-
-        public void JumpToParameter(string parameterName)
-        {
-            if (!string.IsNullOrEmpty(parameterName))
-            {
-                RebuildDisplayFromCache();
-                TreeItem currentItem = treeItems[(int)TreeType.Banks];
-
-                currentItem.Expanded = true;
-                var nextItem = currentItem.Children.Find(x => x.Name.Equals(parameterName, StringComparison.CurrentCultureIgnoreCase));
-                if (nextItem == null)
-                {
-                    return;
-                }
-                if (nextItem.ParamRef)
-                {
-                    SetSelectedItem(nextItem);
-                    return;
-                }
-            }
-        }
-
-        public EventBrowser()
-        {
-            treeItems = new List<TreeItem>();
-            treeItems.Add(new TreeItem());
-            treeItems.Add(new TreeItem());
-            treeItems.Add(new TreeItem());
-            treeItems.Add(new TreeItem());
-            treeItems[(int)TreeType.Events].Name            = "Events";
-            treeItems[(int)TreeType.Snapshots].Name         = "Snapshots";
-            treeItems[(int)TreeType.Banks].Name             = "Banks";
-            treeItems[(int)TreeType.GlobalParameters].Name  = "Global Parameters";
-        }
-
-        public static void RepaintEventBrowser()
-        {
-            if (instance)
-            {
-                instance.Repaint();
-            }
-        }
-
-        static EventBrowser instance;
 
         public void OnEnable()
         {
-            #if UNITY_2019_1_OR_NEWER
+            if (treeViewState == null)
+            {
+                treeViewState = new TreeView.State();
+            }
+
+            searchField = new SearchField();
+            treeView = new TreeView(treeViewState);
+
+            ReadEventCache();
+
+            searchField.downOrUpArrowKeyPressed += treeView.SetFocus;
+
             SceneView.duringSceneGui += SceneUpdate;
-            #else
-            SceneView.onSceneGUIDelegate += SceneUpdate;
-            #endif
-            EditorApplication.hierarchyWindowItemOnGUI += HierachachyUpdate;
-            instance = this;
+
+            EditorApplication.hierarchyWindowItemOnGUI += HierarchyUpdate;
+
+            if (isStandaloneWindow)
+            {
+                EditorUtils.LoadPreviewBanks();
+            }
+
+            IsOpen = true;
+        }
+
+        public void OnDestroy()
+        {
+            EditorUtils.PreviewStop();
+            EditorUtils.UnloadPreviewBanks();
+
+            IsOpen = false;
+        }
+
+        private static bool IsDraggable(UnityEngine.Object data)
+        {
+            return data is EditorEventRef || data is EditorBankRef || data is EditorParamRef;
+        }
+
+        public static bool IsDroppable(UnityEngine.Object[] data)
+        {
+            return data.Length > 0 && IsDraggable(data[0]);
         }
 
         // This is an event handler on the hierachy view to handle dragging our objects from the browser
-        void HierachachyUpdate(int instance, Rect rect)
+        void HierarchyUpdate(int instance, Rect rect)
         {
-            Event e = Event.current;
-            if (e.type == EventType.DragPerform && rect.Contains(e.mousePosition))
+            if (Event.current.type == EventType.DragPerform && rect.Contains(Event.current.mousePosition))
             {
-                if (DragAndDrop.objectReferences.Length > 0 &&
-                    DragAndDrop.objectReferences[0] != null &&
-                        (DragAndDrop.objectReferences[0].GetType() == typeof(EditorEventRef) ||
-                         DragAndDrop.objectReferences[0].GetType() == typeof(EditorBankRef)))
+                if (IsDroppable(DragAndDrop.objectReferences))
                 {
-                    GameObject target = (GameObject)EditorUtility.InstanceIDToObject(instance);
-                    if (DragAndDrop.objectReferences[0].GetType() == typeof(EditorEventRef))
+                    UnityEngine.Object data = DragAndDrop.objectReferences[0];
+
+                    GameObject target = EditorUtility.InstanceIDToObject(instance) as GameObject;
+
+                    if (data is EditorEventRef)
                     {
-                        var emitter = Undo.AddComponent<StudioEventEmitter>(target);
-                        emitter.Event = ((EditorEventRef)DragAndDrop.objectReferences[0]).Path;
-                        var so = new SerializedObject(emitter);
-                        so.ApplyModifiedProperties();
+                        Undo.SetCurrentGroupName("Add Studio Event Emitter");
+
+                        StudioEventEmitter emitter = Undo.AddComponent<StudioEventEmitter>(target);
+
+                        EditorEventRef eventRef = data as EditorEventRef;
+                        emitter.EventReference.Path = eventRef.Path;
+                        emitter.EventReference.Guid = eventRef.Guid;
                     }
-                    else
+                    else if (data is EditorBankRef)
                     {
-                        var loader = Undo.AddComponent<StudioBankLoader>(target);
+                        Undo.SetCurrentGroupName("Add Studio Bank Loader");
+
+                        StudioBankLoader loader = Undo.AddComponent<StudioBankLoader>(target);
                         loader.Banks = new List<string>();
-                        loader.Banks.Add(((EditorBankRef)DragAndDrop.objectReferences[0]).Name);
+                        loader.Banks.Add((data as EditorBankRef).Name);
                     }
+                    else // data is EditorParamRef
+                    {
+                        Undo.SetCurrentGroupName("Add Studio Global Parameter Trigger");
+
+                        StudioGlobalParameterTrigger trigger = Undo.AddComponent<StudioGlobalParameterTrigger>(target);
+                        trigger.parameter = (data as EditorParamRef).Name;
+                    }
+
                     Selection.activeObject = target;
-                    e.Use();
+
+                    Event.current.Use();
                 }
             }
         }
@@ -1125,59 +1673,68 @@ namespace FMODUnity
         // and creating new gameobjects
         void SceneUpdate(SceneView sceneView)
         {
-            Event e = Event.current;
-            if (e.type == EventType.DragPerform)
+            if (Event.current.type == EventType.DragPerform && IsDroppable(DragAndDrop.objectReferences))
             {
-                if (DragAndDrop.objectReferences.Length > 0 &&
-                    DragAndDrop.objectReferences[0] != null &&
-                        (DragAndDrop.objectReferences[0].GetType() == typeof(EditorEventRef) ||
-                         DragAndDrop.objectReferences[0].GetType() == typeof(EditorBankRef)))
+                UnityEngine.Object data = DragAndDrop.objectReferences[0];
+                GameObject newObject;
+
+                if (data is EditorEventRef)
                 {
-                    GameObject newObject = null;
-                    if (DragAndDrop.objectReferences[0].GetType() == typeof(EditorEventRef))
-                    {
-                        string path = ((EditorEventRef)DragAndDrop.objectReferences[0]).Path;
-                        string name = path.Substring(path.LastIndexOf("/") + 1);
-                        newObject = new GameObject(name + " Emitter");
-                        var emitter = newObject.AddComponent<StudioEventEmitter>();
-                        emitter.Event = path;
-                        var so = new SerializedObject(emitter);
-                        so.ApplyModifiedProperties();
-                        Undo.RegisterCreatedObjectUndo(newObject, "Create FMOD Studio Emitter");
-                    }
-                    else
-                    {
-                        newObject = new GameObject("FMOD Studio Loader");
-                        var loader = newObject.AddComponent<StudioBankLoader>();
-                        loader.Banks = new List<string>();
-                        loader.Banks.Add(((EditorBankRef)DragAndDrop.objectReferences[0]).Name);
-                        Undo.RegisterCreatedObjectUndo(newObject, "Create FMOD Studio Loader");
-                    }
-                    Ray ray = HandleUtility.GUIPointToWorldRay(e.mousePosition);
-                    var hit = HandleUtility.RaySnap(ray);
-                    if (hit != null)
-                    {
-                        newObject.transform.position = ((RaycastHit)hit).point;
-                    }
-                    else
-                    {
-                        newObject.transform.position = ray.origin + ray.direction * 10.0f;
-                    }
-                    Selection.activeObject = newObject;
-                    e.Use();
+                    EditorEventRef eventRef = data as EditorEventRef;
+
+                    string path = eventRef.Path;
+
+                    string name = path.Substring(path.LastIndexOf("/") + 1);
+                    newObject = new GameObject(name + " Emitter");
+
+                    StudioEventEmitter emitter = newObject.AddComponent<StudioEventEmitter>();
+                    emitter.EventReference.Path = path;
+                    emitter.EventReference.Guid = eventRef.Guid;
+
+                    Undo.RegisterCreatedObjectUndo(newObject, "Create Studio Event Emitter");
                 }
+                else if (data is EditorBankRef)
+                {
+                    newObject = new GameObject("Studio Bank Loader");
+
+                    StudioBankLoader loader = newObject.AddComponent<StudioBankLoader>();
+                    loader.Banks = new List<string>();
+                    loader.Banks.Add((data as EditorBankRef).Name);
+
+                    Undo.RegisterCreatedObjectUndo(newObject, "Create Studio Bank Loader");
+                }
+                else // data is EditorParamRef
+                {
+                    string name = (data as EditorParamRef).Name;
+
+                    newObject = new GameObject(name + " Trigger");
+
+                    StudioGlobalParameterTrigger trigger = newObject.AddComponent<StudioGlobalParameterTrigger>();
+                    trigger.parameter = name;
+
+                    Undo.RegisterCreatedObjectUndo(newObject, "Create Studio Global Parameter Trigger");
+                }
+
+                Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+                object hit = HandleUtility.RaySnap(ray);
+
+                if (hit != null)
+                {
+                    newObject.transform.position = ((RaycastHit)hit).point;
+                }
+                else
+                {
+                    newObject.transform.position = ray.origin + ray.direction * 10.0f;
+                }
+
+                Selection.activeObject = newObject;
+                Event.current.Use();
             }
-            if (e.type == EventType.DragUpdated)
+            else if (Event.current.type == EventType.DragUpdated && IsDroppable(DragAndDrop.objectReferences))
             {
-                if (DragAndDrop.objectReferences.Length > 0 &&
-                    DragAndDrop.objectReferences[0] != null &&
-                        (DragAndDrop.objectReferences[0].GetType() == typeof(EditorEventRef) ||
-                         DragAndDrop.objectReferences[0].GetType() == typeof(EditorBankRef)))
-                {
-                    DragAndDrop.visualMode = DragAndDropVisualMode.Move;
-                    DragAndDrop.AcceptDrag();
-                    e.Use(); 
-                }
+                DragAndDrop.visualMode = DragAndDropVisualMode.Move;
+                DragAndDrop.AcceptDrag();
+                Event.current.Use(); 
             }
         }
     }
