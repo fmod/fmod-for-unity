@@ -156,7 +156,7 @@ namespace FMODUnity
         private FMOD.Studio.EventInstance eventInstance;
         private float currentVolume = 1;
 
-        protected void PlayEvent()
+        protected void PlayEvent(int timelinePosition = 0)
         {
             if (!eventReference.IsNull)
             {
@@ -193,16 +193,17 @@ namespace FMODUnity
                     eventInstance.setParameterByID(param.ID, param.Value);
                 }
 
+                eventInstance.setTimelinePosition(timelinePosition);
                 eventInstance.setVolume(currentVolume);
                 eventInstance.start();
             }
         }
 
-        public void OnEnter()
+        public void OnEnter(double time)
         {
             if (!isPlayheadInside)
             {
-                PlayEvent();
+                PlayEvent((int)(time * 1000));
                 isPlayheadInside = true;
             }
         }
@@ -249,7 +250,7 @@ namespace FMODUnity
 
             if ((time >= OwningClip.start) && (time < OwningClip.end))
             {
-                OnEnter();
+                OnEnter(time - OwningClip.start);
             }
             else
             {
