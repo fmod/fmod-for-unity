@@ -10,7 +10,7 @@ namespace FMODUnity
     [CustomTimelineEditor(typeof(FMODEventTrack))]
     public class FMODEventTrackEditor : TrackEditor
     {
-        static readonly Texture2D icon = EditorUtils.LoadImage("StudioIcon.png");
+        private static readonly Texture2D icon = EditorUtils.LoadImage("StudioIcon.png");
 
         public override TrackDrawOptions GetTrackOptions(TrackAsset track, Object binding)
         {

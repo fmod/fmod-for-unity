@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -91,7 +92,8 @@ namespace FMODUnity
         protected PropertyStorage Properties = new PropertyStorage();
 
         [SerializeField]
-        public string outputType;
+        [FormerlySerializedAs("outputType")]
+        public string OutputTypeName;
 
         private static List<ThreadAffinityGroup> StaticThreadAffinities = new List<ThreadAffinityGroup>();
 
@@ -939,9 +941,9 @@ namespace FMODUnity
 
         public FMOD.OUTPUTTYPE GetOutputType()
         {
-            if (Enum.IsDefined(typeof(FMOD.OUTPUTTYPE), outputType))
+            if (Enum.IsDefined(typeof(FMOD.OUTPUTTYPE), OutputTypeName))
             {
-                return (FMOD.OUTPUTTYPE)Enum.Parse(typeof(FMOD.OUTPUTTYPE), outputType);
+                return (FMOD.OUTPUTTYPE)Enum.Parse(typeof(FMOD.OUTPUTTYPE), OutputTypeName);
             }
             return FMOD.OUTPUTTYPE.AUTODETECT;
         }
@@ -981,5 +983,38 @@ namespace FMODUnity
         }
 
         public PropertyThreadAffinityList ThreadAffinitiesProperty { get { return threadAffinities; } }
+
+        public virtual List<CodecChannelCount> DefaultCodecChannels { get { return staticCodecChannels; } }
+
+        private static List<CodecChannelCount> staticCodecChannels = new List<CodecChannelCount>()
+        {
+            new CodecChannelCount { format = CodecType.FADPCM, channels = 32 },
+            new CodecChannelCount { format = CodecType.Vorbis, channels = 0 },
+        };
+
+        [Serializable]
+        public class PropertyCodecChannels : Property<List<CodecChannelCount>>
+        {
+        }
+
+        [SerializeField]
+        private PropertyCodecChannels codecChannels = new PropertyCodecChannels();
+
+        public List<CodecChannelCount> CodecChannels
+        {
+            get
+            {
+                if (codecChannels.HasValue)
+                {
+                    return codecChannels.Value;
+                }
+                else
+                {
+                    return DefaultCodecChannels;
+                }
+            }
+        }
+
+        public PropertyCodecChannels CodecChannelsProperty { get { return codecChannels; } }
     }
 }

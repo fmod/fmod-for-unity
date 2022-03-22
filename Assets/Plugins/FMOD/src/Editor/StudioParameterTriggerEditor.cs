@@ -7,14 +7,14 @@ namespace FMODUnity
     [CustomEditor(typeof(StudioParameterTrigger))]
     public class StudioParameterTriggerEditor : Editor
     {
-        StudioEventEmitter targetEmitter;
-        SerializedProperty emitters;
-        SerializedProperty trigger;
-        SerializedProperty tag;
+        private StudioEventEmitter targetEmitter;
+        private SerializedProperty emitters;
+        private SerializedProperty trigger;
+        private SerializedProperty tag;
 
-        bool[] expanded;
+        private bool[] expanded;
 
-        void OnEnable()
+        private void OnEnable()
         {
             emitters = serializedObject.FindProperty("Emitters");
             trigger = serializedObject.FindProperty("TriggerEvent");

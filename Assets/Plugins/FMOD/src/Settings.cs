@@ -78,7 +78,7 @@ namespace FMODUnity
     {
 #if UNITY_EDITOR
         [SerializeField]
-        bool SwitchSettingsMigration = false;
+        private bool SwitchSettingsMigration = false;
 #endif
 
         public const string SettingsAssetName = "FMODStudioSettings";

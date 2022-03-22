@@ -5,18 +5,19 @@ namespace FMODUnity
     [AddComponentMenu("FMOD Studio/FMOD Studio Listener")]
     public class StudioListener : MonoBehaviour
     {
-#if UNITY_PHYSICS_EXIST
-        Rigidbody rigidBody;
-#endif
-#if UNITY_PHYSICS2D_EXIST
-        Rigidbody2D rigidBody2D;
-#endif
-
-        public GameObject attenuationObject;
-
         public int ListenerNumber = -1;
 
-        void OnEnable()
+        [SerializeField]
+        private GameObject attenuationObject;
+
+#if UNITY_PHYSICS_EXIST
+        private Rigidbody rigidBody;
+#endif
+#if UNITY_PHYSICS2D_EXIST
+        private Rigidbody2D rigidBody2D;
+#endif
+
+        private void OnEnable()
         {
             RuntimeUtils.EnforceLibraryOrder();
 #if UNITY_PHYSICS_EXIST
@@ -28,12 +29,12 @@ namespace FMODUnity
             ListenerNumber = RuntimeManager.AddListener(this);
         }
 
-        void OnDisable()
+        private void OnDisable()
         {
             RuntimeManager.RemoveListener(this);
         }
 
-        void Update()
+        private void Update()
         {
             if (ListenerNumber >= 0 && ListenerNumber < FMOD.CONSTANTS.MAX_LISTENERS)
             {
@@ -41,7 +42,7 @@ namespace FMODUnity
             }
         }
 
-        void SetListenerLocation()
+        private void SetListenerLocation()
         {
 #if UNITY_PHYSICS_EXIST
             if (rigidBody)

@@ -72,7 +72,7 @@ namespace FMODUnity
             HandleGameEvent(EmitterGameEvent.ObjectStart);
         }
 
-        void OnApplicationQuit()
+        private void OnApplicationQuit()
         {
             isQuitting = true;
         }
@@ -114,7 +114,7 @@ namespace FMODUnity
             }
         }
 
-        void Lookup()
+        private void Lookup()
         {
             eventDescription = RuntimeManager.GetEventDescription(EventReference);
 

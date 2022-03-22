@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace FMODUnity
 {
@@ -7,20 +8,24 @@ namespace FMODUnity
     public class StudioGlobalParameterTrigger: EventHandler
     {
         [ParamRef]
-        public string parameter;
+        [FormerlySerializedAs("parameter")]
+        public string Parameter;
+
         public EmitterGameEvent TriggerEvent;
-        public float value;
+
+        [FormerlySerializedAs("value")]
+        public float Value;
 
         private FMOD.Studio.PARAMETER_DESCRIPTION parameterDescription;
         public FMOD.Studio.PARAMETER_DESCRIPTION ParameterDesctription { get { return parameterDescription; } }
 
-        FMOD.RESULT Lookup()
+        private FMOD.RESULT Lookup()
         {
-            FMOD.RESULT result = RuntimeManager.StudioSystem.getParameterDescriptionByName(parameter, out parameterDescription);
+            FMOD.RESULT result = RuntimeManager.StudioSystem.getParameterDescriptionByName(Parameter, out parameterDescription);
             return result;
         }
 
-        void Awake()
+        private void Awake()
         {
             if (string.IsNullOrEmpty(parameterDescription.name))
             {
@@ -38,12 +43,12 @@ namespace FMODUnity
 
         public void TriggerParameters()
         {
-            if (!string.IsNullOrEmpty(parameter))
+            if (!string.IsNullOrEmpty(Parameter))
             {
-                FMOD.RESULT result = RuntimeManager.StudioSystem.setParameterByID(parameterDescription.id, value);
+                FMOD.RESULT result = RuntimeManager.StudioSystem.setParameterByID(parameterDescription.id, Value);
                 if (result != FMOD.RESULT.OK)
                 {
-                    RuntimeUtils.DebugLogError(string.Format(("[FMOD] StudioGlobalParameterTrigger failed to set parameter {0} : result = {1}"), parameter, result));
+                    RuntimeUtils.DebugLogError(string.Format(("[FMOD] StudioGlobalParameterTrigger failed to set parameter {0} : result = {1}"), Parameter, result));
                 }
             }
         }

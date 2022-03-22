@@ -27,24 +27,24 @@ namespace FMODUnity
         Paused,
     }
 
-    class EditorUtils : MonoBehaviour
+    public class EditorUtils : MonoBehaviour
     {
         public const string BuildFolder = "Build";
 
-        static FMOD.Studio.System system;
-        static FMOD.SPEAKERMODE speakerMode;
-        static string encryptionKey;
+        private static FMOD.Studio.System system;
+        private static FMOD.SPEAKERMODE speakerMode;
+        private static string encryptionKey;
 
         private static List<FMOD.Studio.Bank> loadedPreviewBanks = new List<FMOD.Studio.Bank>();
-        static FMOD.Studio.EventDescription previewEventDesc;
-        static FMOD.Studio.EventInstance previewEventInstance;
+        private static FMOD.Studio.EventDescription previewEventDesc;
+        private static FMOD.Studio.EventInstance previewEventInstance;
 
-        static PreviewState previewState;
+        private static PreviewState previewState;
 
-        const int StudioScriptPort = 3663;
-        static NetworkStream networkStream = null;
-        static Socket socket = null;
-        static IAsyncResult socketConnection = null;
+        private const int StudioScriptPort = 3663;
+        private static NetworkStream networkStream = null;
+        private static Socket socket = null;
+        private static IAsyncResult socketConnection = null;
 
         public static void CheckResult(FMOD.RESULT result)
         {
@@ -362,8 +362,10 @@ namespace FMODUnity
             style = GUI.skin.label;
         }
 
+#if !FMOD_STORE_UPLOAD
         [InitializeOnLoadMethod]
-        static void Startup()
+#endif
+        private static void Startup()
         {
             EditorApplication.update += Update;
             AssemblyReloadEvents.beforeAssemblyReload += HandleBeforeAssemblyReload;
@@ -373,12 +375,12 @@ namespace FMODUnity
             EditorApplication.update += CallStartupMethodsWhenReady;
         }
 
-        static void HandleBeforeAssemblyReload()
+        private static void HandleBeforeAssemblyReload()
         {
             DestroySystem();
         }
 
-        static void HandleOnPausedModeChanged(PauseState state)
+        private static void HandleOnPausedModeChanged(PauseState state)
         {
             if (RuntimeManager.IsInitialized && RuntimeManager.HaveMasterBanksLoaded)
             {
@@ -387,7 +389,7 @@ namespace FMODUnity
             }
         }
 
-        static void HandleOnPlayModeChanged(PlayModeStateChange state)
+        private static void HandleOnPlayModeChanged(PlayModeStateChange state)
         {
             // Entering Play Mode will cause scripts to reload, losing all state
             // This is the last chance to clean up FMOD and avoid a leak.
@@ -397,7 +399,7 @@ namespace FMODUnity
             }
         }
 
-        static void Update()
+        private static void Update()
         {
             // Update the editor system
             if (system.isValid())
@@ -426,7 +428,7 @@ namespace FMODUnity
             }
         }
 
-        static void CallStartupMethodsWhenReady()
+        private static void CallStartupMethodsWhenReady()
         {
             if (EditorApplication.isUpdating)
             {
@@ -453,14 +455,14 @@ namespace FMODUnity
             SetupWizardWindow.Startup();
         }
 
-        static void RecreateSystem()
+        private static void RecreateSystem()
         {
             PreviewStop();
             DestroySystem();
             CreateSystem();
         }
 
-        static void DestroySystem()
+        private static void DestroySystem()
         {
             if (system.isValid())
             {
@@ -471,7 +473,7 @@ namespace FMODUnity
             }
         }
 
-        static void CreateSystem()
+        private static void CreateSystem()
         {
             RuntimeUtils.DebugLog("FMOD Studio: Creating editor system instance");
             RuntimeUtils.EnforceLibraryOrder();
@@ -568,7 +570,7 @@ namespace FMODUnity
         }
 
         [MenuItem("FMOD/Help/Getting Started", priority = 2)]
-        static void OnlineGettingStarted()
+        private static void OnlineGettingStarted()
         {
             OpenOnlineDocumentation("unity", "user-guide");
         }
@@ -580,19 +582,19 @@ namespace FMODUnity
         }
 
         [MenuItem("FMOD/Help/API Manual", priority = 4)]
-        static void OnlineAPIDocs()
+        private static void OnlineAPIDocs()
         {
             OpenOnlineDocumentation("api");
         }
 
         [MenuItem("FMOD/Help/Support Forum", priority = 16)]
-        static void OnlineQA()
+        private static void OnlineQA()
         {
             Application.OpenURL("https://qa.fmod.com/");
         }
 
         [MenuItem("FMOD/Help/Revision History", priority = 5)]
-        static void OnlineRevisions()
+        private static void OnlineRevisions()
         {
             OpenOnlineDocumentation("api", "welcome-revision-history");
         }
@@ -632,7 +634,7 @@ namespace FMODUnity
             CheckResult(lowlevel.getVersion(out version));
 
             string text = string.Format(
-                "Version: {0}\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2021 \n\n" +
+                "Version: {0}\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2022 \n\n" +
                 "See LICENSE.TXT for additional license information.",
                 VersionString(version));
 
@@ -792,7 +794,7 @@ namespace FMODUnity
             return data;
         }
 
-        static NetworkStream ScriptStream
+        private static NetworkStream ScriptStream
         {
             get
             {
@@ -1223,18 +1225,18 @@ namespace FMODUnity
 
     public class StagingSystem
     {
-        static string PlatformsFolder => $"Assets/{RuntimeUtils.PluginBasePath}/platforms";
-        static string StagingFolder => $"Assets/{RuntimeUtils.PluginBasePath}/staging";
-        const string AnyCPU = "AnyCPU";
+        private static string PlatformsFolder => $"Assets/{RuntimeUtils.PluginBasePath}/platforms";
+        private static string StagingFolder => $"Assets/{RuntimeUtils.PluginBasePath}/staging";
+        private const string AnyCPU = "AnyCPU";
 
-        static readonly LibInfo[] LibrariesToUpdate = {
+        private static readonly LibInfo[] LibrariesToUpdate = {
             new LibInfo() {cpu = "x86", os = "Windows",  lib = "fmodstudioL.dll", platform = "win", buildTarget = BuildTarget.StandaloneWindows},
             new LibInfo() {cpu = "x86_64", os = "Windows", lib = "fmodstudioL.dll", platform = "win", buildTarget = BuildTarget.StandaloneWindows64},
             new LibInfo() {cpu = "x86_64", os = "Linux", lib = "libfmodstudioL.so", platform = "linux", buildTarget = BuildTarget.StandaloneLinux64},
             new LibInfo() {cpu = AnyCPU, os = "OSX", lib = "fmodstudioL.bundle", platform = "mac", buildTarget = BuildTarget.StandaloneOSX},
         };
 
-        struct LibInfo
+        private struct LibInfo
         {
             public string cpu;
             public string os;
@@ -1478,12 +1480,12 @@ namespace FMODUnity
             }
         }
 
-        static UpdateStep FindUpdateStep(Settings.SharedLibraryUpdateStages stage)
+        private static UpdateStep FindUpdateStep(Settings.SharedLibraryUpdateStages stage)
         {
             return UpdateSteps.FirstOrDefault(s => s.Stage == stage);
         }
 
-        static void ResetUpdateStage()
+        private static void ResetUpdateStage()
         {
             Settings.Instance.SharedLibraryUpdateStage = Settings.SharedLibraryUpdateStages.Start;
             Settings.Instance.SharedLibraryTimeSinceStart = 0;
@@ -1621,9 +1623,9 @@ namespace FMODUnity
         public static Action OnBuildStarted;
         public static Action OnBuildEnded;
 
-        static bool buildInProgress = false;
+        private static bool buildInProgress = false;
 
-        static void SetBuildInProgress(bool inProgress)
+        private static void SetBuildInProgress(bool inProgress)
         {
             if (inProgress != buildInProgress)
             {
@@ -1650,7 +1652,7 @@ namespace FMODUnity
             }
         }
 
-        static void PollBuildStatus()
+        private static void PollBuildStatus()
         {
             SetBuildInProgress(BuildPipeline.isBuildingPlayer);
         }
@@ -1788,7 +1790,7 @@ namespace FMODUnity
 
     public class NoIndentScope : IDisposable
     {
-        int oldIndentLevel;
+        private int oldIndentLevel;
 
         public NoIndentScope()
         {

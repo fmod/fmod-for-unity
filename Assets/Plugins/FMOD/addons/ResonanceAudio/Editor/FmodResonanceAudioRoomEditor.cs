@@ -54,19 +54,19 @@ namespace FMODUnityResonance
           "Adjusts the overall duration of the reverb by a positive scaling factor.");
         private GUIContent sizeLabel = new GUIContent("Size", "Sets the room dimensions.");
 
-        void OnEnable()
+        private void OnEnable()
         {
-            leftWall = serializedObject.FindProperty("leftWall");
-            rightWall = serializedObject.FindProperty("rightWall");
-            floor = serializedObject.FindProperty("floor");
-            ceiling = serializedObject.FindProperty("ceiling");
-            backWall = serializedObject.FindProperty("backWall");
-            frontWall = serializedObject.FindProperty("frontWall");
-            reflectivity = serializedObject.FindProperty("reflectivity");
-            reverbGainDb = serializedObject.FindProperty("reverbGainDb");
-            reverbBrightness = serializedObject.FindProperty("reverbBrightness");
-            reverbTime = serializedObject.FindProperty("reverbTime");
-            size = serializedObject.FindProperty("size");
+            leftWall = serializedObject.FindProperty("LeftWall");
+            rightWall = serializedObject.FindProperty("RightWall");
+            floor = serializedObject.FindProperty("Floor");
+            ceiling = serializedObject.FindProperty("Ceiling");
+            backWall = serializedObject.FindProperty("BackWall");
+            frontWall = serializedObject.FindProperty("FrontWall");
+            reflectivity = serializedObject.FindProperty("Reflectivity");
+            reverbGainDb = serializedObject.FindProperty("ReverbGainDb");
+            reverbBrightness = serializedObject.FindProperty("ReverbBrightness");
+            reverbTime = serializedObject.FindProperty("ReverbTime");
+            size = serializedObject.FindProperty("Size");
         }
 
         /// @cond
@@ -92,17 +92,17 @@ namespace FMODUnityResonance
 
             EditorGUILayout.Separator();
 
-            EditorGUILayout.Slider(reflectivity, 0.0f, FmodResonanceAudio.maxReflectivity, reflectivityLabel);
+            EditorGUILayout.Slider(reflectivity, 0.0f, FmodResonanceAudio.MaxReflectivity, reflectivityLabel);
 
             EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField(reverbPropertiesLabel);
             ++EditorGUI.indentLevel;
-            EditorGUILayout.Slider(reverbGainDb, FmodResonanceAudio.minGainDb, FmodResonanceAudio.maxGainDb,
+            EditorGUILayout.Slider(reverbGainDb, FmodResonanceAudio.MinGainDb, FmodResonanceAudio.MaxGainDb,
                                    reverbGainLabel);
-            EditorGUILayout.Slider(reverbBrightness, FmodResonanceAudio.minReverbBrightness,
-                                   FmodResonanceAudio.maxReverbBrightness, reverbBrightnessLabel);
-            EditorGUILayout.Slider(reverbTime, 0.0f, FmodResonanceAudio.maxReverbTime, reverbTimeLabel);
+            EditorGUILayout.Slider(reverbBrightness, FmodResonanceAudio.MinReverbBrightness,
+                                   FmodResonanceAudio.MaxReverbBrightness, reverbBrightnessLabel);
+            EditorGUILayout.Slider(reverbTime, 0.0f, FmodResonanceAudio.MaxReverbTime, reverbTimeLabel);
             --EditorGUI.indentLevel;
 
             EditorGUILayout.Separator();

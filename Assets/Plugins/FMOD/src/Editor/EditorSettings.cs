@@ -24,13 +24,13 @@ namespace FMODUnity
 
         private static string FMODFolderFull => $"Assets/{RuntimeUtils.PluginBasePath}";
 
-        const string CacheFolderName = "Cache";
-        static string CacheFolderRelative => $"{RuntimeUtils.PluginBasePath}/{CacheFolderName}";
-        static string CacheFolderFull => $"{FMODFolderFull}/{CacheFolderName}";
+        private const string CacheFolderName = "Cache";
+        private static string CacheFolderRelative => $"{RuntimeUtils.PluginBasePath}/{CacheFolderName}";
+        private static string CacheFolderFull => $"{FMODFolderFull}/{CacheFolderName}";
 
-        const string RegisterStaticPluginsFile = "RegisterStaticPlugins.cs";
-        static string RegisterStaticPluginsAssetPathRelative => $"{CacheFolderRelative}/{RegisterStaticPluginsFile}";
-        static string RegisterStaticPluginsAssetPathFull => $"{CacheFolderFull}/{RegisterStaticPluginsFile}";
+        private const string RegisterStaticPluginsFile = "RegisterStaticPlugins.cs";
+        private static string RegisterStaticPluginsAssetPathRelative => $"{CacheFolderRelative}/{RegisterStaticPluginsFile}";
+        private static string RegisterStaticPluginsAssetPathFull => $"{CacheFolderFull}/{RegisterStaticPluginsFile}";
 
         [NonSerialized]
         private Dictionary<string, bool> binaryCompatibilitiesBeforeBuild;

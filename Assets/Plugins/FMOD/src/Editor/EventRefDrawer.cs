@@ -7,13 +7,13 @@ using UnityEditor;
 namespace FMODUnity
 {
     [CustomPropertyDrawer(typeof(EventReference))]
-    class EventReferenceDrawer : PropertyDrawer
+    public class EventReferenceDrawer : PropertyDrawer
     {
-        static readonly Texture RepairIcon = EditorUtils.LoadImage("Wrench.png");
-        static readonly Texture WarningIcon = EditorUtils.LoadImage("NotFound.png");
-        static readonly GUIContent NotFoundWarning = new GUIContent("Event Not Found", WarningIcon);
+        private static readonly Texture RepairIcon = EditorUtils.LoadImage("Wrench.png");
+        private static readonly Texture WarningIcon = EditorUtils.LoadImage("NotFound.png");
+        private static readonly GUIContent NotFoundWarning = new GUIContent("Event Not Found", WarningIcon);
 
-        static GUIStyle buttonStyle;
+        private static GUIStyle buttonStyle;
 
         private static Vector2 WarningSize()
         {
@@ -417,11 +417,11 @@ namespace FMODUnity
 #pragma warning disable 0618 // Suppress the warning about using the obsolete EventRefAttribute class
     [CustomPropertyDrawer(typeof(EventRefAttribute))]
 #pragma warning restore 0618
-    class LegacyEventRefDrawer : PropertyDrawer
+    public class LegacyEventRefDrawer : PropertyDrawer
     {
-        GUIStyle RichTextStyle;
+        private GUIStyle RichTextStyle;
 
-        const string HelpText =
+        private const string HelpText =
             "This field has the <b>[EventRef]</b> attribute, which is obsolete.\n" +
             "To resolve this issue:\n" +
             "* Add a field of type <b>EventReference</b> to this class\n" +
@@ -430,10 +430,10 @@ namespace FMODUnity
             "* Run the <b>" + EventReferenceUpdater.MenuPath + "</b> command to " +
             "automatically migrate values from this field to the <b>EventReference</b> field";
 
-        static readonly Texture InfoIcon = EditorGUIUtility.IconContent("console.infoicon.sml").image;
-        static readonly Texture WarningIcon = EditorUtils.LoadImage("NotFound.png");
+        private static readonly Texture InfoIcon = EditorGUIUtility.IconContent("console.infoicon.sml").image;
+        private static readonly Texture WarningIcon = EditorUtils.LoadImage("NotFound.png");
 
-        void AffirmStyles()
+        private void AffirmStyles()
         {
             if (RichTextStyle == null)
             {

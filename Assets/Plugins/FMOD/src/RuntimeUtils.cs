@@ -251,6 +251,16 @@ namespace FMODUnity
         Core15 = 1 << 15,
     }
 
+    // Using a separate enum to avoid serialization issues if FMOD.SOUND_TYPE changes.
+    public enum CodecType : int
+    {
+        FADPCM,
+        Vorbis,
+        AT9,
+        XMA,
+        Opus
+    }
+
     [Serializable]
     public class ThreadAffinityGroup
     {
@@ -271,6 +281,21 @@ namespace FMODUnity
         {
             this.threads = new List<ThreadType>(threads);
             this.affinity = affinity;
+        }
+    }
+
+    [Serializable]
+    public class CodecChannelCount
+    {
+        public CodecType format;
+        public int channels;
+
+        public CodecChannelCount() { }
+
+        public CodecChannelCount(CodecChannelCount other)
+        {
+            format = other.format;
+            channels = other.channels;
         }
     }
 

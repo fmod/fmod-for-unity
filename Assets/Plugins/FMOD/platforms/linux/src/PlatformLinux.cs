@@ -96,5 +96,13 @@ namespace FMODUnity
            new OutputType() { displayName = "Advanced Linux Sound Architecture", outputType = FMOD.OUTPUTTYPE.ALSA },
         };
 #endif
+
+        public override List<CodecChannelCount> DefaultCodecChannels { get { return staticCodecChannels; } }
+
+        private static List<CodecChannelCount> staticCodecChannels = new List<CodecChannelCount>()
+        {
+            new CodecChannelCount { format = CodecType.FADPCM, channels = 0 },
+            new CodecChannelCount { format = CodecType.Vorbis, channels = 32 },
+        };
     }
 }

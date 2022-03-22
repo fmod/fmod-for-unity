@@ -1,6 +1,6 @@
 /* ======================================================================================== */
 /* FMOD Core API - C# wrapper.                                                              */
-/* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2021.                               */
+/* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2022.                               */
 /*                                                                                          */
 /* For more detail visit:                                                                   */
 /* https://fmod.com/resources/documentation-api?version=2.0&page=core-api.html              */
@@ -19,7 +19,7 @@ namespace FMOD
     */
     public partial class VERSION
     {
-        public const int    number = 0x00020205;
+        public const int    number = 0x00020206;
 #if !UNITY_2019_4_OR_NEWER
         public const string dll    = "fmod";
 #endif
@@ -651,20 +651,20 @@ namespace FMOD
         public int                         numsubsounds;
         public IntPtr                      inclusionlist;
         public int                         inclusionlistnum;
-        public SOUND_PCMREAD_CALLBACK      pcmreadcallback;
-        public SOUND_PCMSETPOS_CALLBACK    pcmsetposcallback;
-        public SOUND_NONBLOCK_CALLBACK     nonblockcallback;
+        public IntPtr                      pcmreadcallback_internal;
+        public IntPtr                      pcmsetposcallback_internal;
+        public IntPtr                      nonblockcallback_internal;
         public IntPtr                      dlsname;
         public IntPtr                      encryptionkey;
         public int                         maxpolyphony;
         public IntPtr                      userdata;
         public SOUND_TYPE                  suggestedsoundtype;
-        public FILE_OPEN_CALLBACK          fileuseropen;
-        public FILE_CLOSE_CALLBACK         fileuserclose;
-        public FILE_READ_CALLBACK          fileuserread;
-        public FILE_SEEK_CALLBACK          fileuserseek;
-        public FILE_ASYNCREAD_CALLBACK     fileuserasyncread;
-        public FILE_ASYNCCANCEL_CALLBACK   fileuserasynccancel;
+        public IntPtr                      fileuseropen_internal;
+        public IntPtr                      fileuserclose_internal;
+        public IntPtr                      fileuserread_internal;
+        public IntPtr                      fileuserseek_internal;
+        public IntPtr                      fileuserasyncread_internal;
+        public IntPtr                      fileuserasynccancel_internal;
         public IntPtr                      fileuserdata;
         public int                         filebuffersize;
         public CHANNELORDER                channelorder;
@@ -676,6 +676,53 @@ namespace FMOD
         public uint                        minmidigranularity;
         public int                         nonblockthreadid;
         public IntPtr                      fsbguid;
+
+        public SOUND_PCMREAD_CALLBACK pcmreadcallback
+        {
+            set { pcmreadcallback_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
+            get { return pcmreadcallback_internal == IntPtr.Zero ? null : (SOUND_PCMREAD_CALLBACK)Marshal.GetDelegateForFunctionPointer(pcmreadcallback_internal, typeof(SOUND_PCMREAD_CALLBACK)); }
+        }
+        public SOUND_PCMSETPOS_CALLBACK pcmsetposcallback
+        {
+            set { pcmsetposcallback_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
+            get { return pcmsetposcallback_internal == IntPtr.Zero ? null : (SOUND_PCMSETPOS_CALLBACK)Marshal.GetDelegateForFunctionPointer(pcmsetposcallback_internal, typeof(SOUND_PCMSETPOS_CALLBACK)); }
+        }
+        public SOUND_NONBLOCK_CALLBACK nonblockcallback
+        {
+            set { nonblockcallback_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
+            get { return nonblockcallback_internal == IntPtr.Zero ? null : (SOUND_NONBLOCK_CALLBACK)Marshal.GetDelegateForFunctionPointer(nonblockcallback_internal, typeof(SOUND_NONBLOCK_CALLBACK)); }
+        }
+        public FILE_OPEN_CALLBACK fileuseropen
+        {
+            set { fileuseropen_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
+            get { return fileuseropen_internal == IntPtr.Zero ? null : (FILE_OPEN_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuseropen_internal, typeof(FILE_OPEN_CALLBACK)); }
+        }
+        public FILE_CLOSE_CALLBACK fileuserclose
+        {
+            set { fileuserclose_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
+            get { return fileuserclose_internal == IntPtr.Zero ? null : (FILE_CLOSE_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuserclose_internal, typeof(FILE_CLOSE_CALLBACK)); }
+        }
+        public FILE_READ_CALLBACK fileuserread
+        {
+            set { fileuserread_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
+            get { return fileuserread_internal == IntPtr.Zero ? null : (FILE_READ_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuserread_internal, typeof(FILE_READ_CALLBACK)); }
+        }
+        public FILE_SEEK_CALLBACK fileuserseek
+        {
+            set { fileuserseek_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
+            get { return fileuserseek_internal == IntPtr.Zero ? null : (FILE_SEEK_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuserseek_internal, typeof(FILE_SEEK_CALLBACK)); }
+        }
+        public FILE_ASYNCREAD_CALLBACK fileuserasyncread
+        {
+            set { fileuserasyncread_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
+            get { return fileuserasyncread_internal == IntPtr.Zero ? null : (FILE_ASYNCREAD_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuserasyncread_internal, typeof(FILE_ASYNCREAD_CALLBACK)); }
+        }
+        public FILE_ASYNCCANCEL_CALLBACK fileuserasynccancel
+        {
+            set { fileuserasynccancel_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
+            get { return fileuserasynccancel_internal == IntPtr.Zero ? null : (FILE_ASYNCCANCEL_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuserasynccancel_internal, typeof(FILE_ASYNCCANCEL_CALLBACK)); }
+        }
+
     }
 
 #pragma warning disable 414
@@ -719,7 +766,6 @@ namespace FMOD
 
     public class PRESET
     {
-        /*                                                                                  Instance  Env   Diffus  Room   RoomHF  RmLF DecTm   DecHF  DecLF   Refl  RefDel   Revb  RevDel  ModTm  ModDp   HFRef    LFRef   Diffus  Densty  FLAGS */
         public static REVERB_PROPERTIES OFF()                 { return new REVERB_PROPERTIES(  1000,    7,  11, 5000, 100, 100, 100, 250, 0,    20,  96, -80.0f );}
         public static REVERB_PROPERTIES GENERIC()             { return new REVERB_PROPERTIES(  1500,    7,  11, 5000,  83, 100, 100, 250, 0, 14500,  96,  -8.0f );}
         public static REVERB_PROPERTIES PADDEDCELL()          { return new REVERB_PROPERTIES(   170,    1,   2, 5000,  10, 100, 100, 250, 0,   160,  84,  -7.8f );}
@@ -1127,24 +1173,10 @@ namespace FMOD
         {
             return FMOD5_System_GetDSPInfoByPlugin(this.handle, handle, out description);
         }
-        /*
-        public RESULT registerCodec          (ref CODEC_DESCRIPTION description, out uint handle, uint priority)
-        public RESULT registerCodec          (ref CODEC_DESCRIPTION description, out uint handle, uint priority = 0)
-        public RESULT registerCodec(ref CODEC_DESCRIPTION description, out uint handle, uint priority)
-        {
-            return FMOD5_System_RegisterCodec(this.handle, ref description, out handle, priority);
-        }
-        */
         public RESULT registerDSP(ref DSP_DESCRIPTION description, out uint handle)
         {
             return FMOD5_System_RegisterDSP(this.handle, ref description, out handle);
         }
-        /*
-        public RESULT registerOutput(ref OUTPUT_DESCRIPTION description, out uint handle)
-        {
-            return FMOD5_System_RegisterOutput(this.handle, ref description, out handle);
-        }
-        */
 
         // Init/Close.
         public RESULT init(int maxchannels, INITFLAGS flags, IntPtr extradriverdata)
@@ -1537,12 +1569,8 @@ namespace FMOD
         private static extern RESULT FMOD5_System_CreateDSPByPlugin         (IntPtr system, uint handle, out IntPtr dsp);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_System_GetDSPInfoByPlugin        (IntPtr system, uint handle, out IntPtr description);
-        //[DllImport(VERSION.dll)]
-        //private static extern RESULT FMOD5_System_RegisterCodec           (IntPtr system, out CODEC_DESCRIPTION description, out uint handle, uint priority);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_System_RegisterDSP               (IntPtr system, ref DSP_DESCRIPTION description, out uint handle);
-        //[DllImport(VERSION.dll)]
-        //private static extern RESULT FMOD5_System_RegisterOutput          (IntPtr system, ref OUTPUT_DESCRIPTION description, out uint handle);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_System_Init                      (IntPtr system, int maxchannels, INITFLAGS flags, IntPtr extradriverdata);
         [DllImport(VERSION.dll)]

@@ -16,13 +16,13 @@ namespace FMODUnity
     {
         public const string MenuPath = "FMOD/Update Event References";
 
-        const string SearchButtonText = "Scan";
+        private const string SearchButtonText = "Scan";
 
-        const int EventReferenceTransitionVersion = 0x00020200;
+        private const int EventReferenceTransitionVersion = 0x00020200;
 
-        const BindingFlags DefaultBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        private const BindingFlags DefaultBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
-        static readonly string HelpText =
+        private static readonly string HelpText =
             string.Format("Click {0} to search your project for obsolete event references.", SearchButtonText);
 
         private readonly string[] SearchFolders = {
@@ -66,7 +66,7 @@ namespace FMODUnity
         private static GUIContent ComponentTypeContent = new GUIContent("Component Type");
         private static GUIContent GameObjectContent = new GUIContent("Game Object");
 
-        string ExecuteButtonText()
+        private string ExecuteButtonText()
         {
             return string.Format("Execute {0} Selected Tasks", executableTaskCount);
         }
@@ -348,7 +348,7 @@ namespace FMODUnity
             }
         }
 
-        static IEnumerable<Task> GetUpdateTasks(UnityEngine.Object target)
+        private static IEnumerable<Task> GetUpdateTasks(UnityEngine.Object target)
         {
             if (target == null)
             {
@@ -370,7 +370,7 @@ namespace FMODUnity
             }
         }
 
-        static IEnumerable<Task> GetEmitterUpdateTasks(StudioEventEmitter emitter)
+        private static IEnumerable<Task> GetEmitterUpdateTasks(StudioEventEmitter emitter)
         {
             bool hasOwnEvent = true;
             bool hasOwnEventReference = true;
@@ -421,7 +421,7 @@ namespace FMODUnity
             }
         }
 
-        static Task GetUpdateEventReferenceTask(EventReference eventReference, string fieldName)
+        private static Task GetUpdateEventReferenceTask(EventReference eventReference, string fieldName)
         {
             if (eventReference.IsNull)
             {
@@ -475,9 +475,9 @@ namespace FMODUnity
         }
 
 #if UNITY_TIMELINE_EXIST
-        static IEnumerable<Task> GetPlayableUpdateTasks(FMODEventPlayable playable)
+        private static IEnumerable<Task> GetPlayableUpdateTasks(FMODEventPlayable playable)
         {
-            Task updateTask = GetUpdateEventReferenceTask(playable.eventReference, "eventReference");
+            Task updateTask = GetUpdateEventReferenceTask(playable.EventReference, "EventReference");
             if (updateTask != null)
             {
                 yield return updateTask;
@@ -487,7 +487,7 @@ namespace FMODUnity
             if (!string.IsNullOrEmpty(playable.eventName))
 #pragma warning restore 0618
             {
-                if (playable.eventReference.IsNull)
+                if (playable.EventReference.IsNull)
                 {
                     yield return Task.MoveEventNameToEventReference(playable);
                 }
@@ -500,19 +500,19 @@ namespace FMODUnity
 #endif
 
 #pragma warning disable 0618 // Suppress a warning about using the obsolete EventRefAttribute class
-        static bool IsEventRef(FieldInfo field)
+        private static bool IsEventRef(FieldInfo field)
         {
             return field.FieldType == typeof(string) && EditorUtils.HasAttribute<EventRefAttribute>(field);
         }
 #pragma warning restore 0618
 
-        static T GetCustomAttribute<T>(FieldInfo field)
+        private static T GetCustomAttribute<T>(FieldInfo field)
             where T : Attribute
         {
             return Attribute.GetCustomAttribute(field, typeof(T)) as T;
         }
 
-        static IEnumerable<Task> GetGenericUpdateTasks(UnityEngine.Object target)
+        private static IEnumerable<Task> GetGenericUpdateTasks(UnityEngine.Object target)
         {
             FieldInfo[] fields = target.GetType().GetFields(DefaultBindingFlags);
 
@@ -731,10 +731,10 @@ namespace FMODUnity
             private Type type;
             private string[] Data;
 
-            const string EmitterEventField = "Event";
-            const string EmitterEventReferenceField = "EventReference";
-            const string PlayableEventNameField = "eventName";
-            const string PlayableEventReferenceField = "eventReference";
+            private const string EmitterEventField = "Event";
+            private const string EmitterEventReferenceField = "EventReference";
+            private const string PlayableEventNameField = "eventName";
+            private const string PlayableEventReferenceField = "eventReference";
 
             private delegate string DescriptionDelegate(string[] data);
             private delegate string ManualInstructionsDelegate(string[] data, Component component);
@@ -1037,7 +1037,7 @@ namespace FMODUnity
                     },
                     IsValid: (data, target) => {
                         FMODEventPlayable playable = target as FMODEventPlayable;
-                        return playable != null && playable.eventName == data[0] && !playable.eventReference.IsNull;
+                        return playable != null && playable.eventName == data[0] && !playable.EventReference.IsNull;
                     },
                     Execute: (data, target) => {
                         FMODEventPlayable playable = target as FMODEventPlayable;
@@ -1053,19 +1053,19 @@ namespace FMODUnity
                     },
                     IsValid: (data, target) => {
                         FMODEventPlayable playable = target as FMODEventPlayable;
-                        return playable != null && playable.eventName == data[0] && playable.eventReference.IsNull;
+                        return playable != null && playable.eventName == data[0] && playable.EventReference.IsNull;
                     },
                     Execute: (data, target) => {
                         FMODEventPlayable playable = target as FMODEventPlayable;
 
-                        playable.eventReference.Path = playable.eventName;
+                        playable.EventReference.Path = playable.eventName;
                         playable.eventName = string.Empty;
 
-                        EditorEventRef eventRef = EventManager.EventFromPath(playable.eventReference.Path);
+                        EditorEventRef eventRef = EventManager.EventFromPath(playable.EventReference.Path);
 
                         if (eventRef != null)
                         {
-                            playable.eventReference.Guid = eventRef.Guid;
+                            playable.EventReference.Guid = eventRef.Guid;
                         }
 
                         EditorUtility.SetDirty(playable);
@@ -1561,7 +1561,7 @@ namespace FMODUnity
             }
         }
 
-        void OnEnable()
+        private void OnEnable()
         {
             taskView = new TaskView(taskViewState, tasks, assets, components);
             taskView.Reload();
@@ -1573,7 +1573,7 @@ namespace FMODUnity
             EditorApplication.update += UpdateProcessing;
         }
 
-        void OnDisable()
+        private void OnDisable()
         {
             EditorApplication.update -= UpdateProcessing;
         }
@@ -1884,7 +1884,7 @@ namespace FMODUnity
             EditorGUILayout.SelectableLabel(text, style, GUILayout.Height(height));
         }
 
-        class TaskView : TreeView
+        private class TaskView : TreeView
         {
             private List<Task> tasks;
             private List<Asset> assets;

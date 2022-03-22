@@ -4,10 +4,8 @@ using UnityEngine;
 
 namespace FMODUnity
 {
-    class EventCache : ScriptableObject
+    public class EventCache : ScriptableObject
     {
-        public static int CurrentCacheVersion = 10;
-
         [SerializeField]
         public List<EditorBankRef> EditorBanks;
         [SerializeField]
@@ -19,7 +17,7 @@ namespace FMODUnity
         [SerializeField]
         public List<EditorBankRef> StringsBanks;
         [SerializeField]
-        Int64 cacheTime;
+        private Int64 cacheTime;
         [SerializeField]
         public int cacheVersion;
 

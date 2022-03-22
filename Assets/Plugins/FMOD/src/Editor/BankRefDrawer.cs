@@ -4,7 +4,7 @@ using UnityEngine;
 namespace FMODUnity
 {
     [CustomPropertyDrawer(typeof(BankRefAttribute))]
-    class BankRefDrawer : PropertyDrawer
+    public class BankRefDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

@@ -27,22 +27,22 @@ namespace FMODUnityResonance
     public static class FmodResonanceAudio
     {
         /// Maximum allowed gain value in decibels.
-        public const float maxGainDb = 24.0f;
+        public const float MaxGainDb = 24.0f;
 
         /// Minimum allowed gain value in decibels.
-        public const float minGainDb = -24.0f;
+        public const float MinGainDb = -24.0f;
 
         /// Maximum allowed reverb brightness modifier value.
-        public const float maxReverbBrightness = 1.0f;
+        public const float MaxReverbBrightness = 1.0f;
 
         /// Minimum allowed reverb brightness modifier value.
-        public const float minReverbBrightness = -1.0f;
+        public const float MinReverbBrightness = -1.0f;
 
         /// Maximum allowed reverb time modifier value.
-        public const float maxReverbTime = 3.0f;
+        public const float MaxReverbTime = 3.0f;
 
         /// Maximum allowed reflectivity multiplier of a room surface material.
-        public const float maxReflectivity = 2.0f;
+        public const float MaxReflectivity = 2.0f;
 
         // Right-handed to left-handed matrix converter (and vice versa).
         private static readonly Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1, 1, -1));
@@ -115,7 +115,7 @@ namespace FMODUnityResonance
             Vector3 relativePosition = listenerPosition - room.transform.position;
             Quaternion rotationInverse = Quaternion.Inverse(room.transform.rotation);
             // Set the size of the room as the boundary and return whether the listener is inside.
-            bounds.size = Vector3.Scale(room.transform.lossyScale, room.size);
+            bounds.size = Vector3.Scale(room.transform.lossyScale, room.Size);
             return bounds.Contains(rotationInverse * relativePosition);
         }
 
@@ -123,43 +123,43 @@ namespace FMODUnityResonance
         private struct RoomProperties
         {
             // Center position of the room in world space.
-            public float positionX;
-            public float positionY;
-            public float positionZ;
+            public float PositionX;
+            public float PositionY;
+            public float PositionZ;
 
             // Rotation (quaternion) of the room in world space.
-            public float rotationX;
-            public float rotationY;
-            public float rotationZ;
-            public float rotationW;
+            public float RotationX;
+            public float RotationY;
+            public float RotationZ;
+            public float RotationW;
 
             // Size of the shoebox room in world space.
-            public float dimensionsX;
-            public float dimensionsY;
-            public float dimensionsZ;
+            public float DimensionsX;
+            public float DimensionsY;
+            public float DimensionsZ;
 
             // Material name of each surface of the shoebox room.
-            public FmodResonanceAudioRoom.SurfaceMaterial materialLeft;
-            public FmodResonanceAudioRoom.SurfaceMaterial materialRight;
-            public FmodResonanceAudioRoom.SurfaceMaterial materialBottom;
-            public FmodResonanceAudioRoom.SurfaceMaterial materialTop;
-            public FmodResonanceAudioRoom.SurfaceMaterial materialFront;
-            public FmodResonanceAudioRoom.SurfaceMaterial materialBack;
+            public FmodResonanceAudioRoom.SurfaceMaterial MaterialLeft;
+            public FmodResonanceAudioRoom.SurfaceMaterial MaterialRight;
+            public FmodResonanceAudioRoom.SurfaceMaterial MaterialBottom;
+            public FmodResonanceAudioRoom.SurfaceMaterial MaterialTop;
+            public FmodResonanceAudioRoom.SurfaceMaterial MaterialFront;
+            public FmodResonanceAudioRoom.SurfaceMaterial MaterialBack;
 
             // User defined uniform scaling factor for reflectivity. This parameter has no effect when set
             // to 1.0f.
-            public float reflectionScalar;
+            public float ReflectionScalar;
 
             // User defined reverb tail gain multiplier. This parameter has no effect when set to 0.0f.
-            public float reverbGain;
+            public float ReverbGain;
 
             // Adjusts the reverberation time across all frequency bands. RT60 values are multiplied by this
             // factor. Has no effect when set to 1.0f.
-            public float reverbTime;
+            public float ReverbTime;
 
             // Controls the slope of a line from the lowest to the highest RT60 values (increases high
             // frequency RT60s when positive, decreases when negative). Has no effect when set to 0.0f.
-            public float reverbBrightness;
+            public float ReverbBrightness;
         };
 
         // Returns the FMOD Resonance Audio Listener Plugin.
@@ -213,28 +213,28 @@ namespace FMODUnityResonance
             RoomProperties roomProperties;
             Vector3 position = room.transform.position;
             Quaternion rotation = room.transform.rotation;
-            Vector3 scale = Vector3.Scale(room.transform.lossyScale, room.size);
+            Vector3 scale = Vector3.Scale(room.transform.lossyScale, room.Size);
             ConvertAudioTransformFromUnity(ref position, ref rotation);
-            roomProperties.positionX = position.x;
-            roomProperties.positionY = position.y;
-            roomProperties.positionZ = position.z;
-            roomProperties.rotationX = rotation.x;
-            roomProperties.rotationY = rotation.y;
-            roomProperties.rotationZ = rotation.z;
-            roomProperties.rotationW = rotation.w;
-            roomProperties.dimensionsX = scale.x;
-            roomProperties.dimensionsY = scale.y;
-            roomProperties.dimensionsZ = scale.z;
-            roomProperties.materialLeft = room.leftWall;
-            roomProperties.materialRight = room.rightWall;
-            roomProperties.materialBottom = room.floor;
-            roomProperties.materialTop = room.ceiling;
-            roomProperties.materialFront = room.frontWall;
-            roomProperties.materialBack = room.backWall;
-            roomProperties.reverbGain = ConvertAmplitudeFromDb(room.reverbGainDb);
-            roomProperties.reverbTime = room.reverbTime;
-            roomProperties.reverbBrightness = room.reverbBrightness;
-            roomProperties.reflectionScalar = room.reflectivity;
+            roomProperties.PositionX = position.x;
+            roomProperties.PositionY = position.y;
+            roomProperties.PositionZ = position.z;
+            roomProperties.RotationX = rotation.x;
+            roomProperties.RotationY = rotation.y;
+            roomProperties.RotationZ = rotation.z;
+            roomProperties.RotationW = rotation.w;
+            roomProperties.DimensionsX = scale.x;
+            roomProperties.DimensionsY = scale.y;
+            roomProperties.DimensionsZ = scale.z;
+            roomProperties.MaterialLeft = room.LeftWall;
+            roomProperties.MaterialRight = room.RightWall;
+            roomProperties.MaterialBottom = room.Floor;
+            roomProperties.MaterialTop = room.Ceiling;
+            roomProperties.MaterialFront = room.FrontWall;
+            roomProperties.MaterialBack = room.BackWall;
+            roomProperties.ReverbGain = ConvertAmplitudeFromDb(room.ReverbGainDb);
+            roomProperties.ReverbTime = room.ReverbTime;
+            roomProperties.ReverbBrightness = room.ReverbBrightness;
+            roomProperties.ReflectionScalar = room.Reflectivity;
             return roomProperties;
         }
 
@@ -253,17 +253,16 @@ namespace FMODUnityResonance
                 FMOD.Studio.Bus[] busses = null;
                 banks[currentBank].getBusCount(out numBusses);
                 banks[currentBank].getBusList(out busses);
-                RuntimeManager.StudioSystem.flushCommands();
                 for (int currentBus = 0; currentBus < numBusses; ++currentBus)
                 {
                     // Make sure the channel group of the current bus is assigned properly.
                     string busPath = null;
                     busses[currentBus].getPath(out busPath);
                     RuntimeManager.StudioSystem.getBus(busPath, out busses[currentBus]);
+                    busses[currentBus].lockChannelGroup();
                     RuntimeManager.StudioSystem.flushCommands();
                     FMOD.ChannelGroup channelGroup;
                     busses[currentBus].getChannelGroup(out channelGroup);
-                    RuntimeManager.StudioSystem.flushCommands();
                     if (channelGroup.hasHandle())
                     {
                         int numDsps = 0;
@@ -281,6 +280,7 @@ namespace FMODUnityResonance
                             }
                         }
                     }
+                    busses[currentBus].unlockChannelGroup();
                 }
             }
             RuntimeUtils.DebugLogError(listenerPluginName + " not found in the FMOD project.");
