@@ -721,5 +721,38 @@ namespace FMODUnity
         }
 
         public PropertyThreadAffinityList ThreadAffinitiesProperty { get { return threadAffinities; } }
+
+        public virtual List<CodecChannelCount> DefaultCodecChannels { get { return staticCodecChannels; } }
+
+        private static List<CodecChannelCount> staticCodecChannels = new List<CodecChannelCount>()
+        {
+            new CodecChannelCount { format = CodecType.FADPCM, channels = 32 },
+            new CodecChannelCount { format = CodecType.Vorbis, channels = 0 },
+        };
+
+        [Serializable]
+        public class PropertyCodecChannels : Property<List<CodecChannelCount>>
+        {
+        }
+
+        [SerializeField]
+        private PropertyCodecChannels codecChannels = new PropertyCodecChannels();
+
+        public List<CodecChannelCount> CodecChannels
+        {
+            get
+            {
+                if (codecChannels.HasValue)
+                {
+                    return codecChannels.Value;
+                }
+                else
+                {
+                    return DefaultCodecChannels;
+                }
+            }
+        }
+
+        public PropertyCodecChannels CodecChannelsProperty { get { return codecChannels; } }
     }
 }

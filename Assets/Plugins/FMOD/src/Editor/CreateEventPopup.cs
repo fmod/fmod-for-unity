@@ -46,20 +46,32 @@ namespace FMODUnity
             wantsMouseMove = true;
             banks = new List<BankEntry>();
 
-            EditorUtils.GetScriptOutput("children = \"\";");
-            EditorUtils.GetScriptOutput("func = function(val) {{ children += \",\" + val.id + val.name; }};");
-            EditorUtils.GetScriptOutput("studio.project.workspace.masterBankFolder.items.forEach(func, this); ");
-            string bankList = EditorUtils.GetScriptOutput("children;");
+            const string buildBankTreeFunc =
+                @"function() {
+                    var output = """";
+                    const items = [ studio.project.workspace.masterBankFolder ];
+                    while (items.length > 0) {
+                        var currentItem = items.shift();
+                        if (currentItem.isOfType(""BankFolder"")) {
+                            currentItem.items.reverse().forEach(function(val) {
+                                items.unshift(val);
+                            });
+                        } else {
+                            output += "","" + currentItem.id + currentItem.getPath().replace(""bank:/"", """");
+                        }
+                    }
+                    return output;
+                }";
+
+            string bankList = EditorUtils.GetScriptOutput(string.Format("({0})()", buildBankTreeFunc));
             string[] bankListSplit = bankList.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach(var bank in bankListSplit)
+            foreach (var bank in bankListSplit)
             {
                 var entry = new BankEntry();
                 entry.guid = bank.Substring(0, 38);
                 entry.name = bank.Substring(38);
                 banks.Add(entry);
             }
-
-            banks.Sort((a, b) => a.name.CompareTo(b.name));
         }
 
         private void BuildTreeItem(FolderEntry entry)

@@ -427,7 +427,7 @@ namespace FMODUnity
             uint version;
             CheckResult(lowlevel.getVersion(out version));
 
-            EditorUtility.DisplayDialog("FMOD Studio Unity Integration", "Version: " + VerionNumberToString(version) + "\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2021 \n\nSee LICENSE.TXT for additional license information.", "OK");
+            EditorUtility.DisplayDialog("FMOD Studio Unity Integration", "Version: " + VerionNumberToString(version) + "\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2022 \n\nSee LICENSE.TXT for additional license information.", "OK");
         }
 
         [MenuItem("FMOD/Consolidate Plugin Files")]

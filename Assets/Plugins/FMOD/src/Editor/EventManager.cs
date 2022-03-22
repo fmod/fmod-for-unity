@@ -591,6 +591,11 @@ namespace FMODUnity
 
         public static void CopyToStreamingAssets(BuildTarget buildTarget)
         {
+            if (Settings.Instance.ImportType == ImportType.AssetBundle && BuildPipeline.isBuildingPlayer)
+            {
+                return;
+            }
+
             if (string.IsNullOrEmpty(Settings.Instance.SourceBankPath))
                 return;
 

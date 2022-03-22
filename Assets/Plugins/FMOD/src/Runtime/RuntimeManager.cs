@@ -226,15 +226,11 @@ namespace FMODUnity
 
             FMOD.ADVANCEDSETTINGS advancedSettings = new FMOD.ADVANCEDSETTINGS();
             advancedSettings.randomSeed = (uint)DateTime.UtcNow.Ticks;
-            #if UNITY_EDITOR || UNITY_STANDALONE
-            advancedSettings.maxVorbisCodecs = realChannels;
-            #elif UNITY_XBOXONE
-            advancedSettings.maxXMACodecs = realChannels;
-            #elif UNITY_PS4
-            advancedSettings.maxAT9Codecs = realChannels;
-            #else
-            advancedSettings.maxFADPCMCodecs = realChannels;
-            #endif
+            advancedSettings.maxAT9Codecs = GetChannelCountForFormat(CodecType.AT9);
+            advancedSettings.maxFADPCMCodecs = GetChannelCountForFormat(CodecType.FADPCM);
+            advancedSettings.maxOpusCodecs = GetChannelCountForFormat(CodecType.Opus);
+            advancedSettings.maxVorbisCodecs = GetChannelCountForFormat(CodecType.Vorbis);
+            advancedSettings.maxXMACodecs = GetChannelCountForFormat(CodecType.XMA);
 
             SetThreadAffinities(currentPlatform);
 
@@ -350,6 +346,13 @@ retry:
             #endif
 
             return initResult;
+        }
+
+        private int GetChannelCountForFormat(CodecType format)
+        {
+            CodecChannelCount channelCount = currentPlatform.CodecChannels.Find(x => x.format == format);
+
+            return channelCount == null ? 0 : Math.Min(channelCount.channels, 256);
         }
 
         private static void SetThreadAffinities(Platform platform)

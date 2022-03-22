@@ -229,17 +229,16 @@ namespace FMODUnityResonance
                 FMOD.Studio.Bus[] busses = null;
                 banks[currentBank].getBusCount(out numBusses);
                 banks[currentBank].getBusList(out busses);
-                RuntimeManager.StudioSystem.flushCommands();
                 for (int currentBus = 0; currentBus < numBusses; ++currentBus)
                 {
                     // Make sure the channel group of the current bus is assigned properly.
                     string busPath = null;
                     busses[currentBus].getPath(out busPath);
                     RuntimeManager.StudioSystem.getBus(busPath, out busses[currentBus]);
+                    busses[currentBus].lockChannelGroup();
                     RuntimeManager.StudioSystem.flushCommands();
                     FMOD.ChannelGroup channelGroup;
                     busses[currentBus].getChannelGroup(out channelGroup);
-                    RuntimeManager.StudioSystem.flushCommands();
                     if (channelGroup.hasHandle())
                     {
                         int numDsps = 0;
@@ -257,6 +256,7 @@ namespace FMODUnityResonance
                             }
                         }
                     }
+                    busses[currentBus].unlockChannelGroup();
                 }
             }
             Debug.LogError(listenerPluginName + " not found in the FMOD project.");

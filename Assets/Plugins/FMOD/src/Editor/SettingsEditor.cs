@@ -51,6 +51,7 @@ namespace FMODUnity
         }
 
         bool expandThreadAffinity;
+        bool expandCodecChannels;
         bool expandDynamicPlugins;
         bool expandStaticPlugins;
 
@@ -680,6 +681,79 @@ namespace FMODUnity
             }
         }
 
+        void DisplayCodecChannels(string label, Platform platform)
+        {
+            if (platform is PlatformGroup)
+            {
+                return;
+            }
+
+            if (DisplayCodecChannelsFoldout(label, platform))
+            {
+                using (new EditorGUI.IndentLevelScope())
+                {
+                    bool editable = platform.CodecChannelsProperty.HasValue;
+
+                    using (new EditorGUI.DisabledScope(!editable))
+                    {
+                        foreach (CodecChannelCount channelCount in platform.CodecChannels)
+                        {
+                            EditorGUI.BeginChangeCheck();
+
+                            int channels = EditorGUILayout.IntSlider(channelCount.format.ToString(), channelCount.channels, 0, 256);
+
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                Undo.RecordObject(platform, "Edit Codec Channels");
+
+                                channelCount.channels = channels;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        bool DisplayCodecChannelsFoldout(string label, Platform platform)
+        {
+            Rect controlRect = EditorGUILayout.GetControlRect();
+
+            Rect labelRect = controlRect;
+            labelRect.width = EditorGUIUtility.labelWidth;
+
+            expandCodecChannels = EditorGUI.Foldout(labelRect, expandCodecChannels, label, true);
+
+            bool useDefaults = !platform.CodecChannelsProperty.HasValue;
+
+            EditorGUI.BeginChangeCheck();
+
+            Rect toggleRect = controlRect;
+            toggleRect.xMin = labelRect.xMax;
+
+            useDefaults = GUI.Toggle(toggleRect, useDefaults, "Use Defaults");
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (useDefaults)
+                {
+                    platform.CodecChannelsProperty.Value = null;
+                    platform.CodecChannelsProperty.HasValue = false;
+                }
+                else
+                {
+                    platform.CodecChannelsProperty.Value = new List<CodecChannelCount>();
+                    platform.CodecChannelsProperty.HasValue = true;
+
+                    foreach (CodecChannelCount channelCount in platform.DefaultCodecChannels)
+                    {
+                        platform.CodecChannelsProperty.Value.Add(new CodecChannelCount(channelCount));
+                    }
+                }
+            }
+
+            return expandCodecChannels;
+        }
+
         void DisplaySampleRate(string label, Platform platform)
         {
             Platform.PropertyAccessor<int> property = Platform.PropertyAccessors.SampleRate;
@@ -992,6 +1066,9 @@ namespace FMODUnity
                 {
                     DisplayInt("Virtual Channel Count", platform, Platform.PropertyAccessors.VirtualChannelCount, 1, 2048);
                     DisplayInt("Real Channel Count", platform, Platform.PropertyAccessors.RealChannelCount, 1, 256);
+
+                    DisplayCodecChannels("Codec Counts", platform);
+
                     DisplayDSPBufferSettings(platform);
 
                     string warning = null;
@@ -2082,10 +2159,11 @@ namespace FMODUnity
             {
                 Platform platform = SelectedPlatform;
 
-                if (platform == null)
+                if (platform == null || platform == settings.DefaultPlatform || platform == settings.PlayInEditorPlatform)
                 {
                     return;
                 }
+
 
                 const string UndoMessage = "Delete FMOD Platform";
 
