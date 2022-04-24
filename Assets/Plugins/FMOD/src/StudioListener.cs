@@ -17,6 +17,9 @@ namespace FMODUnity
         private Rigidbody2D rigidBody2D;
 #endif
 
+        private Transform cachedTransform;
+        private Vector3 lastFramePosition;
+
         private void OnEnable()
         {
             RuntimeUtils.EnforceLibraryOrder();
@@ -27,6 +30,8 @@ namespace FMODUnity
             rigidBody2D = gameObject.GetComponent<Rigidbody2D>();
 #endif
             ListenerNumber = RuntimeManager.AddListener(this);
+            cachedTransform = transform;
+            lastFramePosition = cachedTransform.position;
         }
 
         private void OnDisable()
@@ -59,7 +64,10 @@ namespace FMODUnity
             else
 #endif
             {
-                RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, attenuationObject);
+                var position = cachedTransform.position;
+                var velocity = (position - lastFramePosition) / Time.deltaTime;
+                lastFramePosition = position;
+                RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, attenuationObject, velocity);
             }
         }
     }

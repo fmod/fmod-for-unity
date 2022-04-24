@@ -377,6 +377,18 @@ namespace FMODUnity
 
             return attributes;
         }
+        
+        public static FMOD.ATTRIBUTES_3D To3DAttributes(this Transform transform, Vector3 velocity)
+        {
+            FMOD.ATTRIBUTES_3D attributes = new FMOD.ATTRIBUTES_3D();
+            attributes.forward = transform.forward.ToFMODVector();
+            attributes.up = transform.up.ToFMODVector();
+            var position = transform.position;
+            attributes.position = position.ToFMODVector();
+            attributes.velocity = velocity.ToFMODVector();
+
+            return attributes;
+        }
 
         public static FMOD.ATTRIBUTES_3D To3DAttributes(this GameObject go)
         {

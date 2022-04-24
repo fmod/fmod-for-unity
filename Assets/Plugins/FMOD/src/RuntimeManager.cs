@@ -398,6 +398,7 @@ retry:
         {
             public FMOD.Studio.EventInstance instance;
             public Transform transform;
+            public Vector3 lastFramePosition;
             #if UNITY_PHYSICS_EXIST
             public Rigidbody rigidBody;
             #endif
@@ -531,7 +532,10 @@ retry:
                     else
                     #endif
                     {
-                        attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform));
+                        var position = attachedInstances[i].transform.position;
+                        var velocity = (position - attachedInstances[i].lastFramePosition) / Time.deltaTime;
+                        attachedInstances[i].lastFramePosition = position;
+                        attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform, velocity));
                     }
                 }
 
@@ -635,6 +639,7 @@ retry:
 
             instance.set3DAttributes(RuntimeUtils.To3DAttributes(transform));
             attachedInstance.transform = transform;
+            attachedInstance.lastFramePosition = transform.position;
             attachedInstance.instance = instance;
         }
 
@@ -1390,15 +1395,15 @@ retry:
             SetListenerLocation(0, gameObject, attenuationObject);
         }       
         
-        public static void SetListenerLocation(int listenerIndex, GameObject gameObject, GameObject attenuationObject = null)
+        public static void SetListenerLocation(int listenerIndex, GameObject gameObject, GameObject attenuationObject = null, Vector3 velocity = default)
         {
             if (attenuationObject)
             {
-                Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject.transform), RuntimeUtils.ToFMODVector(attenuationObject.transform.position));
+                Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject.transform, velocity), RuntimeUtils.ToFMODVector(attenuationObject.transform.position));
             }
             else
             {
-                Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject.transform));
+                Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject.transform, velocity));
             }
         }
 
