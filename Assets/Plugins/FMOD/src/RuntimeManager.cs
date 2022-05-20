@@ -40,8 +40,6 @@ namespace FMODUnity
         private Dictionary<string, LoadedBank> loadedBanks = new Dictionary<string, LoadedBank>();
         private List<string> sampleLoadRequests = new List<string>();
 
-        private List<StudioEventEmitter> activeEmitters = new List<StudioEventEmitter>();
-
         private List<AttachedInstance> attachedInstances = new List<AttachedInstance>(128);
 
 #if UNITY_EDITOR
@@ -58,9 +56,6 @@ namespace FMODUnity
         private float lastDebugUpdate = 0;
 
         private int LoadingBanksRef = 0;
-
-        private static List<StudioListener> listeners = new List<StudioListener>();
-        private static int numListeners = 0;
 
         public static bool IsMuted
         {
@@ -406,97 +401,17 @@ retry:
             #endif
         }
 
-        public static int AddListener(StudioListener listener)
-        {
-            // Is the listener already in the list?
-            for (int i = 0; i < listeners.Count; i++)
-            {
-                if (listeners[i] != null && listener.gameObject == listeners[i].gameObject)
-                {
-                    RuntimeUtils.DebugLogWarning(string.Format(("[FMOD] Listener has already been added at index {0}."), i));
-                    return i;
-                }
-            }
-            // If already at the max numListeners
-            if (numListeners >= FMOD.CONSTANTS.MAX_LISTENERS)
-            {
-                RuntimeUtils.DebugLogWarning(string.Format(("[FMOD] Max number of listeners reached : {0}."), FMOD.CONSTANTS.MAX_LISTENERS));
-            }
-
-            // If not already in the list
-            // The next available spot in the list should be at `numListeners`
-            if (listeners.Count <= numListeners)
-            {
-                listeners.Add(listener);
-            }
-            else
-            {
-                listeners[numListeners] = listener;
-            }
-            // Increment `numListeners`
-            numListeners++;
-            // setNumListeners (8 is the most that FMOD supports)
-            int numListenersClamped = Mathf.Min(numListeners, FMOD.CONSTANTS.MAX_LISTENERS);
-            StudioSystem.setNumListeners(numListenersClamped);
-            return numListeners - 1;
-        }
-
-        public static bool RemoveListener(StudioListener listener)
-        {
-            int index = listener.ListenerNumber;
-            // Remove listener
-            if (index != -1)
-            {
-                listeners[index] = null;
-
-                // Are there more listeners above the index of the one we are removing?
-                if (numListeners - 1 > index)
-                {
-                    // Move any higher index listeners down
-                    for (int i = index; i < listeners.Count; i++)
-                    {
-                        if (i == listeners.Count - 1)
-                        {
-                            listeners[i] = null;
-                        }
-                        else
-                        {
-                            listeners[i] = listeners[i + 1];
-                            if (listeners[i])
-                            {
-                                listeners[i].ListenerNumber = i;
-                            }
-                        }
-                    }
-                }
-                // Decriment numListeners
-                numListeners--;
-                // Always need at least 1 listener, otherwise "[FMOD] assert : assertion: 'numListeners >= 1 && numListeners <= 8' failed"
-                int numListenersClamped = Mathf.Min(Mathf.Max(numListeners, 1), FMOD.CONSTANTS.MAX_LISTENERS);
-                StudioSystem.setNumListeners(numListenersClamped);
-                // Listener attributes will be updated before the next update, due to the Script Execution Order.
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         private void Update()
         {
             if (studioSystem.isValid())
             {
-                if (numListeners <= 0 && !listenerWarningIssued)
+                if (StudioListener.ListenerCount <= 0 && !listenerWarningIssued)
                 {
                     listenerWarningIssued = true;
                     RuntimeUtils.DebugLogWarning("[FMOD] Please add an 'FMOD Studio Listener' component to your a camera in the scene for correct 3D positioning of sounds.");
                 }
 
-                for (int i = 0; i < activeEmitters.Count; i++)
-                {
-                    UpdateActiveEmitter(activeEmitters[i]);
-                }
+                StudioEventEmitter.UpdateActiveEmitters();
 
                 for (int i = 0; i < attachedInstances.Count; i++)
                 {
@@ -584,46 +499,6 @@ retry:
                 studioSystem.update();
             }
         }
-
-        public static void RegisterActiveEmitter(StudioEventEmitter emitter)
-        {
-            if (!Instance.activeEmitters.Contains(emitter))
-            {
-                Instance.activeEmitters.Add(emitter);
-            }
-        }
-
-        public static void DeregisterActiveEmitter(StudioEventEmitter emitter)
-        {
-            Instance.activeEmitters.Remove(emitter);
-        }
-
-        public static void UpdateActiveEmitter(StudioEventEmitter emitter, bool force = false)
-        {
-            // If at least once listener is within the max distance, ensure an event instance is playing
-            bool playInstance = false;
-            for (int i = 0; i < listeners.Count; i++)
-            {
-                if (Vector3.Distance(emitter.transform.position, listeners[i].transform.position) <= emitter.MaxDistance)
-                {
-                    playInstance = true;
-                    break;
-                }
-            }
-            
-            if (force || playInstance != emitter.IsPlaying())
-            {
-                if (playInstance)
-                {
-                    emitter.PlayInstance();
-                }
-                else
-                {
-                    emitter.StopInstance();
-                }
-            }
-        }
-
         public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, Transform transform)
         {
             AttachedInstance attachedInstance = Instance.attachedInstances.Find(x => x.instance.handle == instance.handle);
@@ -980,6 +855,7 @@ retry:
                 {
                     loadedBank.Bank.loadSampleData();
                 }
+                Instance.loadedBanks[bankName] = loadedBank;
             }
             else
             {
@@ -1271,6 +1147,18 @@ retry:
             instance.set3DAttributes(RuntimeUtils.To3DAttributes(position));
             instance.start();
             instance.release();
+        }
+
+        public static void PlayOneShotAttached(EventReference eventReference, GameObject gameObject)
+        {
+            try
+            {
+                PlayOneShotAttached(eventReference.Guid, gameObject);
+            }
+            catch (EventNotFoundException)
+            {
+                RuntimeUtils.DebugLogWarning("[FMOD] Event not found: " + eventReference);
+            }
         }
 
         public static void PlayOneShotAttached(string path, GameObject gameObject)

@@ -112,12 +112,19 @@ namespace FMODUnity
 
         public void OnValidate()
         {
-            if (OwningClip != null && !EventReference.IsNull)
+            if (OwningClip != null)
             {
-                int index = EventReference.Path.LastIndexOf("/");
-                OwningClip.displayName = EventReference.Path.Substring(index + 1);
+                if (EventReference.IsNull)
+                {
+                    OwningClip.displayName = "FMODEventPlayable";
+                }
+                else
+                {
+                    int index = EventReference.Path.LastIndexOf("/");
+                    OwningClip.displayName = EventReference.Path.Substring(index + 1);
+                }
             }
-            if (behavior != null && !behavior.EventReference.IsNull)
+            if (behavior != null)
             {
                 behavior.EventReference = EventReference;
             }
@@ -143,6 +150,20 @@ namespace FMODUnity
     [Serializable]
     public class FMODEventPlayableBehavior : PlayableBehaviour
     {
+        public FMODEventPlayableBehavior()
+        {
+            CurrentVolume = 1;
+        }
+
+        public class EventArgs : System.EventArgs
+        {
+            public FMOD.Studio.EventInstance eventInstance { get; set; }
+        }
+
+        public static event System.EventHandler<EventArgs> Enter;
+        public static event System.EventHandler<EventArgs> Exit;
+        public static event System.EventHandler<EventArgs> GraphStop;
+
         [FormerlySerializedAs("eventReference")]
         public EventReference EventReference;
 
@@ -168,7 +189,8 @@ namespace FMODUnity
         private bool isPlayheadInside = false;
 
         private FMOD.Studio.EventInstance eventInstance;
-        private float currentVolume = 1;
+
+        public float CurrentVolume { get; private set; }
 
         protected void PlayEvent()
         {
@@ -207,33 +229,56 @@ namespace FMODUnity
                     eventInstance.setParameterByID(param.ID, param.Value);
                 }
 
-                eventInstance.setVolume(currentVolume);
+                eventInstance.setVolume(CurrentVolume);
                 eventInstance.start();
             }
         }
 
-        public void OnEnter()
+        protected virtual void OnEnter()
         {
             if (!isPlayheadInside)
             {
-                PlayEvent();
                 isPlayheadInside = true;
+
+                if (Application.isPlaying)
+                {
+                    PlayEvent();
+                }
+                else
+                {
+                    // Handled by the editor auditioning system.
+                    EventArgs args = new EventArgs();
+                    Enter.Invoke(this, args);
+                    eventInstance = args.eventInstance;
+                }
             }
         }
 
-        public void OnExit()
+        protected virtual void OnExit()
         {
             if (isPlayheadInside)
             {
-                if (eventInstance.isValid())
-                {
-                    if (StopType != STOP_MODE.None)
-                    {
-                        eventInstance.stop(StopType == STOP_MODE.Immediate ? FMOD.Studio.STOP_MODE.IMMEDIATE : FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
-                    }
-                    eventInstance.release();
-                }
                 isPlayheadInside = false;
+
+                if (Application.isPlaying)
+                {
+                    if (eventInstance.isValid())
+                    {
+                        if (StopType != STOP_MODE.None)
+                        {
+                            eventInstance.stop(StopType == STOP_MODE.Immediate ? FMOD.Studio.STOP_MODE.IMMEDIATE : FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+                        }
+                        eventInstance.release();
+                        eventInstance.clearHandle();
+                    }
+                }
+                else
+                {
+                    // Handled by the editor auditioning system.
+                    EventArgs args = new EventArgs();
+                    args.eventInstance = eventInstance;
+                    Exit.Invoke(this, args);
+                }
             }
         }
 
@@ -251,9 +296,9 @@ namespace FMODUnity
 
         public void UpdateBehavior(float time, float volume)
         {
-            if (volume != currentVolume)
+            if (volume != CurrentVolume)
             {
-                currentVolume = volume;
+                CurrentVolume = volume;
 
                 if (eventInstance.isValid())
                 {
@@ -274,11 +319,22 @@ namespace FMODUnity
         public override void OnGraphStop(Playable playable)
         {
             isPlayheadInside = false;
-            if (eventInstance.isValid())
+
+            if (Application.isPlaying)
             {
-                eventInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
-                eventInstance.release();
-                RuntimeManager.StudioSystem.update();
+                if (eventInstance.isValid())
+                {
+                    eventInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+                    eventInstance.release();
+                    RuntimeManager.StudioSystem.update();
+                }
+            }
+            else
+            {
+                // Handled by the editor auditioning system.
+                EventArgs args = new EventArgs();
+                args.eventInstance = eventInstance;
+                GraphStop.Invoke(this, args);
             }
         }
     }

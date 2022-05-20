@@ -42,6 +42,8 @@ namespace FMODUnity
 
         private SerializedProperty outputProperty;
 
+        public static FMOD.Studio.EventInstance PreviewEventInstance { get; private set; }
+
         [MenuItem("FMOD/Event Browser", priority = 2)]
         public static void ShowWindow()
         {
@@ -769,7 +771,7 @@ namespace FMODUnity
                 {
                     currentEvent = eventRef;
 
-                    EditorUtils.PreviewStop();
+                    EditorUtils.PreviewStop(PreviewEventInstance);
                     transportControls.Reset();
                     event3DPreview.Reset();
                     parameterControls.Reset();
@@ -1027,10 +1029,17 @@ namespace FMODUnity
             {
                 AffirmResources();
 
-                var previewState = EditorUtils.PreviewState;
-                bool playing = previewState == PreviewState.Playing;
-                bool paused = previewState == PreviewState.Paused;
-                bool stopped = previewState == PreviewState.Stopped;
+                FMOD.Studio.PLAYBACK_STATE previewState = FMOD.Studio.PLAYBACK_STATE.STOPPED;
+                bool paused = false;
+
+                if (PreviewEventInstance.isValid())
+                {
+                    PreviewEventInstance.getPlaybackState(out previewState);
+                    PreviewEventInstance.getPaused(out paused);
+                }
+
+                bool playing = previewState == FMOD.Studio.PLAYBACK_STATE.PLAYING;
+                bool stopped = previewState == FMOD.Studio.PLAYBACK_STATE.STOPPED;
 
                 EditorGUILayout.BeginHorizontal();
 
@@ -1040,22 +1049,28 @@ namespace FMODUnity
 
                     if (paused)
                     {
-                        EditorUtils.PreviewStop();
+                        EditorUtils.PreviewStop(PreviewEventInstance);
+                        PreviewEventInstance.release();
+                        PreviewEventInstance.clearHandle();
                     }
                     if (playing)
                     {
-                        EditorUtils.PreviewPause();
+                        EditorUtils.PreviewPause(PreviewEventInstance);
                     }
                 }
                 if (GUILayout.Button(playing ? playOn : playOff, buttonStyle, GUILayout.ExpandWidth(false)))
                 {
-                    if (playing || stopped)
+                    if (paused)
                     {
-                        EditorUtils.PreviewEvent(selectedEvent, parameterValues);
+                        EditorUtils.PreviewPause(PreviewEventInstance);
                     }
                     else
                     {
-                        EditorUtils.PreviewPause();
+                        if (PreviewEventInstance.isValid())
+                        {
+                            EditorUtils.PreviewStop(PreviewEventInstance);
+                        }
+                        PreviewEventInstance = EditorUtils.PreviewEvent(selectedEvent, parameterValues);
                     }
 
                     forceRepaint = true;
@@ -1178,7 +1193,16 @@ namespace FMODUnity
                     }
                 }
 
-                EditorUtils.PreviewUpdatePosition(eventDistance, eventOrientation);
+                if (PreviewEventInstance.isValid())
+                {
+                    // Listener at origin
+                    FMOD.ATTRIBUTES_3D pos = new FMOD.ATTRIBUTES_3D();
+                    pos.position.x = (float)Math.Sin(eventOrientation) * eventDistance;
+                    pos.position.y = (float)Math.Cos(eventOrientation) * eventDistance;
+                    pos.forward.x = 1.0f;
+                    pos.up.z = 1.0f;
+                    PreviewEventInstance.set3DAttributes(pos);
+                }
             }
         }
 
@@ -1259,7 +1283,10 @@ namespace FMODUnity
                 }
                 else
                 {
-                    EditorUtils.PreviewUpdateParameter(paramRef.ID, parameterValues[paramRef.Name]);
+                    if (PreviewEventInstance.isValid())
+                    {
+                        PreviewEventInstance.setParameterByID(paramRef.ID, parameterValues[paramRef.Name]);
+                    }
                 }
             }
         }
@@ -1605,8 +1632,16 @@ namespace FMODUnity
 
         public void OnDestroy()
         {
-            EditorUtils.PreviewStop();
-            EditorUtils.UnloadPreviewBanks();
+            if (PreviewEventInstance.isValid())
+            {
+                EditorUtils.PreviewStop(PreviewEventInstance);
+                PreviewEventInstance.clearHandle();
+            }
+
+            if (isStandaloneWindow)
+            {
+                EditorUtils.UnloadPreviewBanks();
+            }
 
             IsOpen = false;
         }

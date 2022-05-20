@@ -20,13 +20,6 @@ using System.Net.Sockets;
 
 namespace FMODUnity
 {
-    public enum PreviewState
-    {
-        Stopped,
-        Playing,
-        Paused,
-    }
-
     public class EditorUtils : MonoBehaviour
     {
         public const string BuildFolder = "Build";
@@ -38,8 +31,6 @@ namespace FMODUnity
         private static List<FMOD.Studio.Bank> loadedPreviewBanks = new List<FMOD.Studio.Bank>();
         private static FMOD.Studio.EventDescription previewEventDesc;
         private static FMOD.Studio.EventInstance previewEventInstance;
-
-        private static PreviewState previewState;
 
         private const int StudioScriptPort = 3663;
         private static NetworkStream networkStream = null;
@@ -417,13 +408,18 @@ namespace FMODUnity
                 }
             }
 
-            if (previewEventInstance.isValid())
+            for (int i = 0; i < previewEventInstances.Count; i++)
             {
-                FMOD.Studio.PLAYBACK_STATE state;
-                previewEventInstance.getPlaybackState(out state);
-                if (previewState == PreviewState.Playing && state == FMOD.Studio.PLAYBACK_STATE.STOPPED)
+                var instance = previewEventInstances[i];
+                if (instance.isValid())
                 {
-                    PreviewStop();
+                    FMOD.Studio.PLAYBACK_STATE state;
+                    instance.getPlaybackState(out state);
+                    if (state == FMOD.Studio.PLAYBACK_STATE.STOPPED)
+                    {
+                        PreviewStop(instance);
+                        i--;
+                    }
                 }
             }
         }
@@ -448,6 +444,45 @@ namespace FMODUnity
             Legacy.CleanTemporaryChanges();
             CleanObsoleteFiles();
 
+#if UNITY_TIMELINE_EXIST
+            // Register timeline event receivers.
+            FMODEventPlayableBehavior.Enter += (sender, args) =>
+            {
+                FMODEventPlayableBehavior behavior = sender as FMODEventPlayableBehavior;
+                if (!string.IsNullOrEmpty(behavior.EventReference.Path))
+                {
+                    LoadPreviewBanks();
+                    EditorEventRef eventRef = EventManager.EventFromPath(behavior.EventReference.Path);
+                    Dictionary<string, float> paramValues = new Dictionary<string, float>();
+                    foreach (EditorParamRef param in eventRef.Parameters)
+                    {
+                        paramValues.Add(param.Name, param.Default);
+                    }
+                    foreach (ParamRef param in behavior.Parameters)
+                    {
+                        paramValues[param.Name] = param.Value;
+                    }
+
+                    args.eventInstance = PreviewEvent(eventRef, paramValues, behavior.CurrentVolume);
+                }
+            };
+
+            FMODEventPlayableBehavior.Exit += (sender, args) =>
+            {
+                FMODEventPlayableBehavior behavior = sender as FMODEventPlayableBehavior;
+                if (behavior.StopType != STOP_MODE.None)
+                {
+                    FMOD.Studio.STOP_MODE stopType = behavior.StopType == STOP_MODE.Immediate ? FMOD.Studio.STOP_MODE.IMMEDIATE : FMOD.Studio.STOP_MODE.ALLOWFADEOUT;
+                    PreviewStop(args.eventInstance, stopType);
+                }
+            };
+
+            FMODEventPlayableBehavior.GraphStop += (sender, args) =>
+            {
+                PreviewStop(args.eventInstance);
+            };
+#endif
+
             BuildStatusWatcher.Startup();
             BankRefresher.Startup();
             BoltIntegration.Startup();
@@ -457,7 +492,7 @@ namespace FMODUnity
 
         private static void RecreateSystem()
         {
-            PreviewStop();
+            StopAllPreviews();
             DestroySystem();
             CreateSystem();
         }
@@ -641,10 +676,7 @@ namespace FMODUnity
             EditorUtility.DisplayDialog("FMOD Studio Unity Integration", text, "OK");
         }
 
-        public static PreviewState PreviewState
-        {
-            get { return previewState; }
-        }
+        private static List<FMOD.Studio.EventInstance> previewEventInstances = new List<FMOD.Studio.EventInstance>();
 
         public static bool PreviewBanksLoaded
         {
@@ -681,33 +713,18 @@ namespace FMODUnity
             loadedPreviewBanks.Clear();
         }
 
-        public static void PreviewEvent(EditorEventRef eventRef, Dictionary<string, float> previewParamValues)
+        public static FMOD.Studio.EventInstance PreviewEvent(EditorEventRef eventRef, Dictionary<string, float> previewParamValues, float volume = 1)
         {
-            bool load = true;
-            if (previewEventDesc.isValid())
-            {
-                FMOD.GUID guid;
-                previewEventDesc.getID(out guid);
-                if (guid == eventRef.Guid)
-                {
-                    load = false;
-                }
-                else
-                {
-                    PreviewStop();
-                }
-            }
+            FMOD.Studio.EventDescription eventDescription;
+            FMOD.Studio.EventInstance eventInstance;
 
-            if (load)
-            {
-                CheckResult(System.getEventByID(eventRef.Guid, out previewEventDesc));
-                CheckResult(previewEventDesc.createInstance(out previewEventInstance));
-            }
+            CheckResult(System.getEventByID(eventRef.Guid, out eventDescription));
+            CheckResult(eventDescription.createInstance(out eventInstance));
 
             foreach (EditorParamRef param in eventRef.Parameters)
             {
                 FMOD.Studio.PARAMETER_DESCRIPTION paramDesc;
-                CheckResult(previewEventDesc.getParameterDescriptionByName(param.Name, out paramDesc));
+                CheckResult(eventDescription.getParameterDescriptionByName(param.Name, out paramDesc));
                 param.ID = paramDesc.id;
                 if (param.IsGlobal)
                 {
@@ -715,56 +732,47 @@ namespace FMODUnity
                 }
                 else
                 {
-                    PreviewUpdateParameter(param.ID, previewParamValues[param.Name]);
+                    CheckResult(eventInstance.setParameterByID(param.ID, previewParamValues[param.Name]));
                 }
             }
 
-            CheckResult(previewEventInstance.start());
-            previewState = PreviewState.Playing;
+            CheckResult(eventInstance.setVolume(volume));
+            CheckResult(eventInstance.start());
+
+            previewEventInstances.Add(eventInstance);
+
+            return eventInstance;
         }
 
-        public static void PreviewUpdateParameter(FMOD.Studio.PARAMETER_ID id, float paramValue)
+        public static void PreviewPause(FMOD.Studio.EventInstance eventInstance)
         {
-            if (previewEventInstance.isValid())
-            {
-                CheckResult(previewEventInstance.setParameterByID(id, paramValue));
-            }
-        }
-
-        public static void PreviewUpdatePosition(float distance, float orientation)
-        {
-            if (previewEventInstance.isValid())
-            {
-                // Listener at origin
-                FMOD.ATTRIBUTES_3D pos = new FMOD.ATTRIBUTES_3D();
-                pos.position.x = (float)Math.Sin(orientation) * distance;
-                pos.position.y = (float)Math.Cos(orientation) * distance;
-                pos.forward.x = 1.0f;
-                pos.up.z = 1.0f;
-                CheckResult(previewEventInstance.set3DAttributes(pos));
-            }
-        }
-
-        public static void PreviewPause()
-        {
-            if (previewEventInstance.isValid())
+            if (eventInstance.isValid() && previewEventInstances.Contains(eventInstance))
             {
                 bool paused;
-                CheckResult(previewEventInstance.getPaused(out paused));
-                CheckResult(previewEventInstance.setPaused(!paused));
-                previewState = paused ? PreviewState.Playing : PreviewState.Paused;
+                CheckResult(eventInstance.getPaused(out paused));
+                CheckResult(eventInstance.setPaused(!paused));
             }
         }
 
-        public static void PreviewStop()
+        public static void PreviewStop(FMOD.Studio.EventInstance eventInstance, FMOD.Studio.STOP_MODE stopMode = FMOD.Studio.STOP_MODE.IMMEDIATE)
         {
-            if (previewEventInstance.isValid())
+            if (previewEventInstances.Contains(eventInstance))
             {
-                previewEventInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
-                previewEventInstance.release();
-                previewEventInstance.clearHandle();
-                previewEventDesc.clearHandle();
-                previewState = PreviewState.Stopped;
+                previewEventInstances.Remove(eventInstance);
+                if (eventInstance.isValid())
+                {
+                    eventInstance.stop(stopMode);
+                    eventInstance.release();
+                    eventInstance.clearHandle();
+                }
+            }
+        }
+
+        public static void StopAllPreviews()
+        {
+            foreach (FMOD.Studio.EventInstance eventInstance in previewEventInstances)
+            {
+                PreviewStop(eventInstance);
             }
         }
 
@@ -1235,6 +1243,26 @@ namespace FMODUnity
             new LibInfo() {cpu = "x86_64", os = "Linux", lib = "libfmodstudioL.so", platform = "linux", buildTarget = BuildTarget.StandaloneLinux64},
             new LibInfo() {cpu = AnyCPU, os = "OSX", lib = "fmodstudioL.bundle", platform = "mac", buildTarget = BuildTarget.StandaloneOSX},
         };
+
+        public static bool SourceLibsExist
+        {
+            get
+            {
+                return LibrariesToUpdate.Any((info) =>
+                {
+                    string sourcePath = GetSourcePath(info);
+
+                    if (sourcePath != null)
+                    {
+                        return AssetImporter.GetAtPath(sourcePath) as PluginImporter != null;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                });
+            }
+        }
 
         private struct LibInfo
         {

@@ -32,7 +32,7 @@ namespace FMODUnity
         {
             eventPlayable = target as FMODEventPlayable;
 
-            parametersProperty = serializedObject.FindProperty("Template.Parameters");
+            parametersProperty = serializedObject.FindProperty("Parameters");
             parameterLinksProperty = serializedObject.FindProperty("Template.ParameterLinks");
             parameterAutomationProperty = serializedObject.FindProperty("Template.ParameterAutomation");
 

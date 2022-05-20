@@ -71,13 +71,8 @@ namespace FMODUnity
             {
                 eventCache = AssetDatabase.LoadAssetAtPath(CacheAssetFullName, typeof(EventCache)) as EventCache;
 
-                FMOD.System lowlevel;
-                EditorUtils.CheckResult(EditorUtils.System.getCoreSystem(out lowlevel));
-
-                uint version;
-                EditorUtils.CheckResult(lowlevel.getVersion(out version));
-
-                if (FMOD.VERSION.number != version)
+                // If new libraries need to be staged, or the staging process is in progress, clear the cache and exit.
+                if (StagingSystem.SourceLibsExist)
                 {
                     if (eventCache != null)
                     {
@@ -85,7 +80,7 @@ namespace FMODUnity
                     }
                     return null;
                 }
-
+                
                 if (eventCache == null || eventCache.cacheVersion != FMOD.VERSION.number)
                 {
                     RuntimeUtils.DebugLog("FMOD: Event cache is missing or in an old format; creating a new instance.");
@@ -167,7 +162,7 @@ namespace FMODUnity
             }
 
             // Stop editor preview so no stale data being held
-            EditorUtils.PreviewStop();
+            EditorUtils.StopAllPreviews();
 
             bool reloadPreviewBanks = EditorUtils.PreviewBanksLoaded;
             if (reloadPreviewBanks)

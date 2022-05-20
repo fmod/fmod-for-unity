@@ -675,6 +675,7 @@ namespace FMODUnity
         {
             if (!AssetDatabase.Contains(platform))
             {
+                platform.name = "FMODStudioSettingsPlatform";
                 AssetDatabase.AddObjectToAsset(platform, RuntimeSettings);
             }
         }

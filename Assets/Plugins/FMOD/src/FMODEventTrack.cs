@@ -6,10 +6,6 @@ using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 namespace FMODUnity
 {
     [TrackColor(0.066f, 0.134f, 0.244f)]
@@ -53,17 +49,11 @@ namespace FMODUnity
             /*
              * Process frame is called from OnGUI() when auditioning.
              * Check playing to avoid retriggering sounds while scrubbing or repainting.
-             * Check IsQuitting to avoid accessing the RuntimeManager during the Play-In-Editor to Editor transition.
              */
             bool playing = playable.GetGraph().IsPlaying();
             if (!playing)
             {
                 return;
-            }
-            /* When auditioning manually update the StudioSystem in place of the RuntimeManager. */
-            if (!Application.isPlaying)
-            {
-                FMODUnity.RuntimeManager.StudioSystem.update();
             }
 #endif //UNITY_EDITOR
 
