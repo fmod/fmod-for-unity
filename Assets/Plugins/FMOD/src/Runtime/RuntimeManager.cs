@@ -991,6 +991,7 @@ retry:
                 {
                     loadedBank.Bank.loadSampleData();
                 }
+                Instance.loadedBanks[bankName] = loadedBank;
             }
             else
             {

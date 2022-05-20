@@ -143,7 +143,7 @@ namespace FMODUnity
             }
 
             // Stop editor preview so no stale data being held
-            EditorUtils.PreviewStop();
+            EditorUtils.StopAllPreviews();
 
             bool reloadPreviewBanks = EditorUtils.PreviewBanksLoaded;
             if (reloadPreviewBanks)
