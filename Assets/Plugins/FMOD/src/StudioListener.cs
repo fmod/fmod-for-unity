@@ -7,7 +7,7 @@ namespace FMODUnity
     public class StudioListener : MonoBehaviour
     {
         [SerializeField]
-        private GameObject attenuationObject;
+        private GameObject attenuationObject = null;
 
 #if UNITY_PHYSICS_EXIST
         private Rigidbody rigidBody;
