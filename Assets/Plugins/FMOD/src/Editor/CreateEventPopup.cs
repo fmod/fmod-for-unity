@@ -152,7 +152,6 @@ namespace FMODUnity
 
             var arrowIcon = EditorUtils.LoadImage("ArrowIcon.png");
             var hoverIcon = EditorUtils.LoadImage("SelectedAlt.png");
-            var titleIcon = EditorGUIUtility.Load("IN BigTitle") as Texture2D;
 
             var nextEntry = currentFolder;
 
@@ -250,7 +249,6 @@ namespace FMODUnity
                 Rect currentRect = EditorGUILayout.GetControlRect();
                 
                 var bg = new GUIStyle(GUI.skin.box);
-                bg.normal.background = titleIcon;
                 Rect bgRect = new Rect(currentRect);
                 bgRect.x = 2;
                 bgRect.width = position.width-4;
@@ -264,8 +262,8 @@ namespace FMODUnity
                 }
 
                 Rect labelRect = currentRect;
-                labelRect.x += arrowIcon.width + 50;
-                labelRect.width -= arrowIcon.width + 50;
+                labelRect.x += arrowIcon.width;
+                labelRect.width -= arrowIcon.width;
                 GUI.Label(labelRect, currentFolder.name != null ? currentFolder.name : "Folders", EditorStyles.boldLabel);
 
                 if (Event.current.type == EventType.MouseDown && currentRect.Contains(Event.current.mousePosition) &&

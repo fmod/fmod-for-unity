@@ -190,6 +190,8 @@ namespace FMODUnity
 
         private FMOD.Studio.EventInstance eventInstance;
 
+        public float ClipStartTime { get; private set; } = 0.0f;
+
         public float CurrentVolume { get; private set; }
 
         protected void PlayEvent()
@@ -230,6 +232,7 @@ namespace FMODUnity
                 }
 
                 eventInstance.setVolume(CurrentVolume);
+                eventInstance.setTimelinePosition((int)(ClipStartTime * 1000.0f));
                 eventInstance.start();
             }
         }
@@ -308,6 +311,7 @@ namespace FMODUnity
 
             if ((time >= OwningClip.start) && (time < OwningClip.end))
             {
+                ClipStartTime = time - (float)OwningClip.start;
                 OnEnter();
             }
             else

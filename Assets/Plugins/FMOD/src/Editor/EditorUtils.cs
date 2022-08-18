@@ -463,7 +463,7 @@ namespace FMODUnity
                         paramValues[param.Name] = param.Value;
                     }
 
-                    args.eventInstance = PreviewEvent(eventRef, paramValues, behavior.CurrentVolume);
+                    args.eventInstance = PreviewEvent(eventRef, paramValues, behavior.CurrentVolume, behavior.ClipStartTime);
                 }
             };
 
@@ -636,7 +636,7 @@ namespace FMODUnity
 
         public static void OpenOnlineDocumentation(string section, string page = null, string anchor = null)
         {
-            const string Prefix = "https://fmod.com/resources/documentation-";
+            const string Prefix = "https://fmod.com/docs/";
             string version = string.Format("{0:X}.{1:X}", FMOD.VERSION.number >> 16, (FMOD.VERSION.number >> 8) & 0xFF);
             string url;
 
@@ -644,16 +644,16 @@ namespace FMODUnity
             {
                 if (!string.IsNullOrEmpty(anchor))
                 {
-                    url = string.Format("{0}{1}?version={2}&page={3}.html#{4}", Prefix, section, version, page, anchor);
+                    url = string.Format("{0}/{1}/{2}/{3}.html#{4}", Prefix, version, section, page, anchor);
                 }
                 else
                 {
-                    url = string.Format("{0}{1}?version={2}&page={3}.html", Prefix, section, version, page);
+                    url = string.Format("{0}/{1}/{2}/{3}.html", Prefix, version, section, page);
                 }
             }
             else
             {
-                url = string.Format("{0}{1}?version={2}", Prefix, section, version);
+                url = string.Format("{0}/{1}/{2}", Prefix, version, section);
             }
                 
             Application.OpenURL(url);
@@ -713,7 +713,7 @@ namespace FMODUnity
             loadedPreviewBanks.Clear();
         }
 
-        public static FMOD.Studio.EventInstance PreviewEvent(EditorEventRef eventRef, Dictionary<string, float> previewParamValues, float volume = 1)
+        public static FMOD.Studio.EventInstance PreviewEvent(EditorEventRef eventRef, Dictionary<string, float> previewParamValues, float volume = 1, float startTime = 0.0f)
         {
             FMOD.Studio.EventDescription eventDescription;
             FMOD.Studio.EventInstance eventInstance;
@@ -737,6 +737,7 @@ namespace FMODUnity
             }
 
             CheckResult(eventInstance.setVolume(volume));
+            CheckResult(eventInstance.setTimelinePosition((int)(startTime * 1000.0f)));
             CheckResult(eventInstance.start());
 
             previewEventInstances.Add(eventInstance);

@@ -3,7 +3,7 @@
 /* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2022.                               */
 /*                                                                                          */
 /* For more detail visit:                                                                   */
-/* https://fmod.com/resources/documentation-api?version=2.0&page=page=studio-api.html       */
+/* https://fmod.com/docs/2.02/api/studio-api.html                                           */
 /* ======================================================================================== */
 
 using System;
