@@ -1499,7 +1499,7 @@ namespace FMODUnity
 
         private void BrowseForSourceBankPathAndRefresh()
         {
-            if (BrowseForSourceBankPath(serializedObject))
+            if (BrowseForSourceBankPath(serializedObject, hasPlatforms.boolValue))
             {
                 Repaint();
             }

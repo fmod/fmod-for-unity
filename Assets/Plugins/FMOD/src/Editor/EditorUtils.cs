@@ -439,17 +439,17 @@ namespace FMODUnity
 
         static void OpenOnlineDocumentation(string section, string page = null)
         {
-            const string Prefix = "https://fmod.com/resources/documentation-";
+            const string Prefix = "https://fmod.com/docs/";
             string version = string.Format("{0:X}.{1:X}", FMOD.VERSION.number >> 16, (FMOD.VERSION.number >> 8) & 0xFF);
             string url;
 
             if (!string.IsNullOrEmpty(page))
             {
-                url = string.Format("{0}{1}?version={2}&page={3}.html", Prefix, section, version, page);
+                url = string.Format("{0}/{1}/{2}/{3}.html", Prefix, version, section, page);
             }
             else
             {
-                url = string.Format("{0}{1}?version={2}", Prefix, section, version);
+                url = string.Format("{0}/{1}/{2}", Prefix, version, section);
             }
                 
             Application.OpenURL(url);
