@@ -959,7 +959,7 @@ namespace FMODUnity
             {
                 TaskGenerator generator = new TaskGenerator() { tasks = tasks };
 
-                Settings.Instance.ForEachPlatform(generator.GenerateTasksForPlatform);
+                Settings.Instance.Platforms.ForEach(generator.GenerateTasksForPlatform);
                 generator.GenerateTasksForLooseAssets();
                 generator.GenerateTasksForCodeFolders();
                 generator.GenerateTasksForLegacyCodeFiles();

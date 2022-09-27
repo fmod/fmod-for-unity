@@ -34,19 +34,19 @@ namespace FMODUnity
             Settings.AddPlatformTemplate<PlatformLinux>("b7716510a1f36934c87976f3a81dbf3d");
         }
 
-        public override string DisplayName { get { return "Linux"; } }
-        public override void DeclareRuntimePlatforms(Settings settings)
+        internal override string DisplayName { get { return "Linux"; } }
+        internal override void DeclareRuntimePlatforms(Settings settings)
         {
             settings.DeclareRuntimePlatform(RuntimePlatform.LinuxPlayer, this);
         }
 
 #if UNITY_EDITOR
-        public override IEnumerable<BuildTarget> GetBuildTargets()
+        internal override IEnumerable<BuildTarget> GetBuildTargets()
         {
             yield return BuildTarget.StandaloneLinux64;
         }
 
-        public override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.Linux; } }
+        internal override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.Linux; } }
 
         protected override BinaryAssetFolderInfo GetBinaryAssetFolder(BuildTarget buildTarget)
         {
@@ -77,13 +77,13 @@ namespace FMODUnity
         }
 #endif
 
-        public override string GetPluginPath(string pluginName)
+        internal override string GetPluginPath(string pluginName)
         {
             return string.Format("{0}/lib{1}.so", GetPluginBasePath(), pluginName);
         }
 
 #if UNITY_EDITOR
-        public override OutputType[] ValidOutputTypes
+        internal override OutputType[] ValidOutputTypes
         {
             get
             {
@@ -97,7 +97,7 @@ namespace FMODUnity
         };
 #endif
 
-        public override List<CodecChannelCount> DefaultCodecChannels { get { return staticCodecChannels; } }
+        internal override List<CodecChannelCount> DefaultCodecChannels { get { return staticCodecChannels; } }
 
         private static List<CodecChannelCount> staticCodecChannels = new List<CodecChannelCount>()
         {

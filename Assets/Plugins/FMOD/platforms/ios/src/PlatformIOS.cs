@@ -36,19 +36,19 @@ namespace FMODUnity
             Settings.AddPlatformTemplate<PlatformIOS>("0f8eb3f400726694eb47beb1a9f94ce8");
         }
 
-        public override string DisplayName { get { return "iOS"; } }
-        public override void DeclareRuntimePlatforms(Settings settings)
+        internal override string DisplayName { get { return "iOS"; } }
+        internal override void DeclareRuntimePlatforms(Settings settings)
         {
             settings.DeclareRuntimePlatform(RuntimePlatform.IPhonePlayer, this);
         }
 
 #if UNITY_EDITOR
-        public override IEnumerable<BuildTarget> GetBuildTargets()
+        internal override IEnumerable<BuildTarget> GetBuildTargets()
         {
             yield return BuildTarget.iOS;
         }
 
-        public override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.iOS; } }
+        internal override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.iOS; } }
 
         protected override BinaryAssetFolderInfo GetBinaryAssetFolder(BuildTarget buildTarget)
         {
@@ -82,9 +82,9 @@ namespace FMODUnity
             }
         }
 
-        public override bool IsFMODStaticallyLinked { get { return true; } }
+        internal override bool IsFMODStaticallyLinked { get { return true; } }
 
-        public override bool SupportsAdditionalCPP(BuildTarget target)
+        internal override bool SupportsAdditionalCPP(BuildTarget target)
         {
             return StaticSupportsAdditionalCpp();
         }
@@ -95,7 +95,7 @@ namespace FMODUnity
         }
 #endif
 
-        public override void LoadPlugins(FMOD.System coreSystem, Action<FMOD.RESULT, string> reportResult)
+        internal override void LoadPlugins(FMOD.System coreSystem, Action<FMOD.RESULT, string> reportResult)
         {
             StaticLoadPlugins(this, coreSystem, reportResult);
         }
@@ -108,7 +108,7 @@ namespace FMODUnity
         }
 
 #if UNITY_EDITOR
-        public override OutputType[] ValidOutputTypes
+        internal override OutputType[] ValidOutputTypes
         {
             get
             {

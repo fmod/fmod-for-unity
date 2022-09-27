@@ -15,15 +15,15 @@ namespace FMODUnity
             Identifier = ConstIdentifier;
         }
 
-        public override string DisplayName { get { return "Default"; } }
-        public override void DeclareRuntimePlatforms(Settings settings) { }
+        internal override string DisplayName { get { return "Default"; } }
+        internal override void DeclareRuntimePlatforms(Settings settings) { }
 #if UNITY_EDITOR
-        public override IEnumerable<BuildTarget> GetBuildTargets()
+        internal override IEnumerable<BuildTarget> GetBuildTargets()
         {
             yield break;
         }
 
-        public override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.Default; } }
+        internal override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.Default; } }
 
         protected override BinaryAssetFolderInfo GetBinaryAssetFolder(BuildTarget buildTarget)
         {
@@ -36,9 +36,9 @@ namespace FMODUnity
         }
 #endif
 
-        public override bool IsIntrinsic { get { return true; } }
+        internal override bool IsIntrinsic { get { return true; } }
 
-        public override void InitializeProperties()
+        internal override void InitializeProperties()
         {
             base.InitializeProperties();
 
@@ -46,7 +46,7 @@ namespace FMODUnity
             PropertyAccessors.StaticPlugins.Set(this, new List<string>());
         }
 
-        public override void EnsurePropertiesAreValid()
+        internal override void EnsurePropertiesAreValid()
         {
             base.EnsurePropertiesAreValid();
 
@@ -58,7 +58,7 @@ namespace FMODUnity
 
         // null means no valid output types - don't display the field in the UI
 #if UNITY_EDITOR
-        public override OutputType[] ValidOutputTypes { get { return null; } }
+        internal override OutputType[] ValidOutputTypes { get { return null; } }
 #endif
     }
 }

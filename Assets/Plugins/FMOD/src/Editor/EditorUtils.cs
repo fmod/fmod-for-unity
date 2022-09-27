@@ -397,7 +397,7 @@ namespace FMODUnity
             {
                 CheckResult(system.update());
 
-                if (speakerMode != Settings.Instance.GetEditorSpeakerMode())
+                if (speakerMode != Settings.Instance.PlayInEditorPlatform.SpeakerMode)
                 {
                     RecreateSystem();
                 }
@@ -525,7 +525,7 @@ namespace FMODUnity
             CheckResult(system.getCoreSystem(out lowlevel));
 
             // Use play-in-editor speaker mode for event browser preview and metering
-            speakerMode = Settings.Instance.GetEditorSpeakerMode();
+            speakerMode = Settings.Instance.PlayInEditorPlatform.SpeakerMode;
             CheckResult(lowlevel.setSoftwareFormat(0, speakerMode, 0));
 
             encryptionKey = Settings.Instance.EncryptionKey;
@@ -1317,7 +1317,7 @@ namespace FMODUnity
 
         public class UpdateStep
         {
-            public Settings.SharedLibraryUpdateStages Stage;
+            internal Settings.SharedLibraryUpdateStages Stage;
             public string Name;
             public string Description;
             public string Details;
@@ -1330,7 +1330,7 @@ namespace FMODUnity
 
             private Func<string> GetDetails;
 
-            public static UpdateStep Create(Settings.SharedLibraryUpdateStages stage, string name, string description,
+            internal static UpdateStep Create(Settings.SharedLibraryUpdateStages stage, string name, string description,
                 Func<string> details, Action execute)
             {
                 return new UpdateStep() {
@@ -1516,9 +1516,13 @@ namespace FMODUnity
 
         private static void ResetUpdateStage()
         {
-            Settings.Instance.SharedLibraryUpdateStage = Settings.SharedLibraryUpdateStages.Start;
-            Settings.Instance.SharedLibraryTimeSinceStart = 0;
-            EditorUtility.SetDirty(Settings.Instance);
+            if (Settings.Instance.SharedLibraryUpdateStage != Settings.SharedLibraryUpdateStages.Start ||
+                Settings.Instance.SharedLibraryTimeSinceStart != 0)
+            {
+                Settings.Instance.SharedLibraryUpdateStage = Settings.SharedLibraryUpdateStages.Start;
+                Settings.Instance.SharedLibraryTimeSinceStart = 0;
+                EditorUtility.SetDirty(Settings.Instance);
+            }
         }
 
         public static UpdateStep Startup()

@@ -562,7 +562,7 @@ retry:
             }
         }
 
-        public void ExecuteOnGUI()
+        internal void ExecuteOnGUI()
         {
             if (studioSystem.isValid() && isOverlayEnabled)
             {
@@ -647,7 +647,7 @@ retry:
         }
 
 #if UNITY_EDITOR
-        public static void Destroy()
+        private static void Destroy()
         {
             if (instance)
             {
@@ -801,9 +801,14 @@ retry:
 
         public static void LoadBank(string bankName, bool loadSamples = false)
         {
-            if (Instance.loadedBanks.ContainsKey(bankName))
+            LoadBank(bankName, loadSamples, bankName);
+        }
+
+        private static void LoadBank(string bankName, bool loadSamples, string bankId)
+        {
+            if (Instance.loadedBanks.ContainsKey(bankId))
             {
-                ReferenceLoadedBank(bankName, loadSamples);
+                ReferenceLoadedBank(bankId, loadSamples);
             }
             else
             {
@@ -829,34 +834,39 @@ retry:
                     bankPath = string.Format("{0}/{1}", bankFolder, bankName);
                 }
                 Instance.loadingBanksRef++;
-                #if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
                 if (Settings.Instance.AndroidUseOBB)
                 {
                     Instance.StartCoroutine(Instance.loadFromWeb(bankPath, bankName, loadSamples));
                 }
                 else
-                #elif UNITY_WEBGL && !UNITY_EDITOR
+#elif UNITY_WEBGL && !UNITY_EDITOR
                 if (true)
                 {
                     Instance.StartCoroutine(Instance.loadFromWeb(bankPath, bankName, loadSamples));
                 }
                 else
-                #endif // (UNITY_ANDROID || UNITY_WEBGL) && !UNITY_EDITOR
+#endif // (UNITY_ANDROID || UNITY_WEBGL) && !UNITY_EDITOR
                 {
                     LoadedBank loadedBank = new LoadedBank();
                     FMOD.RESULT loadResult = Instance.studioSystem.loadBankFile(bankPath, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out loadedBank.Bank);
-                    Instance.RegisterLoadedBank(loadedBank, bankPath, bankName, loadSamples, loadResult);
+                    Instance.RegisterLoadedBank(loadedBank, bankPath, bankId, loadSamples, loadResult);
                     Instance.loadingBanksRef--;
                 }
             }
+
         }
 
         public static void LoadBank(TextAsset asset, bool loadSamples = false)
         {
-            string bankName = asset.name;
-            if (Instance.loadedBanks.ContainsKey(bankName))
+            LoadBank(asset, loadSamples, asset.name);
+        }
+
+        private static void LoadBank(TextAsset asset, bool loadSamples, string bankId) 
+        {
+            if (Instance.loadedBanks.ContainsKey(bankId))
             {
-                ReferenceLoadedBank(bankName, loadSamples);
+                ReferenceLoadedBank(bankId, loadSamples);
             }
             else
             {
@@ -864,58 +874,51 @@ retry:
                 if (asset.text.StartsWith(BankStubPrefix))
                 {
                     string name = asset.text.Substring(BankStubPrefix.Length);
-                    LoadBank(name, loadSamples);
+                    LoadBank(name, loadSamples, bankId);
                     return;
                 }
 #endif
 
                 LoadedBank loadedBank = new LoadedBank();
                 FMOD.RESULT loadResult = Instance.studioSystem.loadBankMemory(asset.bytes, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out loadedBank.Bank);
-                Instance.RegisterLoadedBank(loadedBank, bankName, bankName, loadSamples, loadResult);
+                Instance.RegisterLoadedBank(loadedBank, bankId, bankId, loadSamples, loadResult);
             }
         }
 
-        #if UNITY_ADDRESSABLES_EXIST
+#if UNITY_ADDRESSABLES_EXIST
         public static void LoadBank(AssetReference assetReference, bool loadSamples = false, System.Action completionCallback = null)
         {
-            Instance.loadingBanksRef++;
-
-            if (loadSamples || completionCallback != null)
+            if (Instance.loadedBanks.ContainsKey(assetReference.AssetGUID))
             {
-                assetReference.LoadAssetAsync<TextAsset>().Completed += (result) =>
+                ReferenceLoadedBank(assetReference.AssetGUID, loadSamples);
+            }
+            else
+            {
+                Instance.loadingBanksRef++;
+                assetReference.LoadAssetAsync<TextAsset>().Completed += (obj) =>
                 {
-                    Asset_Completed(result, loadSamples);
+                    if (!obj.IsValid())
+                    {
+                        RuntimeUtils.DebugLogError("[FMOD] Unable to load AssetReference: " + obj.OperationException);
+                        return;
+                    }
+
+                    TextAsset bank = obj.Result;
+                    LoadBank(bank, loadSamples, assetReference.AssetGUID);
+
+                    Instance.loadingBanksRef--;
 
                     if (completionCallback != null)
                     {
                         completionCallback();
                     }
+
+                    assetReference.ReleaseAsset();
                 };
-            }
-            else
-            {
-                assetReference.LoadAssetAsync<TextAsset>().Completed += Asset_Completed;
+
             }
         }
-
-        private static void Asset_Completed(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<TextAsset> obj)
-        {
-            Asset_Completed(obj, false);
-        }
-
-        private static void Asset_Completed(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<TextAsset> obj, bool loadSamples)
-        {
-            if (!obj.IsValid())
-            {
-                RuntimeUtils.DebugLogError("[FMOD] Unable to load AssetReference: " + obj.OperationException);
-                return;
-            }
-
-            TextAsset bank = obj.Result;
-            LoadBank(bank, loadSamples);
-            Instance.loadingBanksRef--;
-        }
-        #endif
+#endif
 
         private void LoadBanks(Settings fmodSettings)
         {
@@ -990,6 +993,18 @@ retry:
                 Instance.loadedBanks[bankName] = loadedBank;
             }
         }
+
+        public static void UnloadBank(TextAsset asset)
+        {
+            UnloadBank(asset.name);
+        }
+
+#if UNITY_ADDRESSABLES_EXIST
+        public static void UnloadBank(AssetReference assetReference)
+        {
+            UnloadBank(assetReference.AssetGUID);
+        }
+#endif
 
         [Obsolete("[FMOD] Deprecated. Use AnySampleDataLoading instead.")]
         public static bool AnyBankLoading()

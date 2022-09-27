@@ -19,7 +19,7 @@ namespace FMOD
     */
     public partial class VERSION
     {
-        public const int    number = 0x00020208;
+        public const int    number = 0x00020209;
 #if !UNITY_2019_4_OR_NEWER
         public const string dll    = "fmod";
 #endif
@@ -534,6 +534,7 @@ namespace FMOD
         BUFFEREDNOMIX          = 0x00002000,
         DEVICEREINITIALIZE     = 0x00004000,
         OUTPUTUNDERRUN         = 0x00008000,
+        RECORDPOSITIONCHANGED  = 0x00010000,
         ALL                    = 0xFFFFFFFF,
     }
 
@@ -1806,7 +1807,7 @@ namespace FMOD
         }
         public RESULT getTag(string name, int index, out TAG tag)
         {
-             using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
+            using (StringHelper.ThreadSafeEncoding encoder = StringHelper.GetFreeHelper())
             {
                 return FMOD5_Sound_GetTag(this.handle, encoder.byteFromStringUTF8(name), index, out tag);
             }
@@ -1814,7 +1815,16 @@ namespace FMOD
         public RESULT getOpenState(out OPENSTATE openstate, out uint percentbuffered, out bool starving, out bool diskbusy)
         {
             return FMOD5_Sound_GetOpenState(this.handle, out openstate, out percentbuffered, out starving, out diskbusy);
+        } 
+        public RESULT readData(byte[] buffer)
+        {
+            return FMOD5_Sound_ReadData(this.handle, buffer, (uint)buffer.Length, IntPtr.Zero);
         }
+        public RESULT readData(byte[] buffer, out uint read)
+        {
+            return FMOD5_Sound_ReadData(this.handle, buffer, (uint)buffer.Length, out read);
+        }
+        [Obsolete("Use Sound.readData(byte[], out uint) or Sound.readData(byte[]) instead.")]
         public RESULT readData(IntPtr buffer, uint length, out uint read)
         {
             return FMOD5_Sound_ReadData(this.handle, buffer, length, out read);
@@ -1971,6 +1981,10 @@ namespace FMOD
         private static extern RESULT FMOD5_Sound_GetTag                  (IntPtr sound, byte[] name, int index, out TAG tag);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_Sound_GetOpenState            (IntPtr sound, out OPENSTATE openstate, out uint percentbuffered, out bool starving, out bool diskbusy);
+        [DllImport(VERSION.dll)]
+        private static extern RESULT FMOD5_Sound_ReadData                (IntPtr sound, byte[] buffer, uint length, IntPtr zero);
+        [DllImport(VERSION.dll)]
+        private static extern RESULT FMOD5_Sound_ReadData                (IntPtr sound, byte[] buffer, uint length, out uint read);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_Sound_ReadData                (IntPtr sound, IntPtr buffer, uint length, out uint read);
         [DllImport(VERSION.dll)]

@@ -311,7 +311,8 @@ namespace FMODUnity
         {
             if (Settings.Instance.StopEventsOutsideMaxDistance && IsActive)
             {
-                ParamRef cachedParam = cachedParams.Find(x => x.Name == name);
+                string findName = name;
+                ParamRef cachedParam = cachedParams.Find(x => x.Name == findName);
 
                 if (cachedParam == null)
                 {
@@ -337,7 +338,8 @@ namespace FMODUnity
         {
             if (Settings.Instance.StopEventsOutsideMaxDistance && IsActive)
             {
-                ParamRef cachedParam = cachedParams.Find(x => x.ID.Equals(id));
+                FMOD.Studio.PARAMETER_ID findId = id;
+                ParamRef cachedParam = cachedParams.Find(x => x.ID.Equals(findId));
 
                 if (cachedParam == null)
                 {

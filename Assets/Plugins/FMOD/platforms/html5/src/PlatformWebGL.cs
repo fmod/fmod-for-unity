@@ -34,19 +34,19 @@ namespace FMODUnity
             Settings.AddPlatformTemplate<PlatformWebGL>("46fbfdf3fc43db0458918377fd40293e");
         }
 
-        public override string DisplayName { get { return "WebGL"; } }
-        public override void DeclareRuntimePlatforms(Settings settings)
+        internal override string DisplayName { get { return "WebGL"; } }
+        internal override void DeclareRuntimePlatforms(Settings settings)
         {
             settings.DeclareRuntimePlatform(RuntimePlatform.WebGLPlayer, this);
         }
 
 #if UNITY_EDITOR
-        public override IEnumerable<BuildTarget> GetBuildTargets()
+        internal override IEnumerable<BuildTarget> GetBuildTargets()
         {
             yield return BuildTarget.WebGL;
         }
 
-        public override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.WebGL; } }
+        internal override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.WebGL; } }
 
         protected override BinaryAssetFolderInfo GetBinaryAssetFolder(BuildTarget buildTarget)
         {
@@ -72,10 +72,10 @@ namespace FMODUnity
             }
         }
 
-        public override bool IsFMODStaticallyLinked { get { return true; } }
+        internal override bool IsFMODStaticallyLinked { get { return true; } }
 #endif
 
-        public override string GetPluginPath(string pluginName)
+        internal override string GetPluginPath(string pluginName)
         {
             #if UNITY_2021_2_OR_NEWER
             return string.Format("{0}/{1}.a", GetPluginBasePath(), pluginName);
@@ -84,7 +84,7 @@ namespace FMODUnity
             #endif
         }
 #if UNITY_EDITOR
-        public override OutputType[] ValidOutputTypes
+        internal override OutputType[] ValidOutputTypes
         {
             get
             {

@@ -52,6 +52,12 @@ namespace FMODUnity
             EditorApplication.ExecuteMenuItem("Window/General/Inspector");
         }
 
+        public void Clear()
+        {
+            PlatformForBuildTarget.Clear();
+            binaryCompatibilitiesBeforeBuild = null;
+        }
+
         public void CreateSettingsAsset(string assetName)
         {
             string resourcesPath = $"{FMODFolderFull}/Resources";
@@ -71,7 +77,14 @@ namespace FMODUnity
             {
                 if (buildTarget != BuildTarget.NoTarget)
                 {
-                    PlatformForBuildTarget.Add(buildTarget, platform);
+                    try
+                    {
+                        PlatformForBuildTarget.Add(buildTarget, platform);
+                    }
+                    catch (Exception e)
+                    {
+                        RuntimeUtils.DebugLogWarningFormat("FMOD: Error platform {0} already added to build targets. : {1}", buildTarget, e.Message);
+                    }
                 }
             }
         }
@@ -95,7 +108,7 @@ namespace FMODUnity
             RemovePlatformFromAsset(RuntimeSettings.DefaultPlatform);
             RemovePlatformFromAsset(RuntimeSettings.PlayInEditorPlatform);
 
-            RuntimeSettings.ForEachPlatform(RemovePlatformFromAsset);
+            RuntimeSettings.Platforms.ForEach(RemovePlatformFromAsset);
 
             foreach (Platform platform in Resources.LoadAll<Platform>(Settings.SettingsAssetName))
             {
@@ -324,7 +337,7 @@ namespace FMODUnity
                 RuntimeSettings.AddPlatform(platform);
             }
 
-            RuntimeSettings.ForEachPlatform(UpdateMigratedPlatform);
+            RuntimeSettings.Platforms.ForEach(UpdateMigratedPlatform);
         }
 
         private void MigrateLegacyPlatforms<TValue, TSetting>(List<TSetting> settings,
@@ -602,7 +615,7 @@ namespace FMODUnity
             RuntimeUtils.DebugLog(message);
         }
 
-        public bool ForceLoggingBinaries { get; private set; } = false;
+        public bool ForceLoggingBinaries { get; set; } = false;
 
         public class BuildProcessor : IPreprocessBuildWithReport, IPostprocessBuildWithReport
         {
@@ -668,7 +681,7 @@ namespace FMODUnity
         // Settings object.
         public void AddPlatformsToAsset()
         {
-            RuntimeSettings.ForEachPlatform(AddPlatformToAsset);
+            RuntimeSettings.Platforms.ForEach(AddPlatformToAsset);
         }
 
         private void AddPlatformToAsset(Platform platform)

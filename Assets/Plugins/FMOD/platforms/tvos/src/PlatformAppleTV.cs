@@ -35,19 +35,19 @@ namespace FMODUnity
             Settings.AddPlatformTemplate<PlatformAppleTV>("e7a046c753c3c3d4aacc91f6597f310d");
         }
 
-        public override string DisplayName { get { return "Apple TV"; } }
-        public override void DeclareRuntimePlatforms(Settings settings)
+        internal override string DisplayName { get { return "Apple TV"; } }
+        internal override void DeclareRuntimePlatforms(Settings settings)
         {
             settings.DeclareRuntimePlatform(RuntimePlatform.tvOS, this);
         }
 
 #if UNITY_EDITOR
-        public override IEnumerable<BuildTarget> GetBuildTargets()
+        internal override IEnumerable<BuildTarget> GetBuildTargets()
         {
             yield return BuildTarget.tvOS;
         }
 
-        public override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.AppleTV; } }
+        internal override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.AppleTV; } }
 
         protected override BinaryAssetFolderInfo GetBinaryAssetFolder(BuildTarget buildTarget)
         {
@@ -67,21 +67,21 @@ namespace FMODUnity
             }
         }
 
-        public override bool SupportsAdditionalCPP(BuildTarget target)
+        internal override bool SupportsAdditionalCPP(BuildTarget target)
         {
             return PlatformIOS.StaticSupportsAdditionalCpp();
         }
 #endif
 
 #if !UNITY_EDITOR
-        public override void LoadPlugins(FMOD.System coreSystem, Action<FMOD.RESULT, string> reportResult)
+        internal override void LoadPlugins(FMOD.System coreSystem, Action<FMOD.RESULT, string> reportResult)
         {
             PlatformIOS.StaticLoadPlugins(this, coreSystem, reportResult);
         }
 #endif
 
 #if UNITY_EDITOR
-        public override OutputType[] ValidOutputTypes
+        internal override OutputType[] ValidOutputTypes
         {
             get
             {

@@ -35,19 +35,19 @@ namespace FMODUnity
             Settings.AddPlatformTemplate<PlatformAndroid>("2fea114e74ecf3c4f920e1d5cc1c4c40");
         }
 
-        public override string DisplayName { get { return "Android"; } }
-        public override void DeclareRuntimePlatforms(Settings settings)
+        internal override string DisplayName { get { return "Android"; } }
+        internal override void DeclareRuntimePlatforms(Settings settings)
         {
             settings.DeclareRuntimePlatform(RuntimePlatform.Android, this);
         }
 
 #if UNITY_EDITOR
-        public override IEnumerable<BuildTarget> GetBuildTargets()
+        internal override IEnumerable<BuildTarget> GetBuildTargets()
         {
             yield return BuildTarget.Android;
         }
 
-        public override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.Android; } }
+        internal override Legacy.Platform LegacyIdentifier { get { return Legacy.Platform.Android; } }
 
         protected override BinaryAssetFolderInfo GetBinaryAssetFolder(BuildTarget buildTarget)
         {
@@ -77,7 +77,7 @@ namespace FMODUnity
             }
         }
 
-        public override bool SupportsAdditionalCPP(BuildTarget target)
+        internal override bool SupportsAdditionalCPP(BuildTarget target)
         {
             // Unity parses --additional-cpp arguments specified via
             // PlayerSettings.SetAdditionalIl2CppArgs() incorrectly when the Android
@@ -86,27 +86,27 @@ namespace FMODUnity
         }
 #endif
 
-        public override string GetBankFolder()
+        internal override string GetBankFolder()
         {
             return StaticGetBankFolder();
         }
 
-        public static string StaticGetBankFolder()
+        internal static string StaticGetBankFolder()
         {
             return Settings.Instance.AndroidUseOBB ? Application.streamingAssetsPath : "file:///android_asset";
         }
 
-        public override string GetPluginPath(string pluginName)
+        internal override string GetPluginPath(string pluginName)
         {
             return StaticGetPluginPath(pluginName);
         }
 
-        public static string StaticGetPluginPath(string pluginName)
+        internal static string StaticGetPluginPath(string pluginName)
         {
             return string.Format("lib{0}.so", pluginName);
         }
 #if UNITY_EDITOR
-        public override OutputType[] ValidOutputTypes
+        internal override OutputType[] ValidOutputTypes
         {
             get
             {
@@ -120,7 +120,7 @@ namespace FMODUnity
            new OutputType() { displayName = "AAudio", outputType = FMOD.OUTPUTTYPE.AAUDIO },
         };
 
-        public override int CoreCount { get { return MaximumCoreCount; } }
+        internal override int CoreCount { get { return MaximumCoreCount; } }
 #endif
     }
 }
