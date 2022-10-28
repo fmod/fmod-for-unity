@@ -451,7 +451,7 @@ namespace FMODUnity
 
             if (!PlatformForBuildTarget.TryGetValue(target, out platform))
             {
-                error = string.Format("No FMOD platform found for build target {0}.\n" +
+                error = string.Format("No FMOD platform found for build target {0}. " +
                             "You may need to install a platform specific integration package from {1}.",
                             target, DownloadURL);
                 return false;
@@ -650,29 +650,24 @@ namespace FMODUnity
             }
         }
 
-        public class BuildTargetChecker : IActiveBuildTargetChanged
+        public void CheckActiveBuildTarget()
         {
-            public int callbackOrder { get { return 0; } }
+            Settings.EditorSettings.CleanTemporaryFiles();
 
-            public void OnActiveBuildTargetChanged(BuildTarget previous, BuildTarget current)
+            Platform.BinaryType binaryType = EditorUserBuildSettings.development
+                ? Platform.BinaryType.Logging
+                : Platform.BinaryType.Release;
+
+            string error;
+            if (!Settings.EditorSettings.CanBuildTarget(EditorUserBuildSettings.activeBuildTarget, binaryType, out error))
             {
-                Settings.EditorSettings.CleanTemporaryFiles();
+                RuntimeUtils.DebugLogWarning(error);
 
-                Platform.BinaryType binaryType = EditorUserBuildSettings.development
-                    ? Platform.BinaryType.Logging
-                    : Platform.BinaryType.Release;
-
-                string error;
-                if (!Settings.EditorSettings.CanBuildTarget(current, binaryType, out error))
+                if (EditorWindow.HasOpenInstances<BuildPlayerWindow>())
                 {
-                    RuntimeUtils.DebugLogWarning(error);
-
-                    if (EditorWindow.HasOpenInstances<BuildPlayerWindow>())
-                    {
-                        GUIContent message =
-                            new GUIContent("FMOD detected issues with this platform!\nSee the Console for details.");
-                        EditorWindow.GetWindow<BuildPlayerWindow>().ShowNotification(message, 10);
-                    }
+                    GUIContent message =
+                        new GUIContent("FMOD detected issues with this platform!\nSee the Console for details.");
+                    EditorWindow.GetWindow<BuildPlayerWindow>().ShowNotification(message, 10);
                 }
             }
         }

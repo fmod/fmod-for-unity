@@ -72,6 +72,7 @@ namespace FMODUnity
         void CleanTemporaryFiles();
         void DeleteTemporaryFile(string assetPath);
         bool CanBuildTarget(BuildTarget target, Platform.BinaryType binaryType, out string error);
+        void CheckActiveBuildTarget();
 #endif
     }
 
@@ -616,6 +617,10 @@ namespace FMODUnity
 
             // Link all known platforms
             Platforms.ForEach(LinkPlatform);
+
+#if UNITY_EDITOR
+            EditorSettings.CheckActiveBuildTarget();
+#endif
         }
 
         private void PopulatePlatformsFromAsset()

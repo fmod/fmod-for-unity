@@ -19,7 +19,7 @@ namespace FMOD
     */
     public partial class VERSION
     {
-        public const int    number = 0x00020209;
+        public const int    number = 0x00020210;
 #if !UNITY_2019_4_OR_NEWER
         public const string dll    = "fmod";
 #endif
@@ -515,6 +515,14 @@ namespace FMOD
         public float    convolution2;           /* Convolution reverb processing thread #2 CPU usage */ 
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DSP_DATA_PARAMETER_INFO
+    {
+        public IntPtr   data;
+        public uint     length;
+        public int      index;
+    }
+
     [Flags]
     public enum SYSTEM_CALLBACK_TYPE : uint
     {
@@ -544,6 +552,7 @@ namespace FMOD
     public delegate RESULT DEBUG_CALLBACK           (DEBUG_FLAGS flags, IntPtr file, int line, IntPtr func, IntPtr message);
     public delegate RESULT SYSTEM_CALLBACK          (IntPtr system, SYSTEM_CALLBACK_TYPE type, IntPtr commanddata1, IntPtr commanddata2, IntPtr userdata);
     public delegate RESULT CHANNELCONTROL_CALLBACK  (IntPtr channelcontrol, CHANNELCONTROL_TYPE controltype, CHANNELCONTROL_CALLBACK_TYPE callbacktype, IntPtr commanddata1, IntPtr commanddata2);
+    public delegate RESULT DSP_CALLBACK             (IntPtr dsp, DSP_CALLBACK_TYPE type, IntPtr data);
     public delegate RESULT SOUND_NONBLOCK_CALLBACK  (IntPtr sound, RESULT result);
     public delegate RESULT SOUND_PCMREAD_CALLBACK   (IntPtr sound, IntPtr data, uint datalen);
     public delegate RESULT SOUND_PCMSETPOS_CALLBACK (IntPtr sound, int subsound, uint position, TIMEUNIT postype);
@@ -566,6 +575,13 @@ namespace FMOD
         LINEAR,
         CUBIC,
         SPLINE,
+
+        MAX,
+    }
+
+    public enum DSP_CALLBACK_TYPE : int
+    {
+        DATAPARAMETERRELEASE,
 
         MAX,
     }
@@ -3320,6 +3336,10 @@ namespace FMOD
         {
             return FMOD5_DSP_Reset(this.handle);
         }
+        public RESULT setCallback(DSP_CALLBACK callback)
+        {
+            return FMOD5_DSP_SetCallback(this.handle, callback);
+        }
 
         // DSP parameter control.
         public RESULT setParameterFloat(int index, float value)
@@ -3479,6 +3499,8 @@ namespace FMOD
         private static extern RESULT FMOD5_DSP_GetOutputChannelFormat    (IntPtr dsp, CHANNELMASK inmask, int inchannels, SPEAKERMODE inspeakermode, out CHANNELMASK outmask, out int outchannels, out SPEAKERMODE outspeakermode);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_DSP_Reset                     (IntPtr dsp);
+        [DllImport(VERSION.dll)]
+        private static extern RESULT FMOD5_DSP_SetCallback               (IntPtr dsp, DSP_CALLBACK callback);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_DSP_SetParameterFloat         (IntPtr dsp, int index, float value);
         [DllImport(VERSION.dll)]
