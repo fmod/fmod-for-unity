@@ -913,6 +913,10 @@ namespace FMODUnity
 
             // Link all known platforms
             ForEachPlatform(LinkPlatform);
+
+#if UNITY_EDITOR
+            CheckActiveBuildTarget();
+#endif
         }
 
         private void PopulatePlatformsFromAsset()
@@ -998,7 +1002,7 @@ namespace FMODUnity
 
             if (!PlatformForBuildTarget.TryGetValue(target, out platform))
             {
-                error = string.Format("No FMOD platform found for build target {0}.\n" +
+                error = string.Format("No FMOD platform found for build target {0}. " +
                             "You may need to install a platform specific integration package from {1}.",
                             target, DownloadURL);
                 return false;
@@ -1066,6 +1070,7 @@ namespace FMODUnity
 
         private void PostprocessBuild(BuildTarget target)
         {
+#if UNITY_2018_1_OR_NEWER
             foreach(string path in binaryCompatibilitiesBeforeBuild.Keys)
             {
                 PluginImporter importer = AssetImporter.GetAtPath(path) as PluginImporter;
@@ -1075,6 +1080,7 @@ namespace FMODUnity
                     importer.SetCompatibleWithPlatform(target, binaryCompatibilitiesBeforeBuild[path]);
                 }
             }
+#endif
         }
 
         private static void PreprocessStaticPlugins(Platform platform, BuildTarget target)
@@ -1240,32 +1246,27 @@ namespace FMODUnity
         }
 #endif
 
-        public class BuildTargetChecker : IActiveBuildTargetChanged
+        public void CheckActiveBuildTarget()
         {
-            public int callbackOrder { get { return 0; } }
+            CleanTemporaryFiles();
 
-            public void OnActiveBuildTargetChanged(BuildTarget previous, BuildTarget current)
+            Platform.BinaryType binaryType = EditorUserBuildSettings.development
+                ? Platform.BinaryType.Logging
+                : Platform.BinaryType.Release;
+
+            string error;
+            if (!Settings.Instance.CanBuildTarget(EditorUserBuildSettings.activeBuildTarget, binaryType, out error))
             {
-                CleanTemporaryFiles();
-
-                Platform.BinaryType binaryType = EditorUserBuildSettings.development
-                    ? Platform.BinaryType.Logging
-                    : Platform.BinaryType.Release;
-
-                string error;
-                if (!Settings.Instance.CanBuildTarget(current, binaryType, out error))
-                {
-                    Debug.LogWarning(error);
+                Debug.LogWarning(error);
 
 #if UNITY_2019_3_OR_NEWER
-                    if (EditorWindow.HasOpenInstances<BuildPlayerWindow>())
-                    {
-                        GUIContent message =
-                            new GUIContent("FMOD detected issues with this platform!\nSee the Console for details.");
-                        EditorWindow.GetWindow<BuildPlayerWindow>().ShowNotification(message, 10);
-                    }
-#endif
+                if (EditorWindow.HasOpenInstances<BuildPlayerWindow>())
+                {
+                    GUIContent message =
+                        new GUIContent("FMOD detected issues with this platform!\nSee the Console for details.");
+                    EditorWindow.GetWindow<BuildPlayerWindow>().ShowNotification(message, 10);
                 }
+#endif
             }
         }
 #endif
