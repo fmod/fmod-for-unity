@@ -54,7 +54,7 @@ namespace FMODUnity
             return new BinaryAssetFolderInfo("android", "Plugins/Android/libs");
         }
 
-        private static readonly string[] Architectures = { "arm64-v8a", "armeabi-v7a", "x86" };
+        private static readonly string[] Architectures = { "arm64-v8a", "armeabi-v7a", "x86", "x86_64" };
 
         protected override IEnumerable<FileRecord> GetBinaryFiles(BuildTarget buildTarget, bool allVariants, string suffix)
         {

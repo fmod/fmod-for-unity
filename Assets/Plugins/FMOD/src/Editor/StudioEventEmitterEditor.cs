@@ -85,7 +85,9 @@ namespace FMODUnity
                     EditorGUI.BeginChangeCheck();
                     EditorGUILayout.PropertyField(overrideAtt);
                     if (EditorGUI.EndChangeCheck() ||
-                        (minDistance.floatValue == -1 && maxDistance.floatValue == -1) // never been initialiased
+                        (minDistance.floatValue == -1 && maxDistance.floatValue == -1) || // never been initialiased
+                            !overrideAtt.boolValue &&
+                            (minDistance.floatValue != editorEvent.MinDistance || maxDistance.floatValue != editorEvent.MaxDistance)
                         )
                     {
                         minDistance.floatValue = editorEvent.MinDistance;

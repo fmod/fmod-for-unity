@@ -44,6 +44,16 @@ namespace FMODUnity
             return result;
         }
 
+        public static float DistanceSquaredToNearestListener(Vector3 position)
+        {
+            float result = float.MaxValue;
+            for (int i = 0; i < listeners.Count; i++)
+            {
+                result = Mathf.Min(result, (position - listeners[i].transform.position).sqrMagnitude);
+            }
+            return result;
+        }
+
         private static void AddListener(StudioListener listener)
         {
             // Is the listener already in the list?

@@ -133,7 +133,7 @@ namespace FMODUnity
 #if UNITY_EDITOR
         // The Unity BuildTargets this platform implements.
         // Returns BuildTarget.NoTarget if the correct value is not defined, as some BuildTarget
-        // values are only defined in specific circumstances (e.g. Stadia requires Unity 2019.3).
+        // values are only defined in specific circumstances (e.g. Stadia required Unity 2019.3).
         internal abstract IEnumerable<BuildTarget> GetBuildTargets();
 
         // The old FMOD platform identifier that this platform corresponds to, for settings migration.
