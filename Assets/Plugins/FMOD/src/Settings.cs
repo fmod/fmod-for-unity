@@ -188,6 +188,9 @@ namespace FMODUnity
         public bool AndroidUseOBB = false;
 
         [SerializeField]
+        public bool AndroidPatchBuild = false;
+
+        [SerializeField]
         public MeterChannelOrderingType MeterChannelOrdering;
 
         [SerializeField]
@@ -617,10 +620,6 @@ namespace FMODUnity
 
             // Link all known platforms
             Platforms.ForEach(LinkPlatform);
-
-#if UNITY_EDITOR
-            EditorSettings.CheckActiveBuildTarget();
-#endif
         }
 
         private void PopulatePlatformsFromAsset()

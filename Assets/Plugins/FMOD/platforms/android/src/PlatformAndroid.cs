@@ -93,7 +93,8 @@ namespace FMODUnity
 
         internal static string StaticGetBankFolder()
         {
-            return Settings.Instance.AndroidUseOBB ? Application.streamingAssetsPath : "file:///android_asset";
+            return (Settings.Instance.AndroidUseOBB || Settings.Instance.AndroidPatchBuild)
+                ? Application.streamingAssetsPath : "file:///android_asset";
         }
 
         internal override string GetPluginPath(string pluginName)

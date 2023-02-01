@@ -946,6 +946,7 @@ namespace FMODUnity
                 // Release 2.2 layout
                 new MoveRecord() { source = FMODRoot + "/src/fmodplugins.cpp", destination = "obsolete" },
                 new MoveRecord() { source = FMODRoot + "/src/fmod_static_plugin_support.h", destination = "obsolete" },
+                new MoveRecord() { source = FMODSource + "/CodeGeneration.cs", destination = "src/Editor" },
             };
 
             private static readonly string[] foldersToCleanUp = {

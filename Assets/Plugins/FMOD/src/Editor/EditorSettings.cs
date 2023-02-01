@@ -641,12 +641,27 @@ namespace FMODUnity
                     throw new BuildFailedException(error);
                 }
 
+                bool androidPatchBuildPrevious = Settings.Instance.AndroidPatchBuild;
+                if ((report.summary.options & BuildOptions.PatchPackage) == BuildOptions.PatchPackage)
+                {
+                    Settings.Instance.AndroidPatchBuild = true;
+                }
+                else
+                {
+                    Settings.Instance.AndroidPatchBuild = false;
+                }
+                if (androidPatchBuildPrevious != Settings.Instance.AndroidPatchBuild)
+                {
+                    EditorUtility.SetDirty(Settings.Instance);
+                }
+
                 EditorSettings.Instance.PreprocessBuild(report.summary.platform, binaryType);
             }
 
             public void OnPostprocessBuild(BuildReport report)
             {
                 Instance.PostprocessBuild(report.summary.platform);
+                Settings.Instance.AndroidPatchBuild = false;
             }
         }
 
@@ -659,7 +674,7 @@ namespace FMODUnity
                 : Platform.BinaryType.Release;
 
             string error;
-            if (!Settings.EditorSettings.CanBuildTarget(EditorUserBuildSettings.activeBuildTarget, binaryType, out error))
+            if (!CanBuildTarget(EditorUserBuildSettings.activeBuildTarget, binaryType, out error))
             {
                 RuntimeUtils.DebugLogWarning(error);
 
