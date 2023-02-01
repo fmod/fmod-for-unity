@@ -1264,7 +1264,7 @@ namespace FMODUnity
                 : Platform.BinaryType.Release;
 
             string error;
-            if (!Settings.Instance.CanBuildTarget(EditorUserBuildSettings.activeBuildTarget, binaryType, out error))
+            if (!CanBuildTarget(EditorUserBuildSettings.activeBuildTarget, binaryType, out error))
             {
                 Debug.LogWarning(error);
 
