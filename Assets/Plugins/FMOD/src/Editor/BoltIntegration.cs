@@ -90,6 +90,8 @@ namespace FMODUnity
 
             List<Type> allTypes = new List<Type>(GetTypesForNamespace(fmodUnityAssembly, "FMOD"));
             allTypes.AddRange(GetTypesForNamespace(fmodUnityAssembly, "FMOD.Studio"));
+            allTypes.AddRange(GetTypesForNamespace(fmodUnityAssembly, "FMODUnity"));
+            allTypes.AddRange(GetTypesForNamespace(fmodUnityResonanceAssembly, "FMODUnityResonance"));
 
             foreach (Type type in allTypes)
             {
@@ -103,6 +105,7 @@ namespace FMODUnity
 #if (UNITY_BOLT_EXIST)
             UnitBase.Build();
 #else
+            BoltCore.Configuration.Save();
             UnitBase.Rebuild();
 #endif
         }
