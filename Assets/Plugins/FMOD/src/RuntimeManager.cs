@@ -71,7 +71,7 @@ namespace FMODUnity
             FMOD.StringWrapper file = new FMOD.StringWrapper(filePtr);
             FMOD.StringWrapper func = new FMOD.StringWrapper(funcPtr);
             FMOD.StringWrapper message = new FMOD.StringWrapper(messagePtr);
-            
+
             if (flags == FMOD.DEBUG_FLAGS.ERROR)
             {
                 RuntimeUtils.DebugLogError(string.Format(("[FMOD] {0} : {1}"), (string)func, (string)message));
@@ -411,6 +411,8 @@ retry:
             #if UNITY_PHYSICS_EXIST
             public Rigidbody rigidBody;
             #endif
+            public Vector3 lastFramePosition;
+            public bool allowNonRigidBodyDoppler;
             #if UNITY_PHYSICS2D_EXIST
             public Rigidbody2D rigidBody2D;
             #endif
@@ -461,7 +463,18 @@ retry:
                     else
                     #endif
                     {
-                        attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform));
+                        if (!attachedInstances[i].allowNonRigidBodyDoppler)
+                        {
+                            attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform));
+                        }
+                        else
+                        {
+                            var position = attachedInstances[i].transform.position;
+                            var velocity = (position - attachedInstances[i].lastFramePosition) / Time.deltaTime;
+                            velocity = Vector3.ClampMagnitude(velocity, 20.0f); // Stops pitch fluttering when moving too quickly
+                            attachedInstances[i].lastFramePosition = position;
+                            attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform, velocity));
+                        }
                     }
                 }
 
@@ -514,7 +527,8 @@ retry:
                 studioSystem.update();
             }
         }
-        public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, Transform transform)
+
+        private static AttachedInstance FindOrAddAttachedInstance(FMOD.Studio.EventInstance instance, Transform transform, FMOD.ATTRIBUTES_3D attributes)
         {
             AttachedInstance attachedInstance = Instance.attachedInstances.Find(x => x.instance.handle == instance.handle);
             if (attachedInstance == null)
@@ -522,45 +536,40 @@ retry:
                 attachedInstance = new AttachedInstance();
                 Instance.attachedInstances.Add(attachedInstance);
             }
-
-            instance.set3DAttributes(RuntimeUtils.To3DAttributes(transform));
-            attachedInstance.transform = transform;
             attachedInstance.instance = instance;
+            attachedInstance.transform = transform;
+            attachedInstance.instance.set3DAttributes(attributes);
+            return attachedInstance;
         }
 
-        #if UNITY_PHYSICS_EXIST
+        public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, Transform transform, bool allowNonRigidBodyDoppler = false)
+        {
+            AttachedInstance attachedInstance = FindOrAddAttachedInstance(instance, transform, RuntimeUtils.To3DAttributes(transform));
+
+            if (allowNonRigidBodyDoppler)
+            {
+                attachedInstance.allowNonRigidBodyDoppler = allowNonRigidBodyDoppler;
+                attachedInstance.lastFramePosition = transform.position;
+            }
+        }
+
+#if UNITY_PHYSICS_EXIST
         public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, Transform transform, Rigidbody rigidBody)
         {
-            AttachedInstance attachedInstance = Instance.attachedInstances.Find(x => x.instance.handle == instance.handle);
-            if (attachedInstance == null)
-            {
-                attachedInstance = new AttachedInstance();
-                Instance.attachedInstances.Add(attachedInstance);
-            }
+            AttachedInstance attachedInstance = FindOrAddAttachedInstance(instance, transform, RuntimeUtils.To3DAttributes(transform, rigidBody));
 
-            instance.set3DAttributes(RuntimeUtils.To3DAttributes(transform, rigidBody));
-            attachedInstance.transform = transform;
-            attachedInstance.instance = instance;
             attachedInstance.rigidBody = rigidBody;
         }
-        #endif
+#endif
 
-        #if UNITY_PHYSICS2D_EXIST
+#if UNITY_PHYSICS2D_EXIST
         public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, Transform transform, Rigidbody2D rigidBody2D)
         {
-            AttachedInstance attachedInstance = Instance.attachedInstances.Find(x => x.instance.handle == instance.handle);
-            if (attachedInstance == null)
-            {
-                attachedInstance = new AttachedInstance();
-                Instance.attachedInstances.Add(attachedInstance);
-            }
+            AttachedInstance attachedInstance = FindOrAddAttachedInstance(instance, transform, RuntimeUtils.To3DAttributes(transform, rigidBody2D));
 
-            instance.set3DAttributes(RuntimeUtils.To3DAttributes(transform, rigidBody2D));
-            attachedInstance.transform = transform;
-            attachedInstance.instance = instance;
             attachedInstance.rigidBody2D = rigidBody2D;
         }
-        #endif
+#endif
 
         public static void DetachInstanceFromGameObject(FMOD.Studio.EventInstance instance)
         {
@@ -1291,8 +1300,8 @@ retry:
         public static void SetListenerLocation(GameObject gameObject, GameObject attenuationObject = null)
         {
             SetListenerLocation(0, gameObject, attenuationObject);
-        }       
-        
+        }
+
         public static void SetListenerLocation(int listenerIndex, GameObject gameObject, GameObject attenuationObject = null)
         {
             if (attenuationObject)

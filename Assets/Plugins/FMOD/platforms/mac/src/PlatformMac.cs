@@ -74,7 +74,7 @@ namespace FMODUnity
         internal override string GetPluginPath(string pluginName)
         {
             string pluginPath = string.Format("{0}/{1}.bundle", GetPluginBasePath(), pluginName);
-            if (System.IO.File.Exists((pluginPath)))
+            if (System.IO.Directory.Exists((pluginPath)))
             {
                 return pluginPath;
             }

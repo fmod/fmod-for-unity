@@ -805,8 +805,26 @@ fmod_editor.log";
                 GUILayout.FlexibleSpace();
             }
 
+            string msg = "";
+            if (completed)
+            {
+                // All complete
+                msg = "FMOD for Unity has been set up successfully!";
+            }
+            // Essential
+            else if (pageComplete[(int)PAGES.Linking])
+            {
+                // Partial complete (linking done)
+                msg = "FMOD for Unity has been partially set up.";
+            }
+            else
+            {
+                // Linking not done
+                msg = "FMOD for Unity has not finished being set up.\nLinking to a project or banks is required.";
+            }
+
             GUILayout.FlexibleSpace();
-            EditorGUILayout.LabelField(completed ? "FMOD for Unity has been set up successfully!" : "FMOD for Unity has not finished being set up.", titleStyle);
+            EditorGUILayout.LabelField(msg, titleStyle);
             GUILayout.FlexibleSpace();
 
             using (new EditorGUILayout.HorizontalScope())

@@ -15,7 +15,6 @@ namespace FMODUnity
 #if UNITY_PHYSICS2D_EXIST
         private Rigidbody2D rigidBody2D;
 #endif
-
         private static List<StudioListener> listeners = new List<StudioListener>();
 
         public static int ListenerCount
