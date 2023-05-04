@@ -44,9 +44,9 @@ namespace FMODUnity
             if (!prefabScope)
             {
                 #if UNITY_2018_3_OR_NEWER
-                emitters.RemoveAll(x => PrefabUtility.GetPrefabAssetType(x) == PrefabAssetType.NotAPrefab);
+                emitters.RemoveAll(x => PrefabUtility.GetPrefabAssetType(x) != PrefabAssetType.NotAPrefab);
                 #else
-                emitters.RemoveAll(x => PrefabUtility.GetPrefabType(x) != PrefabType.Prefab);
+                emitters.RemoveAll(x => PrefabUtility.GetPrefabType(x) == PrefabType.Prefab);
                 #endif
             }
         }
