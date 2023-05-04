@@ -50,7 +50,12 @@ extern "C" void RegisterSuspendCallback(void (*callback)(bool))
                 gSuspendCallback(true);
             }
 #endif
-            [[AVAudioSession sharedInstance] setActive:TRUE error:nil];
+            NSError *errorMessage;
+            if(![[AVAudioSession sharedInstance] setActive:TRUE error:&errorMessage])
+            {
+                NSLog(@"UIApplicationDidBecomeActiveNotification: AVAudioSession.setAtive() failed: %@", errorMessage);
+                return;
+            }
             if (gSuspendCallback)
             {
                 gSuspendCallback(false);

@@ -477,6 +477,18 @@ namespace FMODUnity
             {
                 PreviewStop(args.eventInstance);
             };
+
+            FMODEventPlayable.OnCreatePlayable += (sender, args) =>
+            {
+                FMODEventPlayable playable = sender as FMODEventPlayable;
+                if (playable.Parameters.Length > 0 || playable.Template.ParameterLinks.Count > 0)
+                {
+                    LoadPreviewBanks();
+                    FMOD.Studio.EventDescription eventDescription;
+                    system.getEventByID(playable.EventReference.Guid, out eventDescription);
+                    playable.LinkParameters(eventDescription);
+                }
+            };
 #endif
 
             BuildStatusWatcher.Startup();
