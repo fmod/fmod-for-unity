@@ -52,7 +52,7 @@ namespace FMODUnity
         private class Task
         {
             public int step = int.MaxValue;
-            
+
             private Task()
             {
             }

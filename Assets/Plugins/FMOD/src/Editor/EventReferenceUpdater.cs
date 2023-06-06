@@ -437,7 +437,7 @@ namespace FMODUnity
                 {
                     return null;
                 }
-                
+
                 if (eventReference.Path != editorEventRef.Path)
                 {
                     return Task.UpdateEventReferencePath(subObjectPath, fieldName, eventReference.Path,
@@ -566,7 +566,7 @@ namespace FMODUnity
                 .Where(g => !string.IsNullOrEmpty(g.Key) && g.Count() > 1)
                 .ToArray();
 #pragma warning restore 0618
-            
+
             foreach (IGrouping<string, FieldInfo> group in conflictingGroups)
             {
                 foreach (FieldInfo field in group)

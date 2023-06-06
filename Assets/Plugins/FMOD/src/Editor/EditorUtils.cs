@@ -358,7 +358,14 @@ namespace FMODUnity
             EditorApplication.playModeStateChanged += HandleOnPlayModeChanged;
             EditorApplication.pauseStateChanged += HandleOnPausedModeChanged;
 
-            EditorApplication.update += CallStartupMethodsWhenReady;
+            if (Application.isBatchMode)
+            {
+                BuildStatusWatcher.Startup();
+            }
+            else
+            {
+                EditorApplication.update += CallStartupMethodsWhenReady;
+            }
         }
 
         private static void HandleBeforeAssemblyReload()
@@ -663,7 +670,7 @@ namespace FMODUnity
             {
                 url = string.Format("{0}/{1}/{2}", Prefix, version, section);
             }
-                
+
             Application.OpenURL(url);
         }
 

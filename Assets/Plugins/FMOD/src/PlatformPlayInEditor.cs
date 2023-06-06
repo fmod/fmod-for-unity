@@ -70,7 +70,7 @@ namespace FMODUnity
             if (globalSettings.HasPlatforms)
             {
                 bankFolder = RuntimeUtils.GetCommonPlatformPath(Path.Combine(bankFolder, BuildDirectory));
-            } 
+            }
 
             return bankFolder;
         }

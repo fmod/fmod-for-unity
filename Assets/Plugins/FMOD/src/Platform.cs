@@ -917,7 +917,7 @@ namespace FMODUnity
         }
 
         // The platforms which inherit their property values from this platform.
-        internal List<string> ChildIdentifiers { get { return childIdentifiers; } } 
+        internal List<string> ChildIdentifiers { get { return childIdentifiers; } }
 #endif
 
         // Checks whether this platform inherits from the given platform, so we can avoid creating

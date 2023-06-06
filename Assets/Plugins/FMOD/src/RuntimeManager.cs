@@ -885,7 +885,7 @@ retry:
             LoadBank(asset, loadSamples, asset.name);
         }
 
-        private static void LoadBank(TextAsset asset, bool loadSamples, string bankId) 
+        private static void LoadBank(TextAsset asset, bool loadSamples, string bankId)
         {
             if (Instance.loadedBanks.ContainsKey(bankId))
             {

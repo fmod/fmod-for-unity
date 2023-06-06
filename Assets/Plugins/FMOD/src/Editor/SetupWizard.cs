@@ -96,14 +96,14 @@ namespace FMODUnity
 # Don't ignore images and gizmos used by FMOD in the Unity Editor.
 !/[Aa]ssets/Gizmos/FMOD/*
 !/[Aa]ssets/Editor Default Resources/FMOD/*
-                    
+
 # Ignore the Cache folder since it is updated locally.
 /[Aa]ssets/Plugins/FMOD/Cache/*
-                    
+
 # Ignore bank files in the StreamingAssets folder.
 /[Aa]ssets/StreamingAssets/**/*.bank
 /[Aa]ssets/StreamingAssets/**/*.bank.meta
-                    
+
 # If the source bank files are kept outside of the StreamingAssets folder then these can be ignored.
 # Log files can be ignored.
 fmod_editor.log";
@@ -515,7 +515,7 @@ fmod_editor.log";
 
             EditorGUILayout.LabelField("Choose how to access your FMOD Studio content:", titleLeftStyle);
 
-            EditorGUILayout.Space(); 
+            EditorGUILayout.Space();
             using (new GUILayout.HorizontalScope())
             {
                 using (new GUILayout.VerticalScope("box"))

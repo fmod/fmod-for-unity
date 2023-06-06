@@ -102,7 +102,7 @@ namespace FMODUnity
             }
         }
 
-        protected override void Start() 
+        protected override void Start()
         {
             RuntimeUtils.EnforceLibraryOrder();
             if (Preload)
@@ -221,7 +221,7 @@ namespace FMODUnity
                 PlayInstance();
             }
         }
-        
+
         private void PlayInstance()
         {
             if (!instance.isValid())

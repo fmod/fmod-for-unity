@@ -466,7 +466,7 @@ namespace FMODUnity
 #pragma warning disable 0618 // Suppress the warning about using the obsolete EventRefAttribute class
             string migrationTarget = (attribute as EventRefAttribute).MigrateTo;
 #pragma warning restore 0618
-        
+
             if (string.IsNullOrEmpty(migrationTarget))
             {
                 return new GUIContent("<b>[EventRef]</b> is obsolete - use the <b>EventReference</b> type instead.",

@@ -44,7 +44,7 @@ namespace FMODUnity
         private bool hasBankTargetChanged = false;
 
         private bool expandThreadAffinity;
-		private bool expandCodecChannels;
+        private bool expandCodecChannels;
         private bool expandDynamicPlugins;
         private bool expandStaticPlugins;
 
