@@ -305,7 +305,7 @@ namespace FMODUnity
         private static string pluginBasePath;
 
         public const string BaseFolderGUID = "06ae579381df01a4a87bb149dec89954";
-        public const string PluginBasePathDefault = "Plugins/FMOD";
+        public const string PluginBasePathDefault = "Assets/Plugins/FMOD";
 
         public static string PluginBasePath
         {
@@ -315,16 +315,7 @@ namespace FMODUnity
                 {
                     pluginBasePath = AssetDatabase.GUIDToAssetPath(BaseFolderGUID);
 
-                    if (!string.IsNullOrEmpty(pluginBasePath))
-                    {
-                        const string AssetsFolder = "Assets/";
-
-                        if (pluginBasePath.StartsWith(AssetsFolder))
-                        {
-                            pluginBasePath = pluginBasePath.Substring(AssetsFolder.Length);
-                        }
-                    }
-                    else
+                    if (string.IsNullOrEmpty(pluginBasePath))
                     {
                         pluginBasePath = PluginBasePathDefault;
 

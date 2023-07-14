@@ -932,6 +932,7 @@ namespace FMODUnity
             private static readonly MoveRecord[] looseAssets = {
                 // Release 1.10 layout
                 new MoveRecord() { source = FMODRoot + "/fmodplugins.cpp", destination = "obsolete" },
+                new MoveRecord() { source = "Assets/Editor/FMODMigrationUtil.cs", destination = "obsolete" },
                 new MoveRecord() { source = "Assets/GoogleVR", destination = "addons" },
                 new MoveRecord() { source = "Assets/ResonanceAudio", destination = "addons" },
                 new MoveRecord() { source = "Assets/Resources/FMODStudioSettings.asset", destination = "Resources" },
@@ -978,7 +979,7 @@ namespace FMODUnity
 
                 foreach (Platform.FileInfo info in files)
                 {
-                    string newPath = string.Format("{0}/{1}", AssetsFolder, info.LatestLocation());
+                    string newPath = info.LatestLocation();
 
                     if (!AssetExists(newPath))
                     {
@@ -987,7 +988,7 @@ namespace FMODUnity
 
                         foreach (string path in info.OldLocations())
                         {
-                            oldPath = string.Format("{0}/{1}", AssetsFolder, path);
+                            oldPath = path;
 
                             if (tasks.Any(t => t.source == oldPath))
                             {
@@ -1098,7 +1099,7 @@ namespace FMODUnity
                             string filename = Path.GetFileName(sourcePath);
 
                             AddMoveTask(
-                                sourcePath, $"Assets/{RuntimeUtils.PluginBasePath}/{folder.destination}/{filename}");
+                                sourcePath, $"{RuntimeUtils.PluginBasePath}/{folder.destination}/{filename}");
 
                         }
 
@@ -1112,7 +1113,7 @@ namespace FMODUnity
                 foreach (MoveRecord asset in looseAssets)
                 {
                     string filename = Path.GetFileName(asset.source);
-                    string destinationPath = $"Assets/{RuntimeUtils.PluginBasePath}/{asset.destination}/{filename}";
+                    string destinationPath = $"{RuntimeUtils.PluginBasePath}/{asset.destination}/{filename}";
 
                     if (AssetExists(asset.source) && !AssetExists(destinationPath))
                     {
@@ -1161,7 +1162,7 @@ namespace FMODUnity
             {
                 foreach (string path in FindFileAssets(FMODRoot).Where(p => p.EndsWith(".cs")))
                 {
-                    string destinationPath = $"Assets/{RuntimeUtils.PluginBasePath}/src/{Path.GetFileName(path)}";
+                    string destinationPath = $"{RuntimeUtils.PluginBasePath}/src/{Path.GetFileName(path)}";
 
                     if (!AssetExists(destinationPath))
                     {

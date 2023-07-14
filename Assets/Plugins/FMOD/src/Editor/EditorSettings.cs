@@ -22,7 +22,7 @@ namespace FMODUnity
         // This is used to find the platform that implements the current Unity build target.
         private Dictionary<BuildTarget, Platform> PlatformForBuildTarget = new Dictionary<BuildTarget, Platform>();
 
-        private static string FMODFolderFull => $"Assets/{RuntimeUtils.PluginBasePath}";
+        private static string FMODFolderFull => RuntimeUtils.PluginBasePath;
 
         private const string CacheFolderName = "Cache";
         private static string CacheFolderRelative => $"{RuntimeUtils.PluginBasePath}/{CacheFolderName}";
@@ -521,7 +521,12 @@ namespace FMODUnity
             CleanTemporaryFiles();
 
             BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(target);
+#if UNITY_2021_2_OR_NEWER
+            NamedBuildTarget namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(buildTargetGroup);
+            ScriptingImplementation scriptingBackend = PlayerSettings.GetScriptingBackend(namedBuildTarget);
+#else
             ScriptingImplementation scriptingBackend = PlayerSettings.GetScriptingBackend(buildTargetGroup);
+#endif
 
             if (platform.StaticPlugins.Count > 0)
             {

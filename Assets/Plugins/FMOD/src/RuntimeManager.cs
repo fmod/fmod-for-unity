@@ -57,6 +57,20 @@ namespace FMODUnity
 
         private int loadingBanksRef = 0;
 
+        private static byte[] masterBusPrefix;
+        private static byte[] eventSet3DAttributes;
+        private static byte[] systemGetBus;
+
+        static RuntimeManager()
+        {
+            UTF8Encoding encoding = new UTF8Encoding();
+
+            masterBusPrefix = encoding.GetBytes("bus:/, ");
+            eventSet3DAttributes = encoding.GetBytes("EventInstance::set3DAttributes");
+            systemGetBus = encoding.GetBytes("System::getBus");
+        }
+
+
         public static bool IsMuted
         {
             get
@@ -99,8 +113,15 @@ namespace FMODUnity
                 return FMOD.RESULT.OK;
             }
             if (callbackInfo.instancetype == FMOD.ERRORCALLBACK_INSTANCETYPE.STUDIO_EVENTINSTANCE
-                && callbackInfo.functionname == "EventInstance::set3DAttributes"
+                && callbackInfo.functionname.Equals(eventSet3DAttributes)
                 && callbackInfo.result == FMOD.RESULT.ERR_INVALID_HANDLE)
+            {
+                return FMOD.RESULT.OK;
+            }
+            if (callbackInfo.instancetype == FMOD.ERRORCALLBACK_INSTANCETYPE.STUDIO_SYSTEM
+                && callbackInfo.functionname.Equals(systemGetBus)
+                && callbackInfo.result == FMOD.RESULT.ERR_EVENT_NOTFOUND
+                && callbackInfo.functionparams.StartsWith(masterBusPrefix))
             {
                 return FMOD.RESULT.OK;
             }
@@ -1336,13 +1357,10 @@ retry:
 
         public static void PauseAllEvents(bool paused)
         {
-            if (HaveMasterBanksLoaded)
+            FMOD.Studio.Bus masterBus;
+            if (StudioSystem.getBus("bus:/", out masterBus) == FMOD.RESULT.OK)
             {
-                FMOD.Studio.Bus masterBus;
-                if (StudioSystem.getBus("bus:/", out masterBus) == FMOD.RESULT.OK)
-                {
-                    masterBus.setPaused(paused);
-                }
+                masterBus.setPaused(paused);
             }
         }
 
@@ -1355,17 +1373,14 @@ retry:
 
         private static void ApplyMuteState()
         {
-            if (HaveMasterBanksLoaded)
+            FMOD.Studio.Bus masterBus;
+            if (StudioSystem.getBus("bus:/", out masterBus) == FMOD.RESULT.OK)
             {
-                FMOD.Studio.Bus masterBus;
-                if (StudioSystem.getBus("bus:/", out masterBus) == FMOD.RESULT.OK)
-                {
-                    #if UNITY_EDITOR
-                    masterBus.setMute(Instance.isMuted || EditorUtility.audioMasterMute);
-                    #else
-                    masterBus.setMute(Instance.isMuted);
-                    #endif
-                }
+#if UNITY_EDITOR
+                masterBus.setMute(Instance.isMuted || EditorUtility.audioMasterMute);
+#else
+            masterBus.setMute(Instance.isMuted);
+#endif
             }
         }
 

@@ -19,7 +19,7 @@ namespace FMOD
     */
     public partial class VERSION
     {
-        public const int    number = 0x00020215;
+        public const int    number = 0x00020216;
 #if !UNITY_2019_4_OR_NEWER
         public const string dll    = "fmod";
 #endif
@@ -263,7 +263,7 @@ namespace FMOD
 
         MAX,
     }
-     
+
     public enum SPEAKER : int
     {
         NONE = -1,
@@ -513,7 +513,7 @@ namespace FMOD
         public float    geometry;               /* Geometry engine CPU usage. */
         public float    update;                 /* System::update CPU usage. */
         public float    convolution1;           /* Convolution reverb processing thread #1 CPU usage */
-        public float    convolution2;           /* Convolution reverb processing thread #2 CPU usage */ 
+        public float    convolution2;           /* Convolution reverb processing thread #2 CPU usage */
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -860,7 +860,7 @@ namespace FMOD
         VERY_HIGH           = PLATFORM_MIN - 5,
         EXTREME             = PLATFORM_MIN - 6,
         CRITICAL            = PLATFORM_MIN - 7,
-        
+
         /* Thread defaults */
         MIXER               = EXTREME,
         FEEDER              = CRITICAL,
@@ -904,7 +904,7 @@ namespace FMOD
         GROUP_A             = 0x4000000000000001,
         GROUP_B             = 0x4000000000000002,
         GROUP_C             = 0x4000000000000003,
-        
+
         /* Thread defaults */
         MIXER               = GROUP_A,
         FEEDER              = GROUP_C,
@@ -919,7 +919,7 @@ namespace FMOD
         STUDIO_LOAD_SAMPLE  = GROUP_C,
         CONVOLUTION1        = GROUP_C,
         CONVOLUTION2        = GROUP_C,
-                
+
         /* Core mask, valid up to 1 << 61 */
         CORE_ALL            = 0,
         CORE_0              = 1 << 0,
@@ -1832,7 +1832,7 @@ namespace FMOD
         public RESULT getOpenState(out OPENSTATE openstate, out uint percentbuffered, out bool starving, out bool diskbusy)
         {
             return FMOD5_Sound_GetOpenState(this.handle, out openstate, out percentbuffered, out starving, out diskbusy);
-        } 
+        }
         public RESULT readData(byte[] buffer)
         {
             return FMOD5_Sound_ReadData(this.handle, buffer, (uint)buffer.Length, IntPtr.Zero);
@@ -3878,6 +3878,47 @@ namespace FMOD
             {
                 return encoder.stringFromNative(fstring.nativeUtf8Ptr);
             }
+        }
+
+        public bool StartsWith(byte[] prefix)
+        {
+            if (nativeUtf8Ptr == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < prefix.Length; i++)
+            {
+                if (Marshal.ReadByte(nativeUtf8Ptr, i) != prefix[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool Equals(byte[] comparison)
+        {
+            if (nativeUtf8Ptr == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < comparison.Length; i++)
+            {
+                if (Marshal.ReadByte(nativeUtf8Ptr, i) != comparison[i])
+                {
+                    return false;
+                }
+            }
+
+            if (Marshal.ReadByte(nativeUtf8Ptr, comparison.Length) != 0)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 
