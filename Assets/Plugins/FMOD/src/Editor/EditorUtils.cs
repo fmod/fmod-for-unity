@@ -739,15 +739,25 @@ namespace FMODUnity
             foreach (EditorParamRef param in eventRef.Parameters)
             {
                 FMOD.Studio.PARAMETER_DESCRIPTION paramDesc;
-                CheckResult(eventDescription.getParameterDescriptionByName(param.Name, out paramDesc));
-                param.ID = paramDesc.id;
                 if (param.IsGlobal)
                 {
-                    CheckResult(System.setParameterByID(param.ID, previewParamValues[param.Name]));
+                    CheckResult(System.getParameterDescriptionByName(param.Name, out paramDesc));
                 }
                 else
                 {
-                    CheckResult(eventInstance.setParameterByID(param.ID, previewParamValues[param.Name]));
+                    CheckResult(eventDescription.getParameterDescriptionByName(param.Name, out paramDesc));
+                }
+
+                float value = previewParamValues.ContainsKey(param.Name) ? previewParamValues[param.Name] : param.Default;
+                param.ID = paramDesc.id;
+
+                if (param.IsGlobal)
+                {
+                    CheckResult(System.setParameterByID(param.ID, value));
+                }
+                else
+                {
+                    CheckResult(eventInstance.setParameterByID(param.ID, value));
                 }
             }
 

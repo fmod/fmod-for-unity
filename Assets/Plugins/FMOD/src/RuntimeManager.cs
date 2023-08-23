@@ -202,11 +202,6 @@ namespace FMODUnity
                         }
                         throw initException;
                     }
-
-                    if (initResult != FMOD.RESULT.OK)
-                    {
-                        throw new SystemNotInitializedException(initResult, "Output forced to NO SOUND mode");
-                    }
                 }
                 return instance;
             }
