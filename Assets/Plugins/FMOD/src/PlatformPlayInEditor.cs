@@ -78,7 +78,9 @@ namespace FMODUnity
 #if UNITY_EDITOR
         internal override string GetPluginPath(string pluginName)
         {
-            string platformsFolder = $"{Application.dataPath}/{RuntimeUtils.PluginBasePath}/platforms";
+            // UNITY_EDITOR Application.dataPath always ends in "/Assets"
+            // Remove from end of dataPath using Path.GetDirectoryName() as PluginBasePath already contains it
+            string platformsFolder = $"{Path.GetDirectoryName(Application.dataPath)}/{RuntimeUtils.PluginBasePath}/platforms";
 
 #if UNITY_EDITOR_WIN && UNITY_EDITOR_64
             return string.Format("{0}/win/lib/x86_64/{1}.dll", platformsFolder, pluginName);
