@@ -62,10 +62,12 @@ namespace FMODUnity
         {
             string resourcesPath = $"{FMODFolderFull}/Resources";
 
-            if (!Directory.Exists(resourcesPath))
+            bool inPackagesFolder = resourcesPath.StartsWith("Packages/");
+            if (inPackagesFolder)
             {
-                AssetDatabase.CreateFolder(FMODFolderFull, "Resources");
+                resourcesPath = "Assets/Plugins/FMOD/Resources";
             }
+            EditorUtils.EnsureFolderExists(resourcesPath);
             AssetDatabase.CreateAsset(RuntimeSettings, $"{resourcesPath}/{assetName}.asset");
 
             AddPlatformsToAsset();
@@ -546,7 +548,7 @@ namespace FMODUnity
                     // Generate registration code and import it so it's included in the build.
                     RuntimeUtils.DebugLogFormat("FMOD: Generating static plugin registration code in {0}", RegisterStaticPluginsAssetPathFull);
 
-                    string filePath = Application.dataPath + "/" + RegisterStaticPluginsAssetPathRelative;
+                    string filePath = RegisterStaticPluginsAssetPathRelative.Replace("Assets", Application.dataPath);
                     CodeGeneration.GenerateStaticPluginRegistration(filePath, platform, reportError);
                     AssetDatabase.ImportAsset(RegisterStaticPluginsAssetPathFull);
                 }

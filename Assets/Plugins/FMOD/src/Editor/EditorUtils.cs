@@ -1255,6 +1255,18 @@ namespace FMODUnity
                 EditorApplication.UnlockReloadAssemblies();
             }
         }
+
+        public static string WritableAssetPath(string cacheAssetName)
+        {
+            if (RuntimeUtils.PluginBasePath.StartsWith("Assets/"))
+            {
+                return $"{RuntimeUtils.PluginBasePath}/Cache/Editor/{cacheAssetName}.asset";
+            }
+            else
+            {
+                return $"Assets/Plugins/FMOD/Cache/Editor/{cacheAssetName}.asset";
+            }
+        }
     }
 
     public class StagingSystem

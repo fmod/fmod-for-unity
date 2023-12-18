@@ -596,5 +596,19 @@ namespace FMODUnity
                 Debug.LogException(e);
             }
         }
+
+#if UNITY_EDITOR
+        public static string WritableAssetPath(string subPath)
+        {
+            if (RuntimeUtils.PluginBasePath.StartsWith("Assets/"))
+            {
+                return $"{RuntimeUtils.PluginBasePath}/{subPath}.asset";
+            }
+            else
+            {
+                return $"Assets/Plugins/FMOD/{subPath}.asset";
+            }
+        }
+#endif
     }
 }

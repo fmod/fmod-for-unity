@@ -16,6 +16,8 @@ namespace FMODUnity
     {
         private static readonly string[] ToggleDisplay = new string[] { "Disabled", "Enabled", "Development Build Only",  };
 
+        private static readonly string[] OverlayLocations = new string[] { "TopLeft", "TopCenter", "TopRight", "BottomLeft", "BottomCenter", "BottomRight", "Center", "VR", };
+
         private static readonly string[] FrequencyDisplay = new string[] {
             "Platform Default",
             "22.05 kHz",
@@ -374,6 +376,28 @@ namespace FMODUnity
             if (EditorGUI.EndChangeCheck())
             {
                 property.Set(platform, (TriStateBool)next);
+            }
+        }
+
+        private void DisplayPositionRect(string label, Platform platform, Platform.PropertyAccessor<ScreenPosition> property)
+        {
+            Rect rect = DrawPlatformPropertyLabel(label, platform, property);
+            EditorGUI.BeginChangeCheck();
+            int next = DrawPopup(rect, (int)property.Get(platform), OverlayLocations);
+            if (EditorGUI.EndChangeCheck())
+            {
+                property.Set(platform, (ScreenPosition)next);
+            }
+        }
+
+        private void DisplayDebugFontSelection(string label, Platform platform, Platform.PropertyAccessor<int> property)
+        {
+            Rect rect = DrawPlatformPropertyLabel(label, platform, property);
+            EditorGUI.BeginChangeCheck();
+            int next = EditorGUI.IntField(rect, property.Get(platform));
+            if (EditorGUI.EndChangeCheck())
+            {
+                property.Set(platform, Mathf.Min(next, 20));
             }
         }
 
@@ -1096,6 +1120,12 @@ namespace FMODUnity
                 }
 
                 DisplayTriStateBool("Debug Overlay", platform, Platform.PropertyAccessors.Overlay);
+                if (platform.IsOverlayEnabled)
+                {
+                    DisplayPositionRect("Debug Location", platform, Platform.PropertyAccessors.OverlayPosition);
+                    DisplayDebugFontSelection("Font size", platform, Platform.PropertyAccessors.OverlayFontSize);
+                }
+
                 DisplayOutputMode("Output Mode", platform);
                 DisplaySampleRate("Sample Rate", platform);
 

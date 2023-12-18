@@ -51,6 +51,18 @@ namespace FMODUnity
         Development,
     }
 
+    public enum ScreenPosition
+    {
+        TopLeft,
+        TopCenter,
+        TopRight,
+        BottomLeft,
+        BottomCenter,
+        BottomRight,
+        Center,
+        VR,
+    }
+
     public interface IEditorSettings
     {
 #if UNITY_EDITOR
@@ -287,6 +299,16 @@ namespace FMODUnity
                         // editorSettings is populated via the static constructor of FMODUnity.EditorSettings when in the Unity editor.
                         RuntimeUtils.DebugLogError("[FMOD] Attempted to instantiate Settings before EditorSettings was populated. " +
                             "Ensure that Settings.Instance is not being called from an InitializeOnLoad method or class.");
+                    }
+#endif
+                }
+                else
+                {
+#if UNITY_EDITOR
+                    if (AssetDatabase.GetAssetPath(instance).StartsWith("Packages"))
+                    {
+                        RuntimeUtils.DebugLogError($"[FMOD] {SettingsAssetName} initialization failed. {SettingsAssetName} located in \"Packages\" folder. Please delete {SettingsAssetName} in file explorer.");
+                        instance = CreateInstance<Settings>();
                     }
 #endif
                 }
