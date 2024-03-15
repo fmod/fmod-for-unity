@@ -55,21 +55,7 @@ namespace FMODUnity
 
         protected override IEnumerable<FileRecord> GetBinaryFiles(BuildTarget buildTarget, bool allVariants, string suffix)
         {
-            #if UNITY_2021_2_OR_NEWER
-            bool useWASM = true;
-            #else
-            bool useWASM = false;
-            #endif
-
-            if (allVariants || useWASM)
-            {
-                yield return new FileRecord(string.Format("2.0.19/libfmodstudio{0}.a", suffix));
-            }
-
-            if (allVariants || !useWASM)
-            {
-                yield return new FileRecord(string.Format("libfmodstudiounityplugin{0}.bc", suffix));
-            }
+            yield return new FileRecord(string.Format("2.0.19/libfmodstudio{0}.a", suffix));
         }
 
         internal override bool IsFMODStaticallyLinked { get { return true; } }
@@ -77,11 +63,7 @@ namespace FMODUnity
 
         internal override string GetPluginPath(string pluginName)
         {
-            #if UNITY_2021_2_OR_NEWER
             return string.Format("{0}/{1}.a", GetPluginBasePath(), pluginName);
-            #else
-            return string.Format("{0}/{1}.bc", GetPluginBasePath(), pluginName);
-            #endif
         }
 #if UNITY_EDITOR
         internal override OutputType[] ValidOutputTypes

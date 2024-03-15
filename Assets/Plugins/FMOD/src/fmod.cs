@@ -3,7 +3,7 @@
 /* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2024.                               */
 /*                                                                                          */
 /* For more detail visit:                                                                   */
-/* https://fmod.com/docs/2.02/api/core-api.html                                             */
+/* https://fmod.com/docs/2.03/api/core-api.html                                             */
 /* ======================================================================================== */
 
 using System;
@@ -19,8 +19,8 @@ namespace FMOD
     */
     public partial class VERSION
     {
-        public const int    number = 0x00020221;
-#if !UNITY_2019_4_OR_NEWER
+        public const int    number = 0x00020300;
+#if !UNITY_2021_3_OR_NEWER
         public const string dll    = "fmod";
 #endif
     }
@@ -208,6 +208,8 @@ namespace FMOD
         PERSONAL,
         VIBRATION,
         AUX,
+        PASSTHROUGH,
+        VR_VIBRATION,
 
         MAX
     }
@@ -536,15 +538,14 @@ namespace FMOD
         PREMIX                 = 0x00000020,
         POSTMIX                = 0x00000040,
         ERROR                  = 0x00000080,
-        MIDMIX                 = 0x00000100,
-        THREADDESTROYED        = 0x00000200,
-        PREUPDATE              = 0x00000400,
-        POSTUPDATE             = 0x00000800,
-        RECORDLISTCHANGED      = 0x00001000,
-        BUFFEREDNOMIX          = 0x00002000,
-        DEVICEREINITIALIZE     = 0x00004000,
-        OUTPUTUNDERRUN         = 0x00008000,
-        RECORDPOSITIONCHANGED  = 0x00010000,
+        THREADDESTROYED        = 0x00000100,
+        PREUPDATE              = 0x00000200,
+        POSTUPDATE             = 0x00000400,
+        RECORDLISTCHANGED      = 0x00000800,
+        BUFFEREDNOMIX          = 0x00001000,
+        DEVICEREINITIALIZE     = 0x00002000,
+        OUTPUTUNDERRUN         = 0x00004000,
+        RECORDPOSITIONCHANGED  = 0x00008000,
         ALL                    = 0xFFFFFFFF,
     }
 
@@ -654,8 +655,7 @@ namespace FMOD
 
     public struct PORT_INDEX
     {
-        public const ulong NONE               = 0xFFFFFFFFFFFFFFFF;
-        public const ulong FLAG_VR_CONTROLLER = 0x1000000000000000;
+        public const ulong NONE = 0xFFFFFFFFFFFFFFFF;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -823,7 +823,7 @@ namespace FMOD
         public int                 maxVorbisCodecs;
         public int                 maxAT9Codecs;
         public int                 maxFADPCMCodecs;
-        public int                 maxPCMCodecs;
+        public int                 maxOpusCodecs;
         public int                 ASIONumChannels;
         public IntPtr              ASIOChannelList;
         public IntPtr              ASIOSpeakerList;
@@ -837,7 +837,6 @@ namespace FMOD
         public DSP_RESAMPLER       resamplerMethod;
         public uint                randomSeed;
         public int                 maxConvolutionThreads;
-        public int                 maxOpusCodecs;
         public int                 maxSpatialObjects;
     }
 
@@ -1279,7 +1278,12 @@ namespace FMOD
         // System information functions.
         public RESULT getVersion(out uint version)
         {
-            return FMOD5_System_GetVersion(this.handle, out version);
+            uint buildnumber;
+            return getVersion(out version, out buildnumber);
+        }
+        public RESULT getVersion(out uint version, out uint buildnumber)
+        {
+            return FMOD5_System_GetVersion(this.handle, out version, out buildnumber);
         }
         public RESULT getOutputHandle(out IntPtr handle)
         {
@@ -1630,7 +1634,7 @@ namespace FMOD
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_System_GetSpeakerModeChannels    (IntPtr system, SPEAKERMODE mode, out int channels);
         [DllImport(VERSION.dll)]
-        private static extern RESULT FMOD5_System_GetVersion                (IntPtr system, out uint version);
+        private static extern RESULT FMOD5_System_GetVersion                (IntPtr system, out uint version, out uint buildnumber);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_System_GetOutputHandle           (IntPtr system, out IntPtr handle);
         [DllImport(VERSION.dll)]
@@ -1843,11 +1847,6 @@ namespace FMOD
         {
             return FMOD5_Sound_ReadData(this.handle, buffer, (uint)buffer.Length, out read);
         }
-        [Obsolete("Use Sound.readData(byte[], out uint) or Sound.readData(byte[]) instead.")]
-        public RESULT readData(IntPtr buffer, uint length, out uint read)
-        {
-            return FMOD5_Sound_ReadData(this.handle, buffer, length, out read);
-        }
         public RESULT seekData(uint pcm)
         {
             return FMOD5_Sound_SeekData(this.handle, pcm);
@@ -2004,8 +2003,6 @@ namespace FMOD
         private static extern RESULT FMOD5_Sound_ReadData                (IntPtr sound, byte[] buffer, uint length, IntPtr zero);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_Sound_ReadData                (IntPtr sound, byte[] buffer, uint length, out uint read);
-        [DllImport(VERSION.dll)]
-        private static extern RESULT FMOD5_Sound_ReadData                (IntPtr sound, IntPtr buffer, uint length, out uint read);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_Sound_SeekData                (IntPtr sound, uint pcm);
         [DllImport(VERSION.dll)]

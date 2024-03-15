@@ -681,12 +681,14 @@ namespace FMODUnity
             CheckResult(System.getCoreSystem(out lowlevel));
 
             uint version;
-            CheckResult(lowlevel.getVersion(out version));
+            uint buildNumber;
+            CheckResult(lowlevel.getVersion(out version, out buildNumber));
 
             string text = string.Format(
-                "Version: {0}\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2024 \n\n" +
+                "Version: {0}\nBuild Number: {1}\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2024 \n\n" +
                 "See LICENSE.TXT for additional license information.",
-                VersionString(version));
+                VersionString(version),
+                buildNumber);
 
             EditorUtility.DisplayDialog("FMOD Studio Unity Integration", text, "OK");
         }

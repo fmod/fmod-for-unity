@@ -1151,12 +1151,8 @@ namespace FMODUnity
 
                 BuildTargetGroup buildTargetGroup =
                 BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
-#if UNITY_2021_2_OR_NEWER
                 NamedBuildTarget namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(buildTargetGroup);
                 ScriptingImplementation scriptingBackend = PlayerSettings.GetScriptingBackend(namedBuildTarget);
-#else
-                ScriptingImplementation scriptingBackend = PlayerSettings.GetScriptingBackend(buildTargetGroup);
-#endif
 
                 if (scriptingBackend != ScriptingImplementation.IL2CPP)
                 {
