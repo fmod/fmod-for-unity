@@ -317,6 +317,11 @@ namespace FMODUnity
             }
         }
 
+        internal static bool IsInitialized()
+        {
+            return !(instance == null || isInitializing);
+        }
+
         internal static IEditorSettings EditorSettings
         {
             get

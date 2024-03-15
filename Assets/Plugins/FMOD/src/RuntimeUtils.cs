@@ -543,7 +543,7 @@ namespace FMODUnity
 
         public static void DebugLog(string message)
         {
-            if (Settings.Instance == null || Settings.Instance.LoggingLevel == FMOD.DEBUG_FLAGS.LOG)
+            if (!Settings.IsInitialized() || Settings.Instance.LoggingLevel == FMOD.DEBUG_FLAGS.LOG)
             {
                 Debug.Log(message);
             }
@@ -551,7 +551,7 @@ namespace FMODUnity
 
         public static void DebugLogFormat(string format, params object[] args)
         {
-            if (Settings.Instance == null || Settings.Instance.LoggingLevel == FMOD.DEBUG_FLAGS.LOG)
+            if (!Settings.IsInitialized() || Settings.Instance.LoggingLevel == FMOD.DEBUG_FLAGS.LOG)
             {
                 Debug.LogFormat(format, args);
             }
@@ -559,7 +559,7 @@ namespace FMODUnity
 
         public static void DebugLogWarning(string message)
         {
-            if (Settings.Instance == null || Settings.Instance.LoggingLevel >= FMOD.DEBUG_FLAGS.WARNING)
+            if (!Settings.IsInitialized() || Settings.Instance.LoggingLevel >= FMOD.DEBUG_FLAGS.WARNING)
             {
                 Debug.LogWarning(message);
             }
@@ -567,7 +567,7 @@ namespace FMODUnity
 
         public static void DebugLogWarningFormat(string format, params object[] args)
         {
-            if (Settings.Instance == null || Settings.Instance.LoggingLevel >= FMOD.DEBUG_FLAGS.WARNING)
+            if (!Settings.IsInitialized() || Settings.Instance.LoggingLevel >= FMOD.DEBUG_FLAGS.WARNING)
             {
                 Debug.LogWarningFormat(format, args);
             }
@@ -575,7 +575,7 @@ namespace FMODUnity
 
         public static void DebugLogError(string message)
         {
-            if (Settings.Instance == null || Settings.Instance.LoggingLevel >= FMOD.DEBUG_FLAGS.ERROR)
+            if (!Settings.IsInitialized() || Settings.Instance.LoggingLevel >= FMOD.DEBUG_FLAGS.ERROR)
             {
                 Debug.LogError(message);
             }
@@ -583,7 +583,7 @@ namespace FMODUnity
 
         public static void DebugLogErrorFormat(string format, params object[] args)
         {
-            if (Settings.Instance == null || Settings.Instance.LoggingLevel >= FMOD.DEBUG_FLAGS.ERROR)
+            if (!Settings.IsInitialized() || Settings.Instance.LoggingLevel >= FMOD.DEBUG_FLAGS.ERROR)
             {
                 Debug.LogErrorFormat(format, args);
             }
@@ -591,7 +591,7 @@ namespace FMODUnity
 
         public static void DebugLogException(Exception e)
         {
-            if (Settings.Instance == null || Settings.Instance.LoggingLevel >= FMOD.DEBUG_FLAGS.ERROR)
+            if (!Settings.IsInitialized() || Settings.Instance.LoggingLevel >= FMOD.DEBUG_FLAGS.ERROR)
             {
                 Debug.LogException(e);
             }
