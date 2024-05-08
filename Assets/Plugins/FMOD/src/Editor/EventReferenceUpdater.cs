@@ -682,7 +682,7 @@ namespace FMODUnity
                 {
                     object value = subObjectField.GetValue(target);
 
-                    if (value != null && !parents.Contains(value))
+                    if (value != null && (subObjectField.FieldType.IsValueType || !parents.Contains(value)))
                     {
                         if (value is System.Collections.IEnumerable)
                         {

@@ -661,6 +661,11 @@ namespace FMODUnity
 
         private void OnGUI()
         {
+            if (!IsOpen)
+            {
+                return;
+            }
+
             AffirmResources();
 
             if (InChooserMode)
@@ -1614,20 +1619,25 @@ namespace FMODUnity
             searchField = new SearchField();
             treeView = new TreeView(treeViewState);
 
-            ReadEventCache();
-
-            searchField.downOrUpArrowKeyPressed += treeView.SetFocus;
-
-            SceneView.duringSceneGui += SceneUpdate;
-
-            EditorApplication.hierarchyWindowItemOnGUI += HierarchyUpdate;
-
-            if (isStandaloneWindow)
+			// Delay accessing the event cache as this will cause an error if window is opened on Unity start up.
+            EditorApplication.delayCall += () =>
             {
-                EditorUtils.LoadPreviewBanks();
-            }
+                ReadEventCache();
 
-            IsOpen = true;
+                searchField.downOrUpArrowKeyPressed += treeView.SetFocus;
+
+                SceneView.duringSceneGui += SceneUpdate;
+
+                EditorApplication.hierarchyWindowItemOnGUI += HierarchyUpdate;
+
+                if (isStandaloneWindow)
+                {
+                    EditorUtils.LoadPreviewBanks();
+                }
+
+                IsOpen = true;
+                Repaint();
+            };
         }
 
         public void OnDestroy()

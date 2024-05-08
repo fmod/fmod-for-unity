@@ -72,7 +72,9 @@ namespace FMODUnity
 
         protected override IEnumerable<string> GetObsoleteFiles()
         {
+            yield return "lib/linux/x86/libfmodstudio.so";
             yield return "platforms/linux/lib/x86/libfmodstudio.so";
+            yield return "lib/linux/x86/libfmodstudioL.so";
             yield return "platforms/linux/lib/x86/libfmodstudioL.so";
         }
 #endif

@@ -272,7 +272,7 @@ namespace FMODUnity
                     case FileLayout.Release_1_10:
                         return info.path_1_10;
                     case FileLayout.Release_2_0:
-                        return string.Format("Plugins/FMOD/lib/{0}", info.baseName);
+                        return string.Format("Assets/Plugins/FMOD/lib/{0}", info.baseName);
                     case FileLayout.Release_2_1:
                     case FileLayout.Release_2_2:
                         return $"{RuntimeUtils.PluginBasePath}/platforms/{info.baseName}/lib";
@@ -421,6 +421,7 @@ namespace FMODUnity
             foreach (string path in GetObsoleteFiles())
             {
                 yield return $"{RuntimeUtils.PluginBasePath}/{path}";
+                yield return $"{RuntimeUtils.PluginBasePathDefault}/{path}";
             }
         }
 

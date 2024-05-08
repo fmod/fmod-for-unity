@@ -1351,9 +1351,10 @@ namespace FMODUnity
             GUIContent text = new GUIContent("FMOD Settings");
 
             Vector2 textSize = mainHeaderStyle.CalcSize(text);
+
             Vector2 iconSize = GUI.skin.label.CalcSize(mainHeaderIcon);
 
-            Rect rect = EditorGUILayout.GetControlRect(false, Math.Max(textSize.y, iconSize.y));
+            Rect rect = EditorGUILayout.GetControlRect(false, (Math.Max(textSize.y, iconSize.y)) * 1.75f);
 
             Rect iconRect = rect;
             iconRect.width = iconSize.x;
