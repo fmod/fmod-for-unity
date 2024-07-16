@@ -943,6 +943,7 @@ namespace FMODUnity
 
                 // Release 2.1 layout
                 new MoveRecord() { source = FMODRoot + "/src/Runtime/fmod_static_plugin_support.h", destination = "obsolete" },
+                new MoveRecord() { source = FMODRoot + "/src/Runtime/CodeGeneration.cs", destination = "src/Editor" },
 
                 // Release 2.2 layout
                 new MoveRecord() { source = FMODRoot + "/src/fmodplugins.cpp", destination = "obsolete" },

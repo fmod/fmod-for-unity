@@ -396,7 +396,11 @@ namespace FMODUnity
 
             if (rigidbody)
             {
+#if UNITY_6000_0_OR_NEWER
+                attributes.velocity = rigidbody.linearVelocity.ToFMODVector();
+#else
                 attributes.velocity = rigidbody.velocity.ToFMODVector();
+#endif
             }
 
             return attributes;
@@ -408,7 +412,11 @@ namespace FMODUnity
 
             if (rigidbody)
             {
+#if UNITY_6000_0_OR_NEWER
+                attributes.velocity = rigidbody.linearVelocity.ToFMODVector();
+#else
                 attributes.velocity = rigidbody.velocity.ToFMODVector();
+#endif
             }
 
             return attributes;
@@ -525,14 +533,6 @@ namespace FMODUnity
 
         public static void EnforceLibraryOrder()
         {
-#if UNITY_ANDROID && !UNITY_EDITOR
-
-            AndroidJavaClass jSystem = new AndroidJavaClass("java.lang.System");
-            jSystem.CallStatic("loadLibrary", FMOD.VERSION.dll);
-            jSystem.CallStatic("loadLibrary", FMOD.Studio.STUDIO_VERSION.dll);
-
-#endif
-
             // Call a function in fmod.dll to make sure it's loaded before fmodstudio.dll
             int temp1, temp2;
             FMOD.Memory.GetStats(out temp1, out temp2);

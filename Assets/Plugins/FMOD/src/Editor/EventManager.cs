@@ -1051,9 +1051,13 @@ namespace FMODUnity
         private static void BuildTargetChanged()
         {
             RefreshBanks();
-            #if UNITY_ANDROID
+#if UNITY_ANDROID
+#if UNITY_2023_1_OR_NEWER
+            Settings.Instance.AndroidUseOBB = PlayerSettings.Android.splitApplicationBinary;
+#else
             Settings.Instance.AndroidUseOBB = PlayerSettings.Android.useAPKExpansionFiles;
-            #endif
+#endif //UNITY_2023_1_OR_NEWER
+#endif //UNITY_ANDROID
         }
 
         private static void OnCacheChange()

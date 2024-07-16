@@ -445,7 +445,7 @@ retry:
             public Rigidbody rigidBody;
             #endif
             public Vector3 lastFramePosition;
-            public bool allowNonRigidBodyDoppler;
+            public bool nonRigidbodyVelocity;
             #if UNITY_PHYSICS2D_EXIST
             public Rigidbody2D rigidBody2D;
             #endif
@@ -496,7 +496,7 @@ retry:
                     else
                     #endif
                     {
-                        if (!attachedInstances[i].allowNonRigidBodyDoppler)
+                        if (!attachedInstances[i].nonRigidbodyVelocity)
                         {
                             attachedInstances[i].instance.set3DAttributes(RuntimeUtils.To3DAttributes(attachedInstances[i].transform));
                         }
@@ -579,13 +579,13 @@ retry:
             return attachedInstance;
         }
 
-        public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, Transform transform, bool allowNonRigidBodyDoppler = false)
+        public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, Transform transform, bool nonRigidbodyVelocity = false)
         {
             AttachedInstance attachedInstance = FindOrAddAttachedInstance(instance, transform, RuntimeUtils.To3DAttributes(transform));
 
-            if (allowNonRigidBodyDoppler)
+            if (nonRigidbodyVelocity)
             {
-                attachedInstance.allowNonRigidBodyDoppler = allowNonRigidBodyDoppler;
+                attachedInstance.nonRigidbodyVelocity = nonRigidbodyVelocity;
                 attachedInstance.lastFramePosition = transform.position;
             }
         }

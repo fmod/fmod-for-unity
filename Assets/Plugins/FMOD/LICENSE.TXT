@@ -1,42 +1,81 @@
-﻿                    FMOD END USER LICENCE AGREEMENT
+                    FMOD END USER LICENCE AGREEMENT
                     ===============================
 
-This End User Licence Agreement (EULA) is a legal agreement between you and
-Firelight Technologies Pty Ltd (ACN 099 182 448) (us or we) and governs your use
-of FMOD Studio Authoring Tool and FMOD Studio Engine, together the Software.
+This End User Licence Agreement (EULA) is a legal agreement between you and 
+Firelight Technologies Pty Ltd (ACN 099 182 448) (us or we) and governs your
+use of FMOD Studio and FMOD Engine, together the Software.
 
 1. GRANT OF LICENCE
 
-1.1 FMOD Studio Authoring Tool
+1.1 FMOD Studio
 
-This EULA grants you the right to use FMOD Studio Authoring Tool for all use,
-including Commercial use, subject to the following:
+This EULA grants you the right to use FMOD Studio, being the desktop 
+application for adaptive audio content creation, for all use, including
+Commercial use, subject to the following:
 
-    i. FMOD Studio Authoring Tool is used to create content for use with the
-    FMOD Studio Engine only;
+    i.  FMOD Studio is used to create content for use with the FMOD Engine 
+        only;
+    ii. FMOD Studio is not redistributed in any form.
 
-    ii. FMOD Studio Authoring Tool is not redistributed in any form.
+1.2 FMOD Engine
 
-1.2 FMOD Studio Engine
-
-This EULA grants you the right to use FMOD Studio Engine, for personal
-(hobbyist), educational (students and teachers) or Non-Commercial use only,
+This EULA grants you the right to use the FMOD Engine, 'FMOD Ex' or 'FMOD 3' 
+being the run-time engines for adaptive audio playback, without payment, for
+personal (hobbyist), educational (students and teachers) or Non-Commercial use,
 subject to the following:
 
-    i. FMOD Studio Engine is integrated and redistributed in a software
-    application (Product) only;
+    i.   FMOD Engine is integrated and redistributed in a software application
+         (Product) only;
+    ii.  FMOD Engine is not distributed as part of a game engine or tool set;
+    iii. FMOD Engine is not used in any Commercial enterprise or for any
+         Commercial production or subcontracting, except for the purposes of
+         Evaluation or Development of a Commercial Product;
+    iv.  Non-Commercial use does not involve any form of monetisation,
+         sponsorship or promotion;
+    v.   Product includes attribution in accordance with Clause 3.
 
-    ii. FMOD Studio Engine is not distributed as part of a game engine or tool
-    set;
+This EULA grants you the right to use FMOD Engine, for limited Commercial
+use, subject to the following:
 
-    iii. FMOD Studio Engine is not used in any Commercial enterprise or for any
-    Commercial production or subcontracting, except for the purposes of
-    Evaluation or Development of a Commercial Product;
+    i.   Development budget of the project is less than $600k USD (Refer to
+         https://www.fmod.com/licensing#licensing-faq) for information);
+    ii.  Total gross revenue / funding per year for the developer, before
+         expenses, is less than $200k USD (Refer to 
+         https://www.fmod.com/licensing#licensing-faq for information);
+    iii. FMOD Engine is integrated and redistributed in a game application
+         (Product) only;
+    iv.  FMOD Engine is not distributed as part of a game engine or tool set;
+    v.   FMOD Engine is not distributed as part of a Product with the intent
+         to be commercially exploited by another business or institution;
+    vi.  Project is registered in your profile page at 
+         https://www.fmod.com/profile#projects;
+    vii. Product includes attribution in accordance with Clause 3.
 
-    iv. Non-Commercial use does not involve any form of monetisation,
-    sponsorship or promotion;
+This EULA does not grant you the right to use 'FMOD Ex' or 'FMOD 3', for
+Commercial use. A custom commercial license must be acquired from Firelight 
+Technologies by contacting sales@fmod.com.
 
-    v. Product includes attribution in accordance with Clause 3.
+1.3 FMOD SDK
+
+This EULA grants you the right to use the FMOD SDK, interfacing either 'FMOD
+Engine', 'FMOD Ex' or 'FMOD 3', comprising the programming interface 
+specification, documentation and examples subject to the following:
+
+    i.   FMOD SDK is used to develop a software application using the FMOD
+         Engine;
+    ii.  FMOD SDK is used to develop an external DSP, Output or Codec plugin;
+    iii. FMOD SDK files are not be distributed with the exception of the FMOD 
+         Engine run-time libraries (.DLL, .SO for example).
+
+1.4 FMOD example code and media
+
+This EULA grants you the right to use FMOD example code, being all or snippets 
+of source code files located in the FMOD API examples folder and scripting 
+examples in the documentation, for all use, including Commercial use, subject
+to the following:
+
+    i.   Media files included in FMOD examples, including wav, ogg, mp3, fsb
+         and bank files, are not to be redistributed.
 
 2.OTHER USE
 
@@ -46,9 +85,9 @@ information.
 
 3. CREDITS
 
-All Products require an in game credit line which must include the words “FMOD
-Studio” and “Firelight Technologies Pty Ltd”. Refer to www.fmod.com/attribution
-for examples.
+All Products require an in game credit line which must include the words "FMOD" 
+and "Firelight Technologies Pty Ltd." Refer to www.fmod.com/attribution for 
+examples.
 
 4. INTELLECTUAL PROPERTY RIGHTS
 
@@ -1009,3 +1048,6 @@ If the Library as you received it specifies that a proxy can decide
 whether future versions of the GNU Lesser General Public License shall
 apply, that proxy's public statement of acceptance of any version is
 permanent authorization for you to choose that version for the Library.
+
+---------------------------
+Last updated 17th Jun 2024.
