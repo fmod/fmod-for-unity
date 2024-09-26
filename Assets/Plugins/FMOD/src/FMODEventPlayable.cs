@@ -220,19 +220,19 @@ namespace FMODUnity
 #if UNITY_PHYSICS_EXIST
                     if (TrackTargetObject.GetComponent<Rigidbody>())
                     {
-                        RuntimeManager.AttachInstanceToGameObject(eventInstance, TrackTargetObject.transform, TrackTargetObject.GetComponent<Rigidbody>());
+                        RuntimeManager.AttachInstanceToGameObject(eventInstance, TrackTargetObject, TrackTargetObject.GetComponent<Rigidbody>());
                     }
                     else
 #endif
 #if UNITY_PHYSICS2D_EXIST
                     if (TrackTargetObject.GetComponent<Rigidbody2D>())
                     {
-                        RuntimeManager.AttachInstanceToGameObject(eventInstance, TrackTargetObject.transform, TrackTargetObject.GetComponent<Rigidbody2D>());
+                        RuntimeManager.AttachInstanceToGameObject(eventInstance, TrackTargetObject, TrackTargetObject.GetComponent<Rigidbody2D>());
                     }
                     else
 #endif
                     {
-                        RuntimeManager.AttachInstanceToGameObject(eventInstance, TrackTargetObject.transform);
+                        RuntimeManager.AttachInstanceToGameObject(eventInstance, TrackTargetObject);
                     }
                 }
                 else

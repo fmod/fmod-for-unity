@@ -40,8 +40,8 @@ namespace FMODUnity
 
         public override void OnInspectorGUI()
         {
-            var begin = serializedObject.FindProperty("PlayEvent");
-            var end = serializedObject.FindProperty("StopEvent");
+            var begin = serializedObject.FindProperty("EventPlayTrigger");
+            var end = serializedObject.FindProperty("EventStopTrigger");
             var tag = serializedObject.FindProperty("CollisionTag");
             var eventReference = serializedObject.FindProperty("EventReference");
             var eventPath = eventReference.FindPropertyRelative("Path");
@@ -53,8 +53,8 @@ namespace FMODUnity
             var minDistance = serializedObject.FindProperty("OverrideMinDistance");
             var maxDistance = serializedObject.FindProperty("OverrideMaxDistance");
 
-            EditorGUILayout.PropertyField(begin, new GUIContent("Play Event"));
-            EditorGUILayout.PropertyField(end, new GUIContent("Stop Event"));
+            EditorGUILayout.PropertyField(begin, new GUIContent("Event Play Trigger"));
+            EditorGUILayout.PropertyField(end, new GUIContent("Event Stop Trigger"));
 
             if ((begin.enumValueIndex >= (int)EmitterGameEvent.TriggerEnter && begin.enumValueIndex <= (int)EmitterGameEvent.TriggerExit2D) ||
             (end.enumValueIndex >= (int)EmitterGameEvent.TriggerEnter && end.enumValueIndex <= (int)EmitterGameEvent.TriggerExit2D))

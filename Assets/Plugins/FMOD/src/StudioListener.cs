@@ -7,7 +7,12 @@ namespace FMODUnity
     public class StudioListener : MonoBehaviour
     {
         [SerializeField]
+        private bool nonRigidbodyVelocity = false;
+
+        [SerializeField]
         private GameObject attenuationObject = null;
+
+        private Vector3 lastFramePosition = Vector3.zero;
 
 #if UNITY_PHYSICS_EXIST
         private Rigidbody rigidBody;
@@ -83,11 +88,25 @@ namespace FMODUnity
             RuntimeUtils.EnforceLibraryOrder();
 #if UNITY_PHYSICS_EXIST
             rigidBody = gameObject.GetComponent<Rigidbody>();
+
+            if (nonRigidbodyVelocity && rigidBody)
+            {
+                Debug.LogWarning(string.Format("[FMOD] Non-Rigidbody Velocity is enabled on Listener attached to GameObject \"{0}\", which also has a Rigidbody component attached - this will be disabled in favor of velocity from Rigidbody component.", this.name));
+                nonRigidbodyVelocity = false;
+            }
 #endif
 #if UNITY_PHYSICS2D_EXIST
             rigidBody2D = gameObject.GetComponent<Rigidbody2D>();
+
+            if (nonRigidbodyVelocity && rigidBody2D)
+            {
+                Debug.LogWarning(string.Format("[FMOD] Non-Rigidbody Velocity is enabled on Listener attached to GameObject \"{0}\", which also has a Rigidbody2D component attached - this will be disabled in favor of velocity from Rigidbody2D component.", this.name));
+                nonRigidbodyVelocity = false;
+            }
 #endif
             AddListener(this);
+
+            lastFramePosition = transform.position;
         }
 
         private void OnDisable()
@@ -97,30 +116,45 @@ namespace FMODUnity
 
         private void Update()
         {
-            if (ListenerNumber >= 0 && ListenerNumber < FMOD.CONSTANTS.MAX_LISTENERS)
+            if (ListenerNumber < 0 || ListenerNumber >= FMOD.CONSTANTS.MAX_LISTENERS)
             {
-                SetListenerLocation();
+                return;
             }
-        }
 
-        private void SetListenerLocation()
-        {
-#if UNITY_PHYSICS_EXIST
-            if (rigidBody)
+            if (nonRigidbodyVelocity)
             {
-                RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, rigidBody, attenuationObject);
+                var velocity = Vector3.zero;
+                var position = transform.position;
+
+                if (Time.deltaTime != 0)
+                {
+                    velocity = (position - lastFramePosition) / Time.deltaTime;
+                    velocity = Vector3.ClampMagnitude(velocity, 20.0f);
+                }
+
+                lastFramePosition = position;
+
+                RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, attenuationObject, velocity);
             }
             else
+            {
+#if UNITY_PHYSICS_EXIST
+                if (rigidBody)
+                {
+                    RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, rigidBody, attenuationObject);
+                }
+                else
 #endif
 #if UNITY_PHYSICS2D_EXIST
-            if (rigidBody2D)
-            {
-                RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, rigidBody2D, attenuationObject);
-            }
-            else
+                if (rigidBody2D)
+                {
+                    RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, rigidBody2D, attenuationObject);
+                }
+                else
 #endif
-            {
-                RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, attenuationObject);
+                {
+                    RuntimeManager.SetListenerLocation(ListenerNumber, gameObject, attenuationObject);
+                }
             }
         }
     }

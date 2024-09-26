@@ -765,15 +765,11 @@ fmod_editor.log";
                 "Here is an example of what you should add to your source control ignore file:", titleLeftStyle);
             GUILayout.FlexibleSpace();
 
-            using (new EditorGUILayout.HorizontalScope())
+            using (new EditorGUILayout.VerticalScope("box"))
             {
-                GUILayout.FlexibleSpace();
-                using (new EditorGUILayout.VerticalScope("box"))
-                {
-                    EditorGUILayout.TextArea(IgnoreFileText);
-                }
-                GUILayout.FlexibleSpace();
+                EditorGUILayout.TextArea(IgnoreFileText);
             }
+
             pageComplete[(int)PAGES.SourceControl] = true;
         }
 

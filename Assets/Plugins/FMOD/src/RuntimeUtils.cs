@@ -431,8 +431,15 @@ namespace FMODUnity
             if (rigidbody)
             {
                 FMOD.VECTOR vel;
+#if UNITY_6000_1_OR_NEWER
+                vel.x = rigidbody.linearVelocity.x;
+                vel.y = rigidbody.linearVelocity.y;
+#else
+#pragma warning disable CS0618
                 vel.x = rigidbody.velocity.x;
                 vel.y = rigidbody.velocity.y;
+#pragma warning restore CS0618
+#endif
                 vel.z = 0;
                 attributes.velocity = vel;
             }
@@ -448,8 +455,15 @@ namespace FMODUnity
             if (rigidbody)
             {
                 FMOD.VECTOR vel;
+#if UNITY_6000_1_OR_NEWER
+                vel.x = rigidbody.linearVelocity.x;
+                vel.y = rigidbody.linearVelocity.y;
+#else
+#pragma warning disable CS0618
                 vel.x = rigidbody.velocity.x;
                 vel.y = rigidbody.velocity.y;
+#pragma warning restore CS0618
+#endif
                 vel.z = 0;
                 attributes.velocity = vel;
             }
