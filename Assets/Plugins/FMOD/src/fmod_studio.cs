@@ -395,7 +395,7 @@ namespace FMOD.Studio
         }
         public RESULT setAdvancedSettings(ADVANCEDSETTINGS settings)
         {
-            settings.cbsize = MarshalHelper.SizeOf(typeof(ADVANCEDSETTINGS));
+            settings.cbsize = Marshal.SizeOf<ADVANCEDSETTINGS>();
             return FMOD_Studio_System_SetAdvancedSettings(this.handle, ref settings);
         }
         public RESULT setAdvancedSettings(ADVANCEDSETTINGS settings, string encryptionKey)
@@ -411,7 +411,7 @@ namespace FMOD.Studio
         }
         public RESULT getAdvancedSettings(out ADVANCEDSETTINGS settings)
         {
-            settings.cbsize = MarshalHelper.SizeOf(typeof(ADVANCEDSETTINGS));
+            settings.cbsize = Marshal.SizeOf<ADVANCEDSETTINGS>();
             return FMOD_Studio_System_GetAdvancedSettings(this.handle, out settings);
         }
         public RESULT initialize(int maxchannels, INITFLAGS studioflags, FMOD.INITFLAGS flags, IntPtr extradriverdata)
@@ -679,7 +679,7 @@ namespace FMOD.Studio
         }
         public RESULT loadBankCustom(BANK_INFO info, LOAD_BANK_FLAGS flags, out Bank bank)
         {
-            info.size = MarshalHelper.SizeOf(typeof(BANK_INFO));
+            info.size = Marshal.SizeOf<BANK_INFO>();
             return FMOD_Studio_System_LoadBankCustom(this.handle, ref info, flags, out bank.handle);
         }
         public RESULT unloadAll()

@@ -20,10 +20,46 @@ namespace FMOD
     public struct DSP_BUFFER_ARRAY
     {
         public int              numbuffers;
-        public int[]            buffernumchannels;
-        public CHANNELMASK[]    bufferchannelmask;
-        public IntPtr[]         buffers;
+        public IntPtr           buffernumchannels;
+        public IntPtr           bufferchannelmask;
+        public IntPtr           buffers;
         public SPEAKERMODE      speakermode;
+
+        /*
+            These properties take advantage of the fact that numbuffers is always zero or one
+        */
+
+        public int numchannels
+        {
+            get 
+            {
+                if (buffernumchannels != IntPtr.Zero && numbuffers != 0)
+                    return Marshal.ReadInt32(buffernumchannels);
+
+                return 0;
+            }
+            set
+            {
+                if (buffernumchannels != IntPtr.Zero && numbuffers != 0)
+                    Marshal.WriteInt32(buffernumchannels, value);
+            }
+        }
+
+        public IntPtr buffer
+        {
+            get
+            {
+                if (buffers != IntPtr.Zero && numbuffers != 0)
+                    return Marshal.ReadIntPtr(buffers);
+
+                return IntPtr.Zero;
+            }
+            set
+            {
+                if (buffers != IntPtr.Zero && numbuffers != 0)
+                    Marshal.WriteIntPtr(buffers, value);
+            }
+        }
     }
 
     public enum DSP_PROCESS_OPERATION

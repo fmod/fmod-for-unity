@@ -19,7 +19,7 @@ namespace FMOD
     */
     public partial class VERSION
     {
-        public const int    number = 0x00020303;
+        public const int    number = 0x00020304;
 #if !UNITY_2021_3_OR_NEWER
         public const string dll    = "fmod";
 #endif
@@ -701,47 +701,47 @@ namespace FMOD
         public SOUND_PCMREAD_CALLBACK pcmreadcallback
         {
             set { pcmreadcallback_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
-            get { return pcmreadcallback_internal == IntPtr.Zero ? null : (SOUND_PCMREAD_CALLBACK)Marshal.GetDelegateForFunctionPointer(pcmreadcallback_internal, typeof(SOUND_PCMREAD_CALLBACK)); }
+            get { return pcmreadcallback_internal == IntPtr.Zero ? null : Marshal.GetDelegateForFunctionPointer<SOUND_PCMREAD_CALLBACK>(pcmreadcallback_internal); }
         }
         public SOUND_PCMSETPOS_CALLBACK pcmsetposcallback
         {
             set { pcmsetposcallback_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
-            get { return pcmsetposcallback_internal == IntPtr.Zero ? null : (SOUND_PCMSETPOS_CALLBACK)Marshal.GetDelegateForFunctionPointer(pcmsetposcallback_internal, typeof(SOUND_PCMSETPOS_CALLBACK)); }
+            get { return pcmsetposcallback_internal == IntPtr.Zero ? null : Marshal.GetDelegateForFunctionPointer<SOUND_PCMSETPOS_CALLBACK>(pcmsetposcallback_internal); }
         }
         public SOUND_NONBLOCK_CALLBACK nonblockcallback
         {
             set { nonblockcallback_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
-            get { return nonblockcallback_internal == IntPtr.Zero ? null : (SOUND_NONBLOCK_CALLBACK)Marshal.GetDelegateForFunctionPointer(nonblockcallback_internal, typeof(SOUND_NONBLOCK_CALLBACK)); }
+            get { return nonblockcallback_internal == IntPtr.Zero ? null : Marshal.GetDelegateForFunctionPointer<SOUND_NONBLOCK_CALLBACK>(nonblockcallback_internal); }
         }
         public FILE_OPEN_CALLBACK fileuseropen
         {
             set { fileuseropen_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
-            get { return fileuseropen_internal == IntPtr.Zero ? null : (FILE_OPEN_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuseropen_internal, typeof(FILE_OPEN_CALLBACK)); }
+            get { return fileuseropen_internal == IntPtr.Zero ? null : Marshal.GetDelegateForFunctionPointer<FILE_OPEN_CALLBACK>(fileuseropen_internal); }
         }
         public FILE_CLOSE_CALLBACK fileuserclose
         {
             set { fileuserclose_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
-            get { return fileuserclose_internal == IntPtr.Zero ? null : (FILE_CLOSE_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuserclose_internal, typeof(FILE_CLOSE_CALLBACK)); }
+            get { return fileuserclose_internal == IntPtr.Zero ? null : Marshal.GetDelegateForFunctionPointer<FILE_CLOSE_CALLBACK>(fileuserclose_internal); }
         }
         public FILE_READ_CALLBACK fileuserread
         {
             set { fileuserread_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
-            get { return fileuserread_internal == IntPtr.Zero ? null : (FILE_READ_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuserread_internal, typeof(FILE_READ_CALLBACK)); }
+            get { return fileuserread_internal == IntPtr.Zero ? null : Marshal.GetDelegateForFunctionPointer<FILE_READ_CALLBACK>(fileuserread_internal); }
         }
         public FILE_SEEK_CALLBACK fileuserseek
         {
             set { fileuserseek_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
-            get { return fileuserseek_internal == IntPtr.Zero ? null : (FILE_SEEK_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuserseek_internal, typeof(FILE_SEEK_CALLBACK)); }
+            get { return fileuserseek_internal == IntPtr.Zero ? null : Marshal.GetDelegateForFunctionPointer<FILE_SEEK_CALLBACK>(fileuserseek_internal); }
         }
         public FILE_ASYNCREAD_CALLBACK fileuserasyncread
         {
             set { fileuserasyncread_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
-            get { return fileuserasyncread_internal == IntPtr.Zero ? null : (FILE_ASYNCREAD_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuserasyncread_internal, typeof(FILE_ASYNCREAD_CALLBACK)); }
+            get { return fileuserasyncread_internal == IntPtr.Zero ? null : Marshal.GetDelegateForFunctionPointer<FILE_ASYNCREAD_CALLBACK>(fileuserasyncread_internal); }
         }
         public FILE_ASYNCCANCEL_CALLBACK fileuserasynccancel
         {
             set { fileuserasynccancel_internal = (value == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(value)); }
-            get { return fileuserasynccancel_internal == IntPtr.Zero ? null : (FILE_ASYNCCANCEL_CALLBACK)Marshal.GetDelegateForFunctionPointer(fileuserasynccancel_internal, typeof(FILE_ASYNCCANCEL_CALLBACK)); }
+            get { return fileuserasynccancel_internal == IntPtr.Zero ? null : Marshal.GetDelegateForFunctionPointer<FILE_ASYNCCANCEL_CALLBACK>(fileuserasynccancel_internal); }
         }
 
     }
@@ -1113,12 +1113,12 @@ namespace FMOD
         }
         public RESULT setAdvancedSettings(ref ADVANCEDSETTINGS settings)
         {
-            settings.cbSize = MarshalHelper.SizeOf(typeof(ADVANCEDSETTINGS));
+            settings.cbSize = Marshal.SizeOf<ADVANCEDSETTINGS>();
             return FMOD5_System_SetAdvancedSettings(this.handle, ref settings);
         }
         public RESULT getAdvancedSettings(ref ADVANCEDSETTINGS settings)
         {
-            settings.cbSize = MarshalHelper.SizeOf(typeof(ADVANCEDSETTINGS));
+            settings.cbSize = Marshal.SizeOf<ADVANCEDSETTINGS>();
             return FMOD5_System_GetAdvancedSettings(this.handle, ref settings);
         }
         public RESULT setCallback(SYSTEM_CALLBACK callback, SYSTEM_CALLBACK_TYPE callbackmask = SYSTEM_CALLBACK_TYPE.ALL)
@@ -1325,7 +1325,7 @@ namespace FMOD
         public RESULT createSound(string name, MODE mode, out Sound sound)
         {
             CREATESOUNDEXINFO exinfo = new CREATESOUNDEXINFO();
-            exinfo.cbsize = MarshalHelper.SizeOf(typeof(CREATESOUNDEXINFO));
+            exinfo.cbsize = Marshal.SizeOf<CREATESOUNDEXINFO>();
 
             return createSound(name, mode, ref exinfo, out sound);
         }
@@ -1347,7 +1347,7 @@ namespace FMOD
         public RESULT createStream(string name, MODE mode, out Sound sound)
         {
             CREATESOUNDEXINFO exinfo = new CREATESOUNDEXINFO();
-            exinfo.cbsize = MarshalHelper.SizeOf(typeof(CREATESOUNDEXINFO));
+            exinfo.cbsize = Marshal.SizeOf<CREATESOUNDEXINFO>();
 
             return createStream(name, mode, ref exinfo, out sound);
         }
@@ -3382,7 +3382,7 @@ namespace FMOD
         {
             IntPtr descPtr;
             RESULT result = FMOD5_DSP_GetParameterInfo(this.handle, index, out descPtr);
-            desc = (DSP_PARAMETER_DESC)MarshalHelper.PtrToStructure(descPtr, typeof(DSP_PARAMETER_DESC));
+            desc = (DSP_PARAMETER_DESC)Marshal.PtrToStructure<DSP_PARAMETER_DESC>(descPtr);
             return result;
         }
         public RESULT getDataParameterIndex(int datatype, out int index)
@@ -4058,23 +4058,6 @@ namespace FMOD
                 return helper;
             }
         }
-    }
-
-    // Some of the Marshal functions were marked as deprecated / obsolete, however that decision was reversed: https://github.com/dotnet/corefx/pull/10541
-    // Use the old syntax (non-generic) to ensure maximum compatibility (especially with Unity) ignoring the warnings
-    public static class MarshalHelper
-    {
-#pragma warning disable 618
-        public static int SizeOf(Type t)
-        {
-            return Marshal.SizeOf(t); // Always use Type version, never Object version as it boxes causes GC allocations
-        }
-
-        public static object PtrToStructure(IntPtr ptr, Type structureType)
-        {
-            return Marshal.PtrToStructure(ptr, structureType);
-        }
-#pragma warning restore 618
     }
 
     #endregion

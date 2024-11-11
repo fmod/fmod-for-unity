@@ -55,7 +55,32 @@ namespace FMODUnity
 
         protected override IEnumerable<FileRecord> GetBinaryFiles(BuildTarget buildTarget, bool allVariants, string suffix)
         {
-            yield return new FileRecord(string.Format("2.0.19/libfmodstudio{0}.a", suffix));
+            bool emVer_2_0_19 = false;
+            bool emVer_3_1_8 = false;
+            bool emVer_3_1_39 = false;
+
+#if UNITY_6000_0_OR_NEWER
+            emVer_3_1_39 = true;
+#elif UNITY_2022_3_OR_NEWER
+            emVer_3_1_8 = true;
+#else
+            emVer_2_0_19 = true;
+#endif
+
+            if (allVariants || emVer_3_1_39)
+            {
+                yield return new FileRecord(string.Format("3.1.39/libfmodstudio{0}.a", suffix));
+            }
+
+            if (allVariants || emVer_3_1_8)
+            {
+                yield return new FileRecord(string.Format("3.1.8/libfmodstudio{0}.a", suffix));
+            }
+
+            if (allVariants || emVer_2_0_19)
+            {
+                yield return new FileRecord(string.Format("2.0.19/libfmodstudio{0}.a", suffix));
+            }
         }
 
         internal override bool IsFMODStaticallyLinked { get { return true; } }

@@ -117,7 +117,7 @@ namespace FMODUnity
         [AOT.MonoPInvokeCallback(typeof(FMOD.SYSTEM_CALLBACK))]
         private static FMOD.RESULT ERROR_CALLBACK(IntPtr system, FMOD.SYSTEM_CALLBACK_TYPE type, IntPtr commanddata1, IntPtr commanddata2, IntPtr userdata)
         {
-            FMOD.ERRORCALLBACK_INFO callbackInfo = (FMOD.ERRORCALLBACK_INFO)FMOD.MarshalHelper.PtrToStructure(commanddata1, typeof(FMOD.ERRORCALLBACK_INFO));
+            FMOD.ERRORCALLBACK_INFO callbackInfo = Marshal.PtrToStructure<FMOD.ERRORCALLBACK_INFO>(commanddata1);
 
             // Filter out benign expected errors.
             if ((callbackInfo.instancetype == FMOD.ERRORCALLBACK_INSTANCETYPE.CHANNEL || callbackInfo.instancetype == FMOD.ERRORCALLBACK_INSTANCETYPE.CHANNELCONTROL)
@@ -582,7 +582,7 @@ retry:
         public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, GameObject gameObject, bool nonRigidbodyVelocity = false)
         {
             AttachedInstance attachedInstance = FindOrAddAttachedInstance(instance, gameObject.transform, RuntimeUtils.To3DAttributes(gameObject.transform));
- 
+
             if (nonRigidbodyVelocity)
             {
                 attachedInstance.nonRigidbodyVelocity = nonRigidbodyVelocity;
@@ -606,7 +606,7 @@ retry:
         public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, GameObject gameObject, Rigidbody rigidBody)
         {
             AttachedInstance attachedInstance = FindOrAddAttachedInstance(instance, gameObject.transform, RuntimeUtils.To3DAttributes(gameObject.transform, rigidBody));
- 
+
             attachedInstance.rigidBody = rigidBody;
         }
 
@@ -623,7 +623,7 @@ retry:
         public static void AttachInstanceToGameObject(FMOD.Studio.EventInstance instance, GameObject gameObject, Rigidbody2D rigidBody2D)
         {
             AttachedInstance attachedInstance = FindOrAddAttachedInstance(instance, gameObject.transform, RuntimeUtils.To3DAttributes(gameObject.transform, rigidBody2D));
- 
+
             attachedInstance.rigidBody2D = rigidBody2D;
         }
 
