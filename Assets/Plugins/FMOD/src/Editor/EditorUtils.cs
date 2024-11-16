@@ -455,7 +455,7 @@ namespace FMODUnity
                 if (!string.IsNullOrEmpty(behavior.EventReference.Path))
                 {
                     LoadPreviewBanks();
-                    EditorEventRef eventRef = EventManager.EventFromPath(behavior.EventReference.Path);
+                    EditorEventRef eventRef = AudioEventManager.EventFromPath(behavior.EventReference.Path);
                     Dictionary<string, float> paramValues = new Dictionary<string, float>();
                     foreach (EditorParamRef param in eventRef.Parameters)
                     {
@@ -501,7 +501,7 @@ namespace FMODUnity
             BuildStatusWatcher.Startup();
             BankRefresher.Startup();
             BoltIntegration.Startup();
-            EventManager.Startup();
+            AudioEventManager.Startup();
             SetupWizardWindow.Startup();
         }
 
@@ -561,12 +561,12 @@ namespace FMODUnity
 
         public static void UpdateParamsOnEmitter(SerializedObject serializedObject, string path)
         {
-            if (string.IsNullOrEmpty(path) || EventManager.EventFromPath(path) == null)
+            if (string.IsNullOrEmpty(path) || AudioEventManager.EventFromPath(path) == null)
             {
                 return;
             }
 
-            var eventRef = EventManager.EventFromPath(path);
+            var eventRef = AudioEventManager.EventFromPath(path);
             serializedObject.ApplyModifiedProperties();
             if (serializedObject.isEditingMultipleObjects)
             {
@@ -584,7 +584,7 @@ namespace FMODUnity
 
         private static void UpdateParamsOnEmitter(UnityEngine.Object obj, EditorEventRef eventRef)
         {
-            var emitter = obj as StudioEventEmitter;
+            var emitter = obj as StudioAudioEventEmitter;
             if (emitter == null)
             {
                 // Custom game object
@@ -705,7 +705,7 @@ namespace FMODUnity
                 return;
             }
 
-            foreach (var bank in EventManager.Banks)
+            foreach (var bank in AudioEventManager.Banks)
             {
                 FMOD.Studio.Bank previewBank;
                 FMOD.RESULT result = System.loadBankFile(bank.Path, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out previewBank);

@@ -12,7 +12,7 @@ using UnityEngine.SceneManagement;
 namespace FMODUnity
 {
     [InitializeOnLoad]
-    public class EventManager : MonoBehaviour
+    public class AudioEventManager : MonoBehaviour
     {
         private const string FMODLabel = "FMOD";
 
@@ -20,7 +20,7 @@ namespace FMODUnity
 
         private const string CacheAssetName = "FMODStudioCache";
         public static string CacheAssetFullName = EditorUtils.WritableAssetPath(CacheAssetName);
-        private static EventCache eventCache;
+        private static AudioEventCache eventCache;
 
         private const string StringBankExtension = "strings.bank";
         private const string BankExtension = "bank";
@@ -68,7 +68,7 @@ namespace FMODUnity
         {
             if (eventCache == null)
             {
-                eventCache = AssetDatabase.LoadAssetAtPath(CacheAssetFullName, typeof(EventCache)) as EventCache;
+                eventCache = AssetDatabase.LoadAssetAtPath(CacheAssetFullName, typeof(AudioEventCache)) as AudioEventCache;
 
                 // If new libraries need to be staged, or the staging process is in progress, clear the cache and exit.
                 if (StagingSystem.SourceLibsExist)
@@ -84,7 +84,7 @@ namespace FMODUnity
                 {
                     RuntimeUtils.DebugLog("FMOD: Event cache is missing or in an old format; creating a new instance.");
 
-                    eventCache = ScriptableObject.CreateInstance<EventCache>();
+                    eventCache = ScriptableObject.CreateInstance<AudioEventCache>();
                     eventCache.cacheVersion = FMOD.VERSION.number;
 
                     Directory.CreateDirectory(Path.GetDirectoryName(CacheAssetFullName));
@@ -382,11 +382,11 @@ namespace FMODUnity
         {
             bool runUpdater = EditorUtility.DisplayDialog("Events Renamed",
                 string.Format("Some events have been renamed in FMOD Studio. Do you want to run {0} " +
-                "to find and update any references to them?", EventReferenceUpdater.MenuPath), "Yes", "No");
+                "to find and update any references to them?", AudioEventReferenceUpdater.MenuPath), "Yes", "No");
 
             if (runUpdater)
             {
-                EventReferenceUpdater.ShowWindow();
+                AudioEventReferenceUpdater.ShowWindow();
             }
         }
 
@@ -564,7 +564,7 @@ namespace FMODUnity
             return labels;
         }
 
-        static EventManager()
+        static AudioEventManager()
         {
             BuildStatusWatcher.OnBuildStarted += () => {
                 BuildTargetChanged();
@@ -618,7 +618,7 @@ namespace FMODUnity
         }
 
         private static readonly string UpdaterInstructions =
-            string.Format("Please run {0} to resolve this issue.", EventReferenceUpdater.MenuPath);
+            string.Format("Please run {0} to resolve this issue.", AudioEventReferenceUpdater.MenuPath);
 
         private static void ValidateEventEmitter(StudioAudioEventEmitter emitter, Scene scene)
         {
@@ -649,7 +649,7 @@ namespace FMODUnity
             foreach (FieldInfo field in fields)
             {
 #pragma warning disable 0618 // Suppress a warning about using the obsolete EventRefAttribute class
-                if (EditorUtils.HasAttribute<EventRefAttribute>(field))
+                if (EditorUtils.HasAttribute<AudioEventRefAttribute>(field))
 #pragma warning restore 0618
                 {
                     RuntimeUtils.DebugLogWarningFormat("FMOD: A component of type {0} in scene '{1}' on GameObject '{2}' has an "

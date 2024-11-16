@@ -7,7 +7,7 @@ namespace FMODUnity
     [CustomEditor(typeof(StudioParameterTrigger))]
     public class StudioParameterTriggerEditor : Editor
     {
-        private StudioEventEmitter targetEmitter;
+        private StudioAudioEventEmitter targetEmitter;
         private SerializedProperty emitters;
         private SerializedProperty trigger;
         private SerializedProperty tag;
@@ -22,10 +22,10 @@ namespace FMODUnity
             targetEmitter = null;
             for (int i = 0; i < emitters.arraySize; i++)
             {
-                targetEmitter = emitters.GetArrayElementAtIndex(i).FindPropertyRelative("Target").objectReferenceValue as StudioEventEmitter;
+                targetEmitter = emitters.GetArrayElementAtIndex(i).FindPropertyRelative("Target").objectReferenceValue as StudioAudioEventEmitter;
                 if (targetEmitter != null)
                 {
-                    expanded = new bool[targetEmitter.GetComponents<StudioEventEmitter>().Length];
+                    expanded = new bool[targetEmitter.GetComponents<StudioAudioEventEmitter>().Length];
                     break;
                 }
             }
@@ -33,7 +33,7 @@ namespace FMODUnity
 
         public override void OnInspectorGUI()
         {
-            var newTargetEmitter = EditorGUILayout.ObjectField("Target", targetEmitter, typeof(StudioEventEmitter), true) as StudioEventEmitter;
+            var newTargetEmitter = EditorGUILayout.ObjectField("Target", targetEmitter, typeof(StudioAudioEventEmitter), true) as StudioAudioEventEmitter;
             if (newTargetEmitter != targetEmitter)
             {
                 emitters.ClearArray();
@@ -45,7 +45,7 @@ namespace FMODUnity
                     return;
                 }
 
-                List<StudioEventEmitter> newEmitters = new List<StudioEventEmitter>();
+                List<StudioAudioEventEmitter> newEmitters = new List<StudioAudioEventEmitter>();
                 targetEmitter.GetComponents(newEmitters);
                 expanded = new bool[newEmitters.Count];
                 foreach (var emitter in newEmitters)
@@ -67,7 +67,7 @@ namespace FMODUnity
                 tag.stringValue = EditorGUILayout.TagField("Collision Tag", tag.stringValue);
             }
 
-            var localEmitters = new List<StudioEventEmitter>();
+            var localEmitters = new List<StudioAudioEventEmitter>();
             targetEmitter.GetComponents(localEmitters);
 
             int emitterIndex = 0;
@@ -96,7 +96,7 @@ namespace FMODUnity
                     expanded[emitterIndex] = EditorGUILayout.Foldout(expanded[emitterIndex], emitter.EventReference.Path);
                     if (expanded[emitterIndex])
                     {
-                        var eventRef = EventManager.EventFromGUID(emitter.EventReference.Guid);
+                        var eventRef = AudioEventManager.EventFromGUID(emitter.EventReference.Guid);
 
                         foreach (var paramRef in eventRef.LocalParameters)
                         {

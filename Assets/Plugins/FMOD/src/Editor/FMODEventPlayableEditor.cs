@@ -74,7 +74,7 @@ namespace FMODUnity
 
                 if (!string.IsNullOrEmpty(eventPath))
                 {
-                    editorEventRef = EventManager.EventFromPath(eventPath);
+                    editorEventRef = AudioEventManager.EventFromPath(eventPath);
                 }
                 else
                 {

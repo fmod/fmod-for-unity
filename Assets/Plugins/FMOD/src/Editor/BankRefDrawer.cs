@@ -51,7 +51,7 @@ namespace FMODUnity
             EditorGUI.PropertyField(pathRect, pathProperty, GUIContent.none);
             if (GUI.Button(searchRect, new GUIContent(browseIcon, "Select FMOD Bank"), buttonStyle))
             {
-                var eventBrowser = ScriptableObject.CreateInstance<EventBrowser>();
+                var eventBrowser = ScriptableObject.CreateInstance<AudioEventBrowser>();
 
                 eventBrowser.ChooseBank(property);
                 var windowRect = position;

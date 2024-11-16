@@ -68,7 +68,7 @@ namespace FMODUnity
 
             if (GUI.Button(searchRect, new GUIContent(browseIcon, "Search"), buttonStyle))
             {
-                var eventBrowser = ScriptableObject.CreateInstance<EventBrowser>();
+                var eventBrowser = ScriptableObject.CreateInstance<AudioEventBrowser>();
 
                 eventBrowser.ChooseParameter(property);
                 var windowRect = position;

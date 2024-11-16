@@ -89,24 +89,24 @@ namespace FMOD
 
 namespace FMODUnity
 {
-    public class EventNotFoundException : Exception
+    public class AudioEventNotFoundException : Exception
     {
         public FMOD.GUID Guid;
         public string Path;
 
-        public EventNotFoundException(string path)
+        public AudioEventNotFoundException(string path)
             : base("[FMOD] Event not found: '" + path + "'")
         {
             Path = path;
         }
 
-        public EventNotFoundException(FMOD.GUID guid)
+        public AudioEventNotFoundException(FMOD.GUID guid)
             : base("[FMOD] Event not found: " + guid)
         {
             Guid = guid;
         }
 
-        public EventNotFoundException(EventReference eventReference)
+        public AudioEventNotFoundException(EventReference eventReference)
             : base("[FMOD] Event not found: " + eventReference.ToString())
         {
             Guid = eventReference.Guid;

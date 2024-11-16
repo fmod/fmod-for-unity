@@ -106,9 +106,9 @@ namespace FMODUnity
         {
             if (Time.realtimeSinceStartup >= nextFilePollTime)
             {
-                if (!File.Exists(EventManager.CacheAssetFullName))
+                if (!File.Exists(AudioEventManager.CacheAssetFullName))
                 {
-                    EventManager.RefreshBanks();
+                    AudioEventManager.RefreshBanks();
                 }
 
                 nextFilePollTime = Time.realtimeSinceStartup + FilePollPeriod;
@@ -119,7 +119,7 @@ namespace FMODUnity
         {
             if (TimeUntilBankRefresh() == 0 && BankRefreshWindow.ReadyToRefreshBanks)
             {
-                EventManager.RefreshBanks();
+                AudioEventManager.RefreshBanks();
             }
         }
 

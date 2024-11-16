@@ -58,7 +58,7 @@ namespace FMODUnity
                 }
                 else
                 {
-                    editorParamRef = EventManager.ParamFromPath(param.stringValue);
+                    editorParamRef = AudioEventManager.ParamFromPath(param.stringValue);
                     value.floatValue = Mathf.Clamp(value.floatValue, editorParamRef.Min, editorParamRef.Max);
                 }
             }

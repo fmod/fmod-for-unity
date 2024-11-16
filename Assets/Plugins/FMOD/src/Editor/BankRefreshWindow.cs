@@ -230,7 +230,7 @@ namespace FMODUnity
 
             if (GUI.Button(refreshRect, "Refresh Banks Now"))
             {
-                EventManager.RefreshBanks();
+                AudioEventManager.RefreshBanks();
             }
         }
     }

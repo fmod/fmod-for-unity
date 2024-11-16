@@ -40,8 +40,8 @@ namespace FMODUnity
                 name: "Update Event References",
                 description: "Find event references that use the obsolete [EventRef] attribute " +
                     "and update them to use the EventReference type.",
-                execute: EventReferenceUpdater.ShowWindow,
-                checkComplete: EventReferenceUpdater.IsUpToDate
+                execute: AudioEventReferenceUpdater.ShowWindow,
+                checkComplete: AudioEventReferenceUpdater.IsUpToDate
             ),
         };
 

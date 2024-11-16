@@ -1671,7 +1671,7 @@ namespace FMODUnity
                 if (deleteBanks)
                 {
                     // Delete the old banks
-                    EventManager.RemoveBanks(settings.TargetPath);
+                    AudioEventManager.RemoveBanks(settings.TargetPath);
                 }
 
                 hasBankTargetChanged = true;
@@ -1697,7 +1697,7 @@ namespace FMODUnity
 
             if (newSubFolder != targetSubFolder.stringValue)
             {
-                EventManager.RemoveBanks(settings.TargetPath);
+                AudioEventManager.RemoveBanks(settings.TargetPath);
                 targetSubFolder.stringValue = newSubFolder;
                 hasBankTargetChanged = true;
             }
@@ -1729,9 +1729,9 @@ namespace FMODUnity
 
                     EditorGUILayout.PropertyField(meterChannelOrdering, new GUIContent("Meter Channel Ordering"));
 
-                    if (EditorGUI.EndChangeCheck() && EventBrowser.IsOpen)
+                    if (EditorGUI.EndChangeCheck() && AudioEventBrowser.IsOpen)
                     {
-                        EditorWindow.GetWindow<EventBrowser>("FMOD Events", false).Repaint();
+                        EditorWindow.GetWindow<AudioEventBrowser>("FMOD Events", false).Repaint();
                     }
                 }
             }
@@ -2620,7 +2620,7 @@ namespace FMODUnity
             if (lastSourceBankPath != settings.SourceBankPath)
             {
                 lastSourceBankPath = settings.SourceBankPath;
-                EventManager.RefreshBanks();
+                AudioEventManager.RefreshBanks();
             }
         }
 
@@ -2694,7 +2694,7 @@ namespace FMODUnity
                 sourceProjectPath.stringValue = newPath;
                 sourceBankPath.stringValue = GetBankDirectory(serializedObject);
                 serializedObject.ApplyModifiedProperties();
-                EventManager.RefreshBanks();
+                AudioEventManager.RefreshBanks();
                 return true;
             }
         }
@@ -2719,7 +2719,7 @@ namespace FMODUnity
                 newPath = MakePathRelative(newPath);
                 sourceBankPath.stringValue = newPath;
                 serializedObject.ApplyModifiedProperties();
-                EventManager.RefreshBanks();
+                AudioEventManager.RefreshBanks();
                 return true;
             }
         }

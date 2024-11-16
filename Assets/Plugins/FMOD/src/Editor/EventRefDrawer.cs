@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace FMODUnity
 {
     [CustomPropertyDrawer(typeof(EventReference))]
-    public class EventReferenceDrawer : PropertyDrawer
+    public class AudioEventReferenceDrawer : PropertyDrawer
     {
         private static readonly Texture RepairIcon = EditorUtils.LoadImage("Wrench.png");
         private static readonly Texture WarningIcon = EditorUtils.LoadImage("NotFound.png");
@@ -76,7 +75,7 @@ namespace FMODUnity
 
                 if (GUI.Button(searchRect, new GUIContent(browseIcon, "Search"), buttonStyle))
                 {
-                    var eventBrowser = ScriptableObject.CreateInstance<EventBrowser>();
+                    var eventBrowser = ScriptableObject.CreateInstance<AudioEventBrowser>();
 
                     eventBrowser.ChooseEvent(property);
                     var windowRect = position;
@@ -102,8 +101,8 @@ namespace FMODUnity
                 }
                 if (GUI.Button(openRect, new GUIContent(openIcon, "Open In Browser"), buttonStyle))
                 {
-                    EventBrowser.ShowWindow();
-                    EventBrowser eventBrowser = EditorWindow.GetWindow<EventBrowser>();
+                    AudioEventBrowser.ShowWindow();
+                    AudioEventBrowser eventBrowser = EditorWindow.GetWindow<AudioEventBrowser>();
                     eventBrowser.FrameEvent(pathProperty.stringValue);
                 }
 
@@ -181,15 +180,17 @@ namespace FMODUnity
 
                     if (renamedEvent != null)
                     {
-                        MismatchInfo mismatch = new MismatchInfo() {
+                        MismatchInfo mismatch = new MismatchInfo()
+                        {
                             Message = string.Format("Moved to {0}", renamedEvent.Path),
                             HelpText = string.Format(
                                 "This event has been moved in FMOD Studio.\n" +
                                 "You can click the repair button to update the path to the new location, or run " +
                                 "the <b>{0}</b> command to scan your project for similar issues and fix them all.",
-                                EventReferenceUpdater.MenuPath),
+                                AudioEventReferenceUpdater.MenuPath),
                             RepairTooltip = string.Format("Repair: set path to {0}", renamedEvent.Path),
-                            RepairAction = (p) => {
+                            RepairAction = (p) =>
+                            {
                                 p.FindPropertyRelative("Path").stringValue = renamedEvent.Path;
                             },
                         };
@@ -281,19 +282,21 @@ namespace FMODUnity
 
         private static MismatchInfo GetMismatch(EventReference eventReference, EditorEventRef editorEventRef)
         {
-            if (EventManager.GetEventLinkage(eventReference) == EventLinkage.Path)
+            if (AudioEventManager.GetEventLinkage(eventReference) == EventLinkage.Path)
             {
                 if (eventReference.Guid != editorEventRef.Guid)
                 {
-                    return new MismatchInfo() {
+                    return new MismatchInfo()
+                    {
                         Message = "GUID doesn't match path",
                         HelpText = string.Format(
                             "The GUID on this EventReference doesn't match the path.\n" +
                             "You can click the repair button to update the GUID to match the path, or run the " +
                             "<b>{0}</b> command to scan your project for similar issues and fix them all.",
-                            EventReferenceUpdater.MenuPath),
+                            AudioEventReferenceUpdater.MenuPath),
                         RepairTooltip = string.Format("Repair: set GUID to {0}", editorEventRef.Guid),
-                        RepairAction = (property) => {
+                        RepairAction = (property) =>
+                        {
                             property.FindPropertyRelative("Guid").SetGuid(editorEventRef.Guid);
                         },
                     };
@@ -303,15 +306,17 @@ namespace FMODUnity
             {
                 if (eventReference.Path != editorEventRef.Path)
                 {
-                    return new MismatchInfo() {
+                    return new MismatchInfo()
+                    {
                         Message = "Path doesn't match GUID",
                         HelpText = string.Format(
                             "The path on this EventReference doesn't match the GUID.\n" +
                             "You can click the repair button to update the path to match the GUID, or run the " +
                             "<b>{0}</b> command to scan your project for similar issues and fix them all.",
-                            EventReferenceUpdater.MenuPath),
+                            AudioEventReferenceUpdater.MenuPath),
                         RepairTooltip = string.Format("Repair: set path to '{0}'", editorEventRef.Path),
-                        RepairAction = (property) => {
+                        RepairAction = (property) =>
+                        {
                             property.FindPropertyRelative("Path").stringValue = editorEventRef.Path;
                         },
                     };
@@ -323,7 +328,7 @@ namespace FMODUnity
 
         private static void SetEvent(SerializedProperty property, string path)
         {
-            EditorEventRef eventRef = EventManager.EventFromPath(path);
+            EditorEventRef eventRef = AudioEventManager.EventFromPath(path);
 
             if (eventRef != null)
             {
@@ -347,13 +352,13 @@ namespace FMODUnity
 
         private static EditorEventRef GetEditorEventRef(EventReference eventReference)
         {
-            if (EventManager.GetEventLinkage(eventReference) == EventLinkage.Path)
+            if (AudioEventManager.GetEventLinkage(eventReference) == EventLinkage.Path)
             {
-                return EventManager.EventFromPath(eventReference.Path);
+                return AudioEventManager.EventFromPath(eventReference.Path);
             }
             else // Assume EventLinkage.GUID
             {
-                return EventManager.EventFromGUID(eventReference.Guid);
+                return AudioEventManager.EventFromGUID(eventReference.Guid);
             }
         }
 
@@ -361,7 +366,7 @@ namespace FMODUnity
         {
             if (Settings.Instance.EventLinkage == EventLinkage.Path && !eventReference.Guid.IsNull)
             {
-                EditorEventRef editorEventRef = EventManager.EventFromGUID(eventReference.Guid);
+                EditorEventRef editorEventRef = AudioEventManager.EventFromGUID(eventReference.Guid);
 
                 if (editorEventRef != null && editorEventRef.Path != eventReference.Path)
                 {
@@ -407,7 +412,7 @@ namespace FMODUnity
     }
 
 #pragma warning disable 0618 // Suppress the warning about using the obsolete EventRefAttribute class
-    [CustomPropertyDrawer(typeof(EventRefAttribute))]
+    [CustomPropertyDrawer(typeof(AudioEventRefAttribute))]
 #pragma warning restore 0618
     public class LegacyEventRefDrawer : PropertyDrawer
     {
@@ -419,7 +424,7 @@ namespace FMODUnity
             "* Add a field of type <b>EventReference</b> to this class\n" +
             "* Set the <b>MigrateTo</b> property on the <b>[EventRef]</b> attribute: " +
             "<b>[EventRef(MigrateTo=\"<fieldname>\")]</b>\n" +
-            "* Run the <b>" + EventReferenceUpdater.MenuPath + "</b> command to " +
+            "* Run the <b>" + AudioEventReferenceUpdater.MenuPath + "</b> command to " +
             "automatically migrate values from this field to the <b>EventReference</b> field";
 
         private static readonly Texture InfoIcon = EditorGUIUtility.IconContent("console.infoicon.sml").image;
@@ -464,7 +469,7 @@ namespace FMODUnity
         private GUIContent StatusContent(SerializedProperty property)
         {
 #pragma warning disable 0618 // Suppress the warning about using the obsolete EventRefAttribute class
-            string migrationTarget = (attribute as EventRefAttribute).MigrateTo;
+            string migrationTarget = (attribute as AudioEventRefAttribute).MigrateTo;
 #pragma warning restore 0618
 
             if (string.IsNullOrEmpty(migrationTarget))

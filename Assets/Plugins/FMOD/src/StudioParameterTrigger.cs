@@ -6,7 +6,7 @@ namespace FMODUnity
     [Serializable]
     public class EmitterRef
     {
-        public StudioEventEmitter Target;
+        public StudioAudioEventEmitter Target;
         public ParamRef[] Params;
     }
 

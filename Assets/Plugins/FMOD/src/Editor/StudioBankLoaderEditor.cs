@@ -35,7 +35,7 @@ namespace FMODUnity
                 SerializedProperty newBank = banks.GetArrayElementAtIndex(banks.arraySize - 1);
                 newBank.stringValue = "";
 
-                EventBrowser browser = CreateInstance<EventBrowser>();
+                AudioEventBrowser browser = CreateInstance<AudioEventBrowser>();
 
                 browser.titleContent = new GUIContent("Select FMOD Bank");
 

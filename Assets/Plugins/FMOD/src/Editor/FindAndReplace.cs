@@ -14,7 +14,7 @@ namespace FMODUnity
         private string message = "";
         private MessageType messageType = MessageType.None;
         private int lastMatch = -1;
-        private List<StudioEventEmitter> emitters;
+        private List<StudioAudioEventEmitter> emitters;
 
         private bool first = true;
 
@@ -32,7 +32,7 @@ namespace FMODUnity
 
         private void OnHierarchyChange()
         {
-            emitters = new List<StudioEventEmitter>(Resources.FindObjectsOfTypeAll<StudioEventEmitter>());
+            emitters = new List<StudioAudioEventEmitter>(Resources.FindObjectsOfTypeAll<StudioAudioEventEmitter>());
 
             if (!levelScope)
             {
@@ -162,7 +162,7 @@ namespace FMODUnity
             messageType = MessageType.Info;
         }
 
-        private bool ReplaceText(StudioEventEmitter emitter)
+        private bool ReplaceText(StudioAudioEventEmitter emitter)
         {
             int findLength = findText.Length;
             int replaceLength = replaceText.Length;

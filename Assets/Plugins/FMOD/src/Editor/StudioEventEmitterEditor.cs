@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace FMODUnity
 {
-    [CustomEditor(typeof(StudioEventEmitter))]
+    [CustomEditor(typeof(StudioAudioEventEmitter))]
     [CanEditMultipleObjects]
     public class StudioEventEmitterEditor : Editor
     {
@@ -19,9 +19,9 @@ namespace FMODUnity
 
         public void OnSceneGUI()
         {
-            var emitter = target as StudioEventEmitter;
+            var emitter = target as StudioAudioEventEmitter;
 
-            EditorEventRef editorEvent = EventManager.EventFromGUID(emitter.EventReference.Guid);
+            EditorEventRef editorEvent = AudioEventManager.EventFromGUID(emitter.EventReference.Guid);
             if (editorEvent != null && editorEvent.Is3D)
             {
                 EditorGUI.BeginChangeCheck();
@@ -70,7 +70,7 @@ namespace FMODUnity
 
             EditorGUILayout.PropertyField(eventReference, new GUIContent(EventReferenceLabel));
 
-            EditorEventRef editorEvent = EventManager.EventFromPath(eventPath.stringValue);
+            EditorEventRef editorEvent = AudioEventManager.EventFromPath(eventPath.stringValue);
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -491,7 +491,7 @@ namespace FMODUnity
             {
                 foreach (SerializedObject serializedTarget in serializedTargets)
                 {
-                    StudioEventEmitter emitter = serializedTarget.targetObject as StudioEventEmitter;
+                    StudioAudioEventEmitter emitter = serializedTarget.targetObject as StudioAudioEventEmitter;
 
                     if (Array.FindIndex(emitter.Params, p => p.Name == parameter.Name) < 0)
                     {

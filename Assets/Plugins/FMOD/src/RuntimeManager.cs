@@ -461,7 +461,7 @@ retry:
                     RuntimeUtils.DebugLogWarning("[FMOD] Please add an 'FMOD Studio Listener' component to your camera in the scene for correct 3D positioning of sounds.");
                 }
 
-                StudioEventEmitter.UpdateActiveEmitters();
+                StudioAudioEventEmitter.UpdateActiveEmitters();
 
                 for (int i = 0; i < attachedInstances.Count; i++)
                 {
@@ -1157,7 +1157,7 @@ retry:
                 var result = Instance.studioSystem.lookupID(path, out guid);
                 if (result == FMOD.RESULT.ERR_EVENT_NOTFOUND)
                 {
-                    throw new EventNotFoundException(path);
+                    throw new AudioEventNotFoundException(path);
                 }
             }
             return guid;
@@ -1171,7 +1171,7 @@ retry:
             {
                 guid = PathToGUID(path);
             }
-            catch (EventNotFoundException)
+            catch (AudioEventNotFoundException)
             {
                 guid = new FMOD.GUID();
             }
@@ -1189,9 +1189,9 @@ retry:
             {
                 return CreateInstance(eventReference.Guid);
             }
-            catch (EventNotFoundException)
+            catch (AudioEventNotFoundException)
             {
-                throw new EventNotFoundException(eventReference);
+                throw new AudioEventNotFoundException(eventReference);
             }
         }
 
@@ -1201,10 +1201,10 @@ retry:
             {
                 return CreateInstance(PathToGUID(path));
             }
-            catch(EventNotFoundException)
+            catch(AudioEventNotFoundException)
             {
                 // Switch from exception with GUID to exception with path
-                throw new EventNotFoundException(path);
+                throw new AudioEventNotFoundException(path);
             }
         }
 
@@ -1234,7 +1234,7 @@ retry:
             {
                 PlayOneShot(eventReference.Guid, position);
             }
-            catch (EventNotFoundException)
+            catch (AudioEventNotFoundException)
             {
                 RuntimeUtils.DebugLogWarning("[FMOD] Event not found: " + eventReference);
             }
@@ -1246,7 +1246,7 @@ retry:
             {
                 PlayOneShot(PathToGUID(path), position);
             }
-            catch (EventNotFoundException)
+            catch (AudioEventNotFoundException)
             {
                 RuntimeUtils.DebugLogWarning("[FMOD] Event not found: " + path);
             }
@@ -1266,7 +1266,7 @@ retry:
             {
                 PlayOneShotAttached(eventReference.Guid, gameObject);
             }
-            catch (EventNotFoundException)
+            catch (AudioEventNotFoundException)
             {
                 RuntimeUtils.DebugLogWarning("[FMOD] Event not found: " + eventReference);
             }
@@ -1278,7 +1278,7 @@ retry:
             {
                 PlayOneShotAttached(PathToGUID(path), gameObject);
             }
-            catch (EventNotFoundException)
+            catch (AudioEventNotFoundException)
             {
                 RuntimeUtils.DebugLogWarning("[FMOD] Event not found: " + path);
             }
@@ -1304,9 +1304,9 @@ retry:
             {
                 return GetEventDescription(eventReference.Guid);
             }
-            catch (EventNotFoundException)
+            catch (AudioEventNotFoundException)
             {
-                throw new EventNotFoundException(eventReference);
+                throw new AudioEventNotFoundException(eventReference);
             }
         }
 
@@ -1316,9 +1316,9 @@ retry:
             {
                 return GetEventDescription(PathToGUID(path));
             }
-            catch (EventNotFoundException)
+            catch (AudioEventNotFoundException)
             {
-                throw new EventNotFoundException(path);
+                throw new AudioEventNotFoundException(path);
             }
         }
 
@@ -1335,7 +1335,7 @@ retry:
 
                 if (result != FMOD.RESULT.OK)
                 {
-                    throw new EventNotFoundException(guid);
+                    throw new AudioEventNotFoundException(guid);
                 }
 
                 if (eventDesc.isValid())
