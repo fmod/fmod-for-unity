@@ -760,7 +760,7 @@ namespace FMODUnity
 
         private void DisplayCodecChannels(string label, Platform platform)
         {
-            if (platform is PlatformGroup)
+            if (platform is PlatformGroup || platform is PlatformDefault)
             {
                 return;
             }
