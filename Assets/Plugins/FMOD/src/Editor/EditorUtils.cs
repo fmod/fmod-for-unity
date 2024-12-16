@@ -632,7 +632,7 @@ namespace FMODUnity
             CheckResult(lowlevel.getVersion(out version));
 
             string text = string.Format(
-                "Version: {0}\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2021 \n\n" +
+                "Version: {0}\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2022 \n\n" +
                 "See LICENSE.TXT for additional license information.",
                 VersionString(version));
 

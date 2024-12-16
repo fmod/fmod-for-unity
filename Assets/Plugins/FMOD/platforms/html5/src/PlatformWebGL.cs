@@ -55,7 +55,7 @@ namespace FMODUnity
 
         protected override IEnumerable<FileRecord> GetBinaryFiles(BuildTarget buildTarget, bool allVariants, string suffix)
         {
-            #if UNITY_2021_2_OR_NEWER
+            #if UNITY_2022_2_OR_NEWER
             bool useWASM = true;
             #else
             bool useWASM = false;
@@ -77,7 +77,7 @@ namespace FMODUnity
 
         public override string GetPluginPath(string pluginName)
         {
-            #if UNITY_2021_2_OR_NEWER
+            #if UNITY_2022_2_OR_NEWER
             return string.Format("{0}/{1}.a", GetPluginBasePath(), pluginName);
             #else
             return string.Format("{0}/{1}.bc", GetPluginBasePath(), pluginName);
