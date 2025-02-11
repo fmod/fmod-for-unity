@@ -524,9 +524,9 @@ retry:
                     {
                         FMOD.ATTRIBUTES_3D attribs;
                         eventPositionWarnings[i].get3DAttributes(out attribs);
-                        if (attribs.position.x == 1e+18F &&
-                            attribs.position.y == 1e+18F &&
-                            attribs.position.z == 1e+18F)
+                        if (attribs.position.x == 1e+17F &&
+                            attribs.position.y == 1e+17F &&
+                            attribs.position.z == 1e+17F)
                         {
                             string path;
                             FMOD.Studio.EventDescription desc;
@@ -1219,8 +1219,8 @@ retry:
             eventDesc.is3D(out is3D);
             if (is3D)
             {
-                // Set position to 1e+18F, set3DAttributes should be called by the dev after this.
-                newInstance.set3DAttributes(RuntimeUtils.To3DAttributes(new Vector3(1e+18F, 1e+18F, 1e+18F)));
+                // Set position to 1e+17F, set3DAttributes should be called by the dev after this.
+                newInstance.set3DAttributes(RuntimeUtils.To3DAttributes(new Vector3(1e+17F, 1e+17F, 1e+17F)));
                 instance.eventPositionWarnings.Add(newInstance);
             }
             #endif
@@ -1363,18 +1363,6 @@ retry:
                 Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject.transform, rigidBody));
             }
         }
-
-        public static void SetListenerLocation(int listenerIndex, GameObject gameObject, GameObject attenuationObject = null, Vector3 velocity = new Vector3())
-        {
-            if (attenuationObject)
-            {
-                Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject.transform, velocity), RuntimeUtils.ToFMODVector(attenuationObject.transform.position));
-            }
-            else
-            {
-                Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject.transform, velocity));
-            }
-        }
 #endif
 
 #if UNITY_PHYSICS2D_EXIST
@@ -1395,6 +1383,18 @@ retry:
             }
         }
 #endif
+
+        public static void SetListenerLocation(int listenerIndex, GameObject gameObject, GameObject attenuationObject = null, Vector3 velocity = new Vector3())
+        {
+            if (attenuationObject)
+            {
+                Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject.transform, velocity), RuntimeUtils.ToFMODVector(attenuationObject.transform.position));
+            }
+            else
+            {
+                Instance.studioSystem.setListenerAttributes(listenerIndex, RuntimeUtils.To3DAttributes(gameObject.transform, velocity));
+            }
+        }
 
         public static void SetListenerLocation(GameObject gameObject, GameObject attenuationObject = null)
         {

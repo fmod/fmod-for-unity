@@ -1,6 +1,6 @@
 /* ======================================================================================== */
 /* FMOD Core API - C# wrapper.                                                              */
-/* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2024.                               */
+/* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2025.                               */
 /*                                                                                          */
 /* For more detail visit:                                                                   */
 /* https://fmod.com/docs/2.02/api/core-api.html                                             */
@@ -19,7 +19,7 @@ namespace FMOD
     */
     public partial class VERSION
     {
-        public const int    number = 0x00020226;
+        public const int    number = 0x00020227;
 #if !UNITY_2019_4_OR_NEWER
         public const string dll    = "fmod";
 #endif

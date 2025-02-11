@@ -34,6 +34,7 @@ namespace FMODUnity
 
         private const int StudioScriptPort = 3663;
         private static NetworkStream networkStream = null;
+        private static StreamReader streamReader = null;
         private static Socket socket = null;
         private static IAsyncResult socketConnection = null;
 
@@ -684,7 +685,7 @@ namespace FMODUnity
             CheckResult(lowlevel.getVersion(out version));
 
             string text = string.Format(
-                "Version: {0}\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2024 \n\n" +
+                "Version: {0}\n\nCopyright \u00A9 Firelight Technologies Pty, Ltd. 2014-2025 \n\n" +
                 "See LICENSE.TXT for additional license information.",
                 VersionString(version));
 
@@ -866,11 +867,23 @@ namespace FMODUnity
                         socketConnection = null;
                         socket = null;
                         networkStream = null;
-
+                        streamReader = null;
                         throw e;
                     }
                 }
                 return networkStream;
+            }
+        }
+
+        private static StreamReader ScriptStreamReader
+        {
+            get
+            {
+                if (streamReader == null)
+                {
+                    streamReader = new StreamReader(ScriptStream);
+                }
+                return streamReader;
             }
         }
 
@@ -934,11 +947,11 @@ namespace FMODUnity
                 {
                     networkStream.Close();
                     networkStream = null;
+                    streamReader = null;
                 }
                 return false;
             }
         }
-
 
         public static string GetScriptOutput(string command)
         {
@@ -946,19 +959,44 @@ namespace FMODUnity
             try
             {
                 ScriptStream.Write(commandBytes, 0, commandBytes.Length);
-                byte[] commandReturnBytes = new byte[2048];
-                int read = ScriptStream.Read(commandReturnBytes, 0, commandReturnBytes.Length);
-                string result = Encoding.UTF8.GetString(commandReturnBytes, 0, read - 1);
+                char[] myReadBuffer = new char[2048];
+                StringBuilder myCompleteMessage = new StringBuilder();
+                int numberOfCharactersRead = ScriptStreamReader.Read(myReadBuffer, 0, myReadBuffer.Length);
+
+                while (numberOfCharactersRead > 0)
+                {
+                    int nullIndex = Array.IndexOf(myReadBuffer, '\0', 0, numberOfCharactersRead);
+
+                    if (nullIndex > 0)
+                    {
+                        myCompleteMessage.Append(myReadBuffer, 0, nullIndex - 1);
+                    }
+                    else if (nullIndex < 0)
+                    {
+                        myCompleteMessage.Append(myReadBuffer, 0, numberOfCharactersRead);
+                    }
+
+                    if (nullIndex >= 0)
+                    {
+                        break;
+                    }
+
+                    numberOfCharactersRead = ScriptStreamReader.Read(myReadBuffer, 0, myReadBuffer.Length);
+                }
+
+                string result = myCompleteMessage.ToString();
                 if (result.StartsWith("out():"))
                 {
                     return result.Substring(6).Trim();
                 }
+
                 return null;
             }
             catch (Exception)
             {
                 networkStream.Close();
                 networkStream = null;
+                streamReader = null;
                 return null;
             }
         }
