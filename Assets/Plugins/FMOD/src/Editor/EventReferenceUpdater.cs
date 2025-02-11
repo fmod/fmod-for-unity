@@ -691,7 +691,18 @@ namespace FMODUnity
                         if (value is System.Collections.IEnumerable && !(value is string))
                         {
                             int index = 0;
-                            var valueEnumerator = (value as System.Collections.IEnumerable).GetEnumerator();
+                            System.Collections.IEnumerator valueEnumerator = null;
+
+                            try
+                            {
+                                valueEnumerator = (value as System.Collections.IEnumerable).GetEnumerator();
+                            }
+                            catch (Exception ex)
+                            {
+                                RuntimeUtils.DebugLogWarningFormat("[FMOD] Failed to get enumerator for value in field '{0}': {1}", subObjectField.Name, ex.Message);
+                                continue;
+                            }
+
                             for (;;)
                             {
                                 object item = null;

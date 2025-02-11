@@ -51,7 +51,7 @@ namespace FMODUnity
 
         private AudioListener[] unityListeners;
         private StudioListener[] fmodListeners;
-        private Vector2 scroll1, scroll2;
+        private Vector2 scroll1, scroll2, pageScrollPos;
         private Vector2 stagingDetailsScroll;
         private bool bFoundUnityListener;
         private bool bFoundFmodListener;
@@ -209,9 +209,8 @@ fmod_editor.log";
         {
             instance = (SetupWizardWindow)GetWindow(typeof(SetupWizardWindow), true, L10n.Tr("FMOD Setup Wizard"));
             instance.ShowUtility();
-            instance.minSize = new Vector2(750, 500);
-            instance.maxSize = instance.minSize;
-            var position = new Rect(Vector2.zero, instance.minSize);
+            instance.minSize = new Vector2(600, 400);
+            var position = new Rect(Vector2.zero, new Vector2(800, 600));
             Vector2 screenCenter = new Vector2(Screen.currentResolution.width, Screen.currentResolution.height) / 2;
             position.center = screenCenter / EditorGUIUtility.pixelsPerPoint;
             instance.position = position;
@@ -269,6 +268,7 @@ fmod_editor.log";
                 titleLeftStyle = new GUIStyle(descriptionStyle);
                 titleLeftStyle.fontStyle = FontStyle.Bold;
 
+                descriptionStyle.fixedWidth = 350;
                 columnStyle = new GUIStyle();
                 columnStyle.margin.left = 50;
                 columnStyle.margin.right = 50;
@@ -290,22 +290,27 @@ fmod_editor.log";
                 Breadcrumbs();
 
                 // Draw Body
-                using (new EditorGUILayout.VerticalScope("box", GUILayout.ExpandHeight(true)))
+                using (new EditorGUILayout.VerticalScope("box", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true)))
                 {
-                    EditorGUILayout.Space();
-                    EditorGUILayout.Space();
-                    EditorGUILayout.Space();
-
-                    switch (currentPage)
+                    using (var scrollView = new EditorGUILayout.ScrollViewScope(pageScrollPos))
                     {
-                        case PAGES.Welcome: WelcomePage(); break;
-                        case PAGES.Updating: UpdatingPage(); break;
-                        case PAGES.Linking: LinkingPage(); break;
-                        case PAGES.Listener: ListenerPage(); break;
-                        case PAGES.UnityAudio: DisableUnityAudioPage(); break;
-                        case PAGES.UnitySources: UnitySources(); break;
-                        case PAGES.SourceControl: SourceControl(); break;
-                        case PAGES.End: EndPage(); break;
+                        pageScrollPos = scrollView.scrollPosition;
+
+                        EditorGUILayout.Space();
+                        EditorGUILayout.Space();
+                        EditorGUILayout.Space();
+
+                        switch (currentPage)
+                        {
+                            case PAGES.Welcome: WelcomePage(); break;
+                            case PAGES.Updating: UpdatingPage(); break;
+                            case PAGES.Linking: LinkingPage(); break;
+                            case PAGES.Listener: ListenerPage(); break;
+                            case PAGES.UnityAudio: DisableUnityAudioPage(); break;
+                            case PAGES.UnitySources: UnitySources(); break;
+                            case PAGES.SourceControl: SourceControl(); break;
+                            case PAGES.End: EndPage(); break;
+                        }
                     }
 
                     Buttons();
@@ -512,49 +517,49 @@ fmod_editor.log";
             EditorGUILayout.LabelField(L10n.Tr("Choose how to access your FMOD Studio content:"), titleLeftStyle);
 
             EditorGUILayout.Space();
-            using (new GUILayout.HorizontalScope())
+            using (new GUILayout.VerticalScope("box"))
             {
-                using (new GUILayout.VerticalScope("box"))
-                {
-                    float indent = 5;
-                    var serializedObject = new SerializedObject(Settings.Instance);
+                float indent = 5;
+                var serializedObject = new SerializedObject(Settings.Instance);
 
-                    var boxStyle = new GUIStyle();
-                    boxStyle.fixedHeight = 10;
-                    using (new GUILayout.HorizontalScope())
+                var boxStyle = new GUIStyle();
+                boxStyle.fixedHeight = 10;
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.Space(indent);
+                    if (GUILayout.Button(L10n.Tr("FMOD Studio Project"), sourceButtonStyle))
                     {
-                        GUILayout.Space(indent);
-                        if (GUILayout.Button(L10n.Tr("FMOD Studio Project"), sourceButtonStyle))
-                        {
-                            SettingsEditor.BrowseForSourceProjectPath(serializedObject);
-                        }
-                        GUILayout.Label(L10n.Tr("If you have the complete FMOD Studio Project."),
-                            descriptionStyle, GUILayout.Height(sourceButtonStyle.fixedHeight));
+                        SettingsEditor.BrowseForSourceProjectPath(serializedObject);
                     }
-                    EditorGUILayout.Space();
-                    using (new GUILayout.HorizontalScope())
-                    {
-                        GUILayout.Space(indent);
-                        if (GUILayout.Button(L10n.Tr("Single Platform Build"), sourceButtonStyle))
-                        {
-                            SettingsEditor.BrowseForSourceBankPath(serializedObject);
-                        }
-                        EditorGUILayout.LabelField(L10n.Tr("If you have the contents of the Build folder for a single platform."),
-                            descriptionStyle, GUILayout.Height(sourceButtonStyle.fixedHeight));
-                        GUILayout.FlexibleSpace();
-                    }
-                    EditorGUILayout.Space();
-                    using (new GUILayout.HorizontalScope())
-                    {
-                        GUILayout.Space(indent);
-                        if (GUILayout.Button(L10n.Tr("Multiple Platform Build"), sourceButtonStyle))
-                        {
-                            SettingsEditor.BrowseForSourceBankPath(serializedObject, true);
-                        }
-                        EditorGUILayout.LabelField(L10n.Tr("If you have the contents of the Build folder for multiple platforms, with each platform in its own subdirectory."),
-                            descriptionStyle, GUILayout.Height(sourceButtonStyle.fixedHeight));
-                    }
+                    GUILayout.Label(L10n.Tr("If you have the complete FMOD Studio Project."), descriptionStyle, GUILayout.Height(sourceButtonStyle.fixedHeight));
+
+                    GUILayout.FlexibleSpace();
                 }
+                EditorGUILayout.Space();
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.Space(indent);
+                    if (GUILayout.Button("Single Platform Build", sourceButtonStyle))
+                    {
+                        SettingsEditor.BrowseForSourceBankPath(serializedObject);
+                    }
+                    EditorGUILayout.LabelField(L10n.Tr("If you have the contents of the Build folder for a single platform."),
+                        descriptionStyle, GUILayout.Height(sourceButtonStyle.fixedHeight));
+                    GUILayout.FlexibleSpace();
+                }
+                EditorGUILayout.Space();
+
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.Space(indent);
+                    if (GUILayout.Button(L10n.Tr("Multiple Platform Build"), sourceButtonStyle))
+                    {
+                        SettingsEditor.BrowseForSourceBankPath(serializedObject, true);
+                    }
+                    EditorGUILayout.LabelField(L10n.Tr("If you have the contents of the Build folder for multiple platforms, with each platform in its own subdirectory."), descriptionStyle, GUILayout.Height(sourceButtonStyle.fixedHeight));
+                    GUILayout.FlexibleSpace();
+                }
+                EditorGUILayout.Space();
             }
 
             if (IsStudioLinked())
@@ -826,18 +831,12 @@ fmod_editor.log";
                     EditorUtils.OnlineManual();
                 }
 
-                GUILayout.FlexibleSpace();
-            }
-
-            GUILayout.Space(20);
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                GUILayout.FlexibleSpace();
 
                 if (GUILayout.Button(L10n.Tr(" FMOD Settings "), buttonStyle))
                 {
                     EditorSettings.EditSettings();
                 }
+                GUILayout.Space(18);
 
                 GUILayout.FlexibleSpace();
             }
@@ -874,7 +873,6 @@ fmod_editor.log";
                 else if (currentPage == PAGES.End) button2Text = L10n.Tr("Close");
                 else button2Text = L10n.Tr("Next");
 
-                EditorGUILayout.Space();
                 if (GUILayout.Button(button2Text, navButtonStyle))
                 {
                     if (currentPage == PAGES.End)
@@ -949,7 +947,9 @@ fmod_editor.log";
                 using (var scope = new EditorGUILayout.ScrollViewScope(stagingDetailsScroll))
                 {
                     stagingDetailsScroll = scope.scrollPosition;
-                    EditorGUILayout.LabelField(nextStagingStep.Details, descriptionStyle);
+                    GUIStyle longDescStyle = descriptionStyle;
+                    longDescStyle.fixedWidth = 0;
+                    EditorGUILayout.LabelField(nextStagingStep.Details, longDescStyle);
                 }
             }
         }
