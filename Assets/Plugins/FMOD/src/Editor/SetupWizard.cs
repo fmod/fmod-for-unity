@@ -89,6 +89,8 @@ namespace FMODUnity
 
         private static bool IsStagingUpdateInProgress => nextStagingStep != null;
 
+        private Vector2 ignoreFileScrollPosition = Vector2.zero;
+
         private const string IgnoreFileText =
 @"# Never ignore DLLs in the FMOD subfolder.
 !/[Aa]ssets/Plugins/FMOD/**/lib/*
@@ -107,6 +109,10 @@ namespace FMODUnity
 # If the source bank files are kept outside of the StreamingAssets folder then these can be ignored.
 # Log files can be ignored.
 fmod_editor.log";
+
+        private const string GitAttributesText =
+@"Assets/Plugins/FMOD/**/*.bundle text eol=lf
+Assets/Plugins/FMOD/**/Info.plist text eol=lf";
 
         private enum PAGES : int
         {
@@ -768,13 +774,23 @@ fmod_editor.log";
 
         private void SourceControl()
         {
-            EditorGUILayout.LabelField("There are a number of files produced by FMOD for Unity that should be ignored by source control. " +
-                "Here is an example of what you should add to your source control ignore file:", titleLeftStyle);
-            GUILayout.FlexibleSpace();
+            EditorGUILayout.LabelField("There are a number of files produced by FMOD for Unity that should be ignored by source control. Here is an example of what you should add to your source control ignore file:", titleLeftStyle);
 
             using (new EditorGUILayout.VerticalScope("box"))
             {
+                ignoreFileScrollPosition = EditorGUILayout.BeginScrollView(ignoreFileScrollPosition, GUILayout.Height(200));
                 EditorGUILayout.TextArea(IgnoreFileText);
+                EditorGUILayout.EndScrollView();
+            }
+
+            EditorGUILayout.LabelField(
+                "Add line ending requirements to a .gitattributes file to avoid issues:",
+                titleLeftStyle
+            );
+
+            using (new EditorGUILayout.VerticalScope("box"))
+            {
+                EditorGUILayout.TextArea(GitAttributesText);
             }
 
             pageComplete[(int)PAGES.SourceControl] = true;
