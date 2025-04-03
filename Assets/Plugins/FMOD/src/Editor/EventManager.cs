@@ -49,6 +49,7 @@ namespace FMODUnity
             eventCache.CacheTime = DateTime.MinValue;
             eventCache.EditorBanks.Clear();
             eventCache.EditorEvents.Clear();
+            eventCache.EditorEventsDict.Clear();
             eventCache.EditorParameters.Clear();
             eventCache.StringsBanks.Clear();
             eventCache.MasterBanks.Clear();
@@ -354,6 +355,7 @@ namespace FMODUnity
                 });
                 eventCache.EditorParameters.RemoveAll((x) => x == null);
 
+                eventCache.BuildDictionary();
                 AssetDatabase.SaveAssets();
             }
             finally
@@ -1222,7 +1224,13 @@ namespace FMODUnity
         public static EditorEventRef EventFromString(string path)
         {
             AffirmEventCache();
-            return eventCache.EditorEvents.Find((x) => x.Path.Equals(path, StringComparison.CurrentCultureIgnoreCase));
+
+            if (eventCache.EditorEventsDict.TryGetValue(path, out int index))
+            {
+                return eventCache.EditorEvents[index];
+            }
+
+            return null;
         }
 
         public static EditorEventRef EventFromGUID(FMOD.GUID guid)

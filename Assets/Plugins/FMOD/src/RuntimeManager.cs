@@ -121,7 +121,7 @@ namespace FMODUnity
 
             // Filter out benign expected errors.
             if ((callbackInfo.instancetype == FMOD.ERRORCALLBACK_INSTANCETYPE.CHANNEL || callbackInfo.instancetype == FMOD.ERRORCALLBACK_INSTANCETYPE.CHANNELCONTROL)
-                && callbackInfo.result == FMOD.RESULT.ERR_INVALID_HANDLE)
+                && (callbackInfo.result == FMOD.RESULT.ERR_INVALID_HANDLE || callbackInfo.result == FMOD.RESULT.ERR_CHANNEL_STOLEN))
             {
                 return FMOD.RESULT.OK;
             }
@@ -182,6 +182,11 @@ namespace FMODUnity
                     try
                     {
                         RuntimeUtils.EnforceLibraryOrder();
+
+                        #if UNITY_OPENHARMONY && !UNITY_EDITOR
+                        OpenHarmonyJSObject openHarmonyJSObject = new OpenHarmonyJSObject("ClassFMOD" + FMOD.VERSION.dllSuffix);
+                        openHarmonyJSObject.Call("init");
+                        #endif
 
                         #if UNITY_ANDROID && !UNITY_EDITOR
                         // First, obtain the current activity context
