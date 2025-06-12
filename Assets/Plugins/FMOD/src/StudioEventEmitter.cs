@@ -235,9 +235,13 @@ namespace FMODUnity
 
             IsActive = true;
 
-            if (is3D && !isOneshot && Settings.Instance.StopEventsOutsideMaxDistance)
+            if (is3D && Settings.Instance.StopEventsOutsideMaxDistance)
             {
-                RegisterActiveEmitter(this);
+                if (!isOneshot)
+                {
+                    RegisterActiveEmitter(this);
+                }
+
                 UpdatePlayingStatus(true);
             }
             else
