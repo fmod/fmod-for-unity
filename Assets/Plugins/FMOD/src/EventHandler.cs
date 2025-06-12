@@ -1,9 +1,14 @@
 ﻿using UnityEngine;
+#if UNITY_UI_EXIST
 using UnityEngine.EventSystems;
+#endif
 
 namespace FMODUnity
 {
-    public abstract class EventHandler : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+    public abstract class EventHandler : MonoBehaviour
+#if UNITY_UI_EXIST
+    , IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+#endif
     {
         public string CollisionTag = "";
 
@@ -27,7 +32,7 @@ namespace FMODUnity
             HandleGameEvent(EmitterGameEvent.ObjectDisable);
         }
 
-        #if UNITY_PHYSICS_EXIST
+#if UNITY_PHYSICS_EXIST
         private void OnTriggerEnter(Collider other)
         {
             if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag) || (other.attachedRigidbody && other.attachedRigidbody.CompareTag(CollisionTag)))
@@ -43,9 +48,9 @@ namespace FMODUnity
                 HandleGameEvent(EmitterGameEvent.TriggerExit);
             }
         }
-        #endif
+#endif
 
-        #if UNITY_PHYSICS2D_EXIST
+#if UNITY_PHYSICS2D_EXIST
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (string.IsNullOrEmpty(CollisionTag) || other.CompareTag(CollisionTag))
@@ -61,7 +66,7 @@ namespace FMODUnity
                 HandleGameEvent(EmitterGameEvent.TriggerExit2D);
             }
         }
-        #endif
+#endif
 
         private void OnCollisionEnter()
         {
@@ -83,6 +88,7 @@ namespace FMODUnity
             HandleGameEvent(EmitterGameEvent.CollisionExit2D);
         }
 
+#if UNITY_UI_EXIST
         private void OnMouseEnter()
         {
             HandleGameEvent(EmitterGameEvent.ObjectMouseEnter);
@@ -121,7 +127,7 @@ namespace FMODUnity
         {
             HandleGameEvent(EmitterGameEvent.UIMouseUp);
         }
-
+#endif
         protected abstract void HandleGameEvent(EmitterGameEvent gameEvent);
     }
 }

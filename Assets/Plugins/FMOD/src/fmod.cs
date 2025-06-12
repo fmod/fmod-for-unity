@@ -19,7 +19,7 @@ namespace FMOD
     */
     public partial class VERSION
     {
-        public const int    number = 0x00020228;
+        public const int    number = 0x00020229;
 #if !UNITY_2019_4_OR_NEWER
         public const string dll    = "fmod";
 #endif
@@ -3359,7 +3359,7 @@ namespace FMOD
         }
         public RESULT setParameterData(int index, byte[] data)
         {
-            return FMOD5_DSP_SetParameterData(this.handle, index, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0), (uint)data.Length);
+            return FMOD5_DSP_SetParameterData(this.handle, index, data, data == null ? 0 : (uint)data.Length);
         }
         public RESULT getParameterFloat(int index, out float value)
         {
@@ -3511,7 +3511,7 @@ namespace FMOD
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_DSP_SetParameterBool          (IntPtr dsp, int index, bool value);
         [DllImport(VERSION.dll)]
-        private static extern RESULT FMOD5_DSP_SetParameterData          (IntPtr dsp, int index, IntPtr data, uint length);
+        private static extern RESULT FMOD5_DSP_SetParameterData          (IntPtr dsp, int index, byte[] data, uint length);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_DSP_GetParameterFloat         (IntPtr dsp, int index, out float value, IntPtr valuestr, int valuestrlen);
         [DllImport(VERSION.dll)]

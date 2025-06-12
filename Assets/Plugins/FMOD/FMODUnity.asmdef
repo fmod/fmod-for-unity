@@ -5,7 +5,6 @@
         "Unity.Addressables",
         "Unity.ResourceManager",
         "Unity.RenderPipelines.Universal.Runtime"
-
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -39,6 +38,11 @@
             "name": "com.unity.urp",
             "expression": "1.0.0",
             "define": "UNITY_URP_EXIST"
+        },
+        {
+            "name": "com.unity.ugui",
+            "expression": "1.0.0",
+            "define": "UNITY_UI_EXIST"
         }
     ],
     "noEngineReferences": false
