@@ -11,6 +11,11 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Collections;
 
+#if UNITY_2021_3_OR_NEWER
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+#endif
+
 namespace FMOD.Studio
 {
     public partial class STUDIO_VERSION
@@ -677,6 +682,14 @@ namespace FMOD.Studio
             pinnedArray.Free();
             return result;
         }
+#if UNITY_2021_3_OR_NEWER
+        public unsafe RESULT loadBankNativeArray(NativeArray<byte> buffer, LOAD_BANK_FLAGS flags, out Bank bank)
+        {
+            IntPtr pointer = (IntPtr)buffer.GetUnsafeReadOnlyPtr();
+            RESULT result = FMOD_Studio_System_LoadBankMemory(this.handle, pointer, buffer.Length, LOAD_MEMORY_MODE.LOAD_MEMORY, flags, out bank.handle);
+            return result;
+        }
+#endif
         public RESULT loadBankCustom(BANK_INFO info, LOAD_BANK_FLAGS flags, out Bank bank)
         {
             info.size = Marshal.SizeOf<BANK_INFO>();
