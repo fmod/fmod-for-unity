@@ -64,7 +64,7 @@ namespace FMOD
 
     public enum DSP_PROCESS_OPERATION
     {
-        PROCESS_PERFORM = 0,
+        PROCESS_PERFORM,
         PROCESS_QUERY
     }
 
@@ -169,7 +169,7 @@ namespace FMOD
 
     public enum DSP_PARAMETER_TYPE
     {
-        FLOAT = 0,
+        FLOAT,
         INT,
         BOOL,
         DATA,
@@ -178,7 +178,7 @@ namespace FMOD
 
     public enum DSP_PARAMETER_FLOAT_MAPPING_TYPE
     {
-        DSP_PARAMETER_FLOAT_MAPPING_TYPE_LINEAR = 0,
+        DSP_PARAMETER_FLOAT_MAPPING_TYPE_LINEAR,
         DSP_PARAMETER_FLOAT_MAPPING_TYPE_AUTO,
         DSP_PARAMETER_FLOAT_MAPPING_TYPE_PIECEWISE_LINEAR,
     }

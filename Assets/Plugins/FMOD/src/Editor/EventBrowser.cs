@@ -1562,12 +1562,10 @@ namespace FMODUnity
         public void ChooseEvent(SerializedProperty property)
         {
             BeginInspectorPopup(property, TypeFilter.Event);
-
-            SerializedProperty pathProperty = property.FindPropertyRelative(L10n.Tr("Path"));
-
-            if (!string.IsNullOrEmpty(pathProperty.stringValue))
+            string path = property.GetEventReferencePath();
+            if (!string.IsNullOrEmpty(path))
             {
-                treeView.JumpToEvent(pathProperty.stringValue);
+                treeView.JumpToEvent(path);
             }
         }
 

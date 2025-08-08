@@ -44,7 +44,17 @@ namespace FMODUnity
             var end = serializedObject.FindProperty("EventStopTrigger");
             var tag = serializedObject.FindProperty("CollisionTag");
             var eventReference = serializedObject.FindProperty("EventReference");
+#if FMOD_SERIALIZE_GUID_ONLY
+            FMOD.GUID guid = eventReference.FindPropertyRelative("Guid").GetGuid();
+            EditorEventRef editorEventRef = EventManager.EventFromGUID(guid);
+            var eventPath = "";
+            if (editorEventRef != null)
+            {
+                eventPath = editorEventRef.Path;
+            }
+#else
             var eventPath = eventReference.FindPropertyRelative("Path");
+#endif
             var fadeout = serializedObject.FindProperty("AllowFadeout");
             var once = serializedObject.FindProperty("TriggerOnce");
             var preload = serializedObject.FindProperty("Preload");
@@ -69,12 +79,20 @@ namespace FMODUnity
             EditorUtils.DrawLegacyEvent(serializedObject.FindProperty("Event"), EventReferenceLabel);
 
             EditorGUILayout.PropertyField(eventReference, new GUIContent(L10n.Tr(EventReferenceLabel)));
-
+#if FMOD_SERIALIZE_GUID_ONLY
+            EditorEventRef editorEvent = EventManager.EventFromPath(eventPath);
+#else
             EditorEventRef editorEvent = EventManager.EventFromPath(eventPath.stringValue);
+#endif
+
 
             if (EditorGUI.EndChangeCheck())
             {
+#if FMOD_SERIALIZE_GUID_ONLY
+                EditorUtils.UpdateParamsOnEmitter(serializedObject, eventPath);
+#else
                 EditorUtils.UpdateParamsOnEmitter(serializedObject, eventPath.stringValue);
+#endif
             }
 
             // Attenuation

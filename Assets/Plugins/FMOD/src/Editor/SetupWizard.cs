@@ -39,7 +39,7 @@ namespace FMODUnity
             UpdateTask.Create(
                 type: UpdateTaskType.UpdateEventReferences,
                 name: L10n.Tr("Update Event References"),
-                description: L10n.Tr("Find event references that use the obsolete [EventRef] attribute and update them to use the EventReference type."),
+                description: L10n.Tr("Find event references that use the obsolete [FMODUnity.EventRef] attribute and update them to use the FMODUnity.EventReference type."),
                 execute: EventReferenceUpdater.ShowWindow,
                 checkComplete: EventReferenceUpdater.IsUpToDate
             ),
@@ -82,6 +82,8 @@ namespace FMODUnity
         private TreeViewState m_TreeViewState;
 
         private bool bStudioLinked;
+        private bool isValidSource = true;
+        private string invalidMessage;
 
         private static StagingSystem.UpdateStep nextStagingStep;
 
@@ -247,6 +249,8 @@ Assets/Plugins/FMOD/**/Info.plist text eol=lf";
             iconStyle = new GUIStyle();
             iconStyle.alignment = TextAnchor.MiddleCenter;
 
+            EditorUtils.ValidateSource(out isValidSource, out invalidMessage);
+
             CheckUpdatesComplete();
             CheckStudioLinked();
             CheckListeners();
@@ -379,7 +383,7 @@ Assets/Plugins/FMOD/**/Info.plist text eol=lf";
 
         private void CheckStudioLinked()
         {
-            pageComplete[(int)PAGES.Linking] = IsStudioLinked();
+            pageComplete[(int)PAGES.Linking] = isValidSource;
         }
 
         private bool IsStudioLinked()
@@ -535,7 +539,7 @@ Assets/Plugins/FMOD/**/Info.plist text eol=lf";
                     GUILayout.Space(indent);
                     if (GUILayout.Button(L10n.Tr("FMOD Studio Project"), sourceButtonStyle))
                     {
-                        SettingsEditor.BrowseForSourceProjectPath(serializedObject);
+                        isValidSource = SettingsEditor.BrowseForSourceProjectPath(serializedObject);
                     }
                     GUILayout.Label(L10n.Tr("If you have the complete FMOD Studio Project."), descriptionStyle, GUILayout.Height(sourceButtonStyle.fixedHeight));
 
@@ -547,7 +551,8 @@ Assets/Plugins/FMOD/**/Info.plist text eol=lf";
                     GUILayout.Space(indent);
                     if (GUILayout.Button("Single Platform Build", sourceButtonStyle))
                     {
-                        SettingsEditor.BrowseForSourceBankPath(serializedObject);
+                        SettingsEditor.BrowseForSourceBankPath(serializedObject, false);
+                        EditorUtils.ValidateSource(out isValidSource, out invalidMessage);
                     }
                     EditorGUILayout.LabelField(L10n.Tr("If you have the contents of the Build folder for a single platform."),
                         descriptionStyle, GUILayout.Height(sourceButtonStyle.fixedHeight));
@@ -561,6 +566,7 @@ Assets/Plugins/FMOD/**/Info.plist text eol=lf";
                     if (GUILayout.Button(L10n.Tr("Multiple Platform Build"), sourceButtonStyle))
                     {
                         SettingsEditor.BrowseForSourceBankPath(serializedObject, true);
+                        EditorUtils.ValidateSource(out isValidSource, out invalidMessage);
                     }
                     EditorGUILayout.LabelField(L10n.Tr("If you have the contents of the Build folder for multiple platforms, with each platform in its own subdirectory."), descriptionStyle, GUILayout.Height(sourceButtonStyle.fixedHeight));
                     GUILayout.FlexibleSpace();
@@ -568,18 +574,18 @@ Assets/Plugins/FMOD/**/Info.plist text eol=lf";
                 EditorGUILayout.Space();
             }
 
-            if (IsStudioLinked())
+            if (IsStudioLinked() || invalidMessage.Length != 0)
             {
                 EditorGUILayout.Space();
 
                 Color oldColor = GUI.backgroundColor;
-                GUI.backgroundColor = Color.green;
+                GUI.backgroundColor = isValidSource ? Color.green : Color.red;
 
                 using (new GUILayout.HorizontalScope("box"))
                 {
                     GUILayout.FlexibleSpace();
 
-                    GUILayout.Label(tickTexture, iconStyle, GUILayout.Height(EditorGUIUtility.singleLineHeight * 2));
+                    GUILayout.Label(isValidSource ? tickTexture : crossTexture, iconStyle, GUILayout.Height(EditorGUIUtility.singleLineHeight * 2));
 
                     EditorGUILayout.Space();
 
@@ -589,18 +595,15 @@ Assets/Plugins/FMOD/**/Info.plist text eol=lf";
 
                         if (settings.HasSourceProject)
                         {
-                            EditorGUILayout.LabelField(L10n.Tr("Using the FMOD Studio project at:"), descriptionStyle);
-                            EditorGUILayout.LabelField(settings.SourceProjectPath, descriptionStyle);
+                            EditorGUILayout.LabelField(L10n.Tr(String.Format("Using the FMOD Studio project at: {0}", settings.SourceBankPath)), descriptionStyle);
                         }
                         else if (settings.HasPlatforms)
                         {
-                            EditorGUILayout.LabelField(L10n.Tr("Using the multiple platform build at:"), descriptionStyle);
-                            EditorGUILayout.LabelField(settings.SourceBankPath, descriptionStyle);
+                            EditorGUILayout.LabelField(L10n.Tr(isValidSource ? String.Format("Using the multiple platform build at: {0}", settings.SourceBankPath) : invalidMessage), descriptionStyle);
                         }
                         else
                         {
-                            EditorGUILayout.LabelField(L10n.Tr("Using the single platform build at:"), descriptionStyle);
-                            EditorGUILayout.LabelField(settings.SourceBankPath, descriptionStyle);
+                            EditorGUILayout.LabelField(L10n.Tr(isValidSource ? String.Format("Using the single platform build at: {0}", settings.SourceBankPath) : invalidMessage), descriptionStyle);
                         }
                     }
 

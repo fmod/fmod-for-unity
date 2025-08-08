@@ -62,8 +62,11 @@ namespace FMODUnity
                 pathRect.xMax = searchRect.x - 3;
                 pathRect.height = baseHeight;
 
+#if FMOD_SERIALIZE_GUID_ONLY
+                string path = property.GetEventReferencePath();
+                EditorGUI.LabelField(pathRect, path, EditorStyles.textField);
+#else
                 SerializedProperty pathProperty = GetPathProperty(property);
-
                 using (var scope = new EditorGUI.ChangeCheckScope())
                 {
                     EditorGUI.PropertyField(pathRect, pathProperty, GUIContent.none);
@@ -73,6 +76,7 @@ namespace FMODUnity
                         SetEvent(property, pathProperty.stringValue);
                     }
                 }
+#endif
 
                 if (GUI.Button(searchRect, new GUIContent(browseIcon, L10n.Tr("Search")), buttonStyle))
                 {
@@ -104,7 +108,11 @@ namespace FMODUnity
                 {
                     EventBrowser.ShowWindow();
                     EventBrowser eventBrowser = EditorWindow.GetWindow<EventBrowser>();
+#if FMOD_SERIALIZE_GUID_ONLY
+                    eventBrowser.FrameEvent(path);
+#else
                     eventBrowser.FrameEvent(pathProperty.stringValue);
+#endif
                 }
 
                 if (editorEventRef != null)
@@ -408,7 +416,7 @@ namespace FMODUnity
         private GUIStyle RichTextStyle;
 
         private static readonly string HelpText =
-        string.Format(L10n.Tr("This field has the <b>[EventRef]</b> attribute, which is obsolete.\nTo resolve this issue:\n* Add a field of type <b>EventReference</b> to this class\nSet the <b>MigrateTo</b> property on the <b>[EventRef]</b> attribute: <b>[EventRef(MigrateTo=\"<fieldname>\")]</b>\n Run the <b>{0}</b> command to automatically migrate values from this field to the <b>EventReference</b> field"), EventReferenceUpdater.MenuPath);
+        string.Format(L10n.Tr("This field has the <b>[FMODUnity.EventRef]</b> attribute, which is obsolete.\nTo resolve this issue:\n* Add a field of type <b>FMODUnity.EventReference</b> to this class\nSet the <b>MigrateTo</b> property on the <b>[FMODUnity.EventRef]</b> attribute: <b>[FMODUnity.EventRef(MigrateTo=\"<fieldname>\")]</b>\n Run the <b>{0}</b> command to automatically migrate values from this field to the <b>FMODUnity.EventReference</b> field"), EventReferenceUpdater.MenuPath);
         private static readonly Texture InfoIcon = EditorGUIUtility.IconContent("console.infoicon.sml").image;
         private static readonly Texture WarningIcon = EditorUtils.LoadImage("NotFound.png");
 
@@ -456,7 +464,7 @@ namespace FMODUnity
 
             if (string.IsNullOrEmpty(migrationTarget))
             {
-                return new GUIContent(L10n.Tr("<b>[EventRef]</b> is obsolete - use the <b>EventReference</b> type instead."),
+                return new GUIContent(L10n.Tr("<b>[FMODUnity.EventRef]</b> is obsolete - use the <b>FMODUnity.EventReference</b> type instead."),
                     WarningIcon);
 
             }
