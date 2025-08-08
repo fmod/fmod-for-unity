@@ -414,13 +414,13 @@ namespace FMODUnity
         private GUIStyle RichTextStyle;
 
         private const string HelpText =
-            "This field has the <b>[EventRef]</b> attribute, which is obsolete.\n" +
+            "This field has the <b>[FMODUnity.EventRef]</b> attribute, which is obsolete.\n" +
             "To resolve this issue:\n" +
-            "* Add a field of type <b>EventReference</b> to this class\n" +
-            "* Set the <b>MigrateTo</b> property on the <b>[EventRef]</b> attribute: " +
-            "<b>[EventRef(MigrateTo=\"<fieldname>\")]</b>\n" +
+            "* Add a field of type <b>FMODUnity.EventReference</b> to this class\n" +
+            "* Set the <b>MigrateTo</b> property on the <b>[FMODUnity.EventRef]</b> attribute: " +
+            "<b>[FMODUnity.EventRef(MigrateTo=\"yourNewFieldName\")]</b>\n" +
             "* Run the <b>" + EventReferenceUpdater.MenuPath + "</b> command to " +
-            "automatically migrate values from this field to the <b>EventReference</b> field";
+            "automatically migrate values from this field to the <b>FMODUnity.EventReference</b> field";
 
         private static readonly Texture InfoIcon = EditorGUIUtility.IconContent("console.infoicon.sml").image;
         private static readonly Texture WarningIcon = EditorUtils.LoadImage("NotFound.png");
@@ -469,7 +469,7 @@ namespace FMODUnity
 
             if (string.IsNullOrEmpty(migrationTarget))
             {
-                return new GUIContent("<b>[EventRef]</b> is obsolete - use the <b>EventReference</b> type instead.",
+                return new GUIContent("<b>[FMODUnity.EventRef]</b> is obsolete - use the <b>FMODUnity.EventReference</b> type instead.",
                     WarningIcon);
 
             }

@@ -656,7 +656,7 @@ namespace FMODUnity
 #pragma warning restore 0618
                 {
                     RuntimeUtils.DebugLogWarningFormat("FMOD: A component of type {0} in scene '{1}' on GameObject '{2}' has an "
-                        + "obsolete [EventRef] attribute on field {3}. {4}",
+                        + "obsolete [FMODUnity.EventRef] attribute on field {3}. {4}",
                         type.Name, scene.name, EditorUtils.GameObjectPath(behaviour), field.Name,
                         UpdaterInstructions);
                 }

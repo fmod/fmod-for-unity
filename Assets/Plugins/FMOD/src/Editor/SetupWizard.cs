@@ -38,8 +38,8 @@ namespace FMODUnity
             UpdateTask.Create(
                 type: UpdateTaskType.UpdateEventReferences,
                 name: "Update Event References",
-                description: "Find event references that use the obsolete [EventRef] attribute " +
-                    "and update them to use the EventReference type.",
+                description: "Find event references that use the obsolete [FMODUnity.EventRef] attribute " +
+                    "and update them to use the FMODUnity.EventReference type.",
                 execute: EventReferenceUpdater.ShowWindow,
                 checkComplete: EventReferenceUpdater.IsUpToDate
             ),

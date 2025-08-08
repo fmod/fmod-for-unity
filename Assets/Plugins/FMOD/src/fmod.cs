@@ -19,7 +19,7 @@ namespace FMOD
     */
     public partial class VERSION
     {
-        public const int    number = 0x00020229;
+        public const int    number = 0x00020230;
 #if !UNITY_2019_4_OR_NEWER
         public const string dll    = "fmod";
 #endif
@@ -435,7 +435,7 @@ namespace FMOD
 
     public enum OPENSTATE : int
     {
-        READY = 0,
+        READY,
         LOADING,
         ERROR,
         CONNECTING,
@@ -600,7 +600,7 @@ namespace FMOD
 
     public enum TAGTYPE : int
     {
-        UNKNOWN = 0,
+        UNKNOWN,
         ID3V1,
         ID3V2,
         VORBISCOMMENT,
@@ -617,7 +617,7 @@ namespace FMOD
 
     public enum TAGDATATYPE : int
     {
-        BINARY = 0,
+        BINARY,
         INT,
         FLOAT,
         STRING,
