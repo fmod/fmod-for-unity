@@ -19,9 +19,21 @@ namespace FMOD
     */
     public partial class VERSION
     {
-        public const int    number = 0x00020309;
+        public const int number = 0x00020310;
+
+        /*
+            Define FMOD_DEBUG or FMOD_LOGGING to select appropriate libraries
+        */
+#if FMOD_DEBUG
+        public const string suffix = "D";
+#elif FMOD_LOGGING || DEVELOPMENT_BUILD
+        public const string suffix = "L";
+#else
+        public const string suffix = "";
+#endif
+
 #if !UNITY_2021_3_OR_NEWER
-        public const string dll    = "fmod";
+        public const string dll = "fmod" + suffix;
 #endif
     }
 
@@ -3479,6 +3491,8 @@ namespace FMOD
         private static extern RESULT FMOD5_DSP_AddInput                  (IntPtr dsp, IntPtr input, IntPtr zero, DSPCONNECTION_TYPE type);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_DSP_AddInput                  (IntPtr dsp, IntPtr input, out IntPtr connection, DSPCONNECTION_TYPE type);
+        [DllImport(VERSION.dll)]
+        private static extern RESULT FMOD5_DSP_AddInputPreallocated      (IntPtr dsp, IntPtr input, out IntPtr connection);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD5_DSP_DisconnectFrom            (IntPtr dsp, IntPtr target, IntPtr connection);
         [DllImport(VERSION.dll)]

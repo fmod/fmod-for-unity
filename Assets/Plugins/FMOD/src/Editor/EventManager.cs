@@ -55,8 +55,6 @@ namespace FMODUnity
             eventCache.EditorParameters.Clear();
             eventCache.StringsBanks.Clear();
             eventCache.MasterBanks.Clear();
-            if (Settings.Instance && Settings.Instance.BanksToLoad != null)
-                Settings.Instance.BanksToLoad.Clear();
         }
 
         private static void AffirmEventCache()
@@ -98,17 +96,17 @@ namespace FMODUnity
             var settings = Settings.Instance;
             var editorSettings = EditorSettings.Instance;
 
+            if (string.IsNullOrEmpty(settings.SourceBankPath))
+            {
+                ClearCache();
+                return null;
+            }
+
             EditorUtils.ValidateSource(out bool isValid, out string reason);
             if (!isValid)
             {
                 ClearCache();
                 return reason;
-            }
-
-            if (string.IsNullOrEmpty(settings.SourceBankPath))
-            {
-                ClearCache();
-                return null;
             }
 
             string defaultBankFolder = null;
@@ -141,8 +139,6 @@ namespace FMODUnity
                 ClearCache();
                 return string.Format("Directory {0} doesn't exist. Please confirm project directory in the settings.", defaultBankFolder);
             }
-
-
 
             // Get all banks and set cache time to most recent write time
             List<string> bankFileNames = new List<string>(Directory.GetFiles(defaultBankFolder, "*.bank", SearchOption.AllDirectories));
@@ -399,6 +395,22 @@ namespace FMODUnity
             if (eventRenameOccurred)
             {
                 EditorApplication.delayCall += ShowEventsRenamedDialog;
+            }
+
+            // Check if any specified banks are missing
+            if (Settings.Instance.BankLoadType == BankLoadType.Specified)
+            {
+                foreach (var bank in Settings.Instance.BanksToLoad)
+                {
+                    string bankPath = Path.Combine(defaultBankFolder, bank + ".bank").Replace('\\', '/');
+                    if (!File.Exists(bankPath))
+                    {
+                        RuntimeUtils.DebugLogWarningFormat(
+                            "FMOD: Specified bank '{0}' not found at: {1}. It may be missing from the current Studio project or the path is incorrect. " +
+                            "Please check 'FMOD > Edit Settings' to verify your Studio project and bank load list.",
+                            bank, bankPath);
+                    }
+                }
             }
 
             return null;

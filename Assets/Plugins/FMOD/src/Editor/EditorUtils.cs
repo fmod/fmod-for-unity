@@ -851,7 +851,7 @@ namespace FMODUnity
             float[] data = new float[channels];
             if (outputMetering.numchannels > 0)
             {
-                Array.Copy(outputMetering.rmslevel, data, channels);
+                outputMetering.rmslevel.CopyTo(data);
             }
             return data;
         }
@@ -1363,7 +1363,7 @@ namespace FMODUnity
             new LibInfo() {cpu = "x86", os = "Windows",  lib = "fmodstudioL.dll", platform = "win", setPlatformCPU = false, buildTarget = BuildTarget.StandaloneWindows},
             new LibInfo() {cpu = "x86_64", os = "Windows", lib = "fmodstudioL.dll", platform = "win", setPlatformCPU = false, buildTarget = BuildTarget.StandaloneWindows64},
             new LibInfo() {cpu = "x86_64", os = "Linux", lib = "libfmodstudioL.so", platform = "linux", setPlatformCPU = false, buildTarget = BuildTarget.StandaloneLinux64},
-            new LibInfo() {cpu = AnyCPU, os = "OSX", lib = "fmodstudioL.bundle", platform = "mac", setPlatformCPU = false, buildTarget = BuildTarget.StandaloneOSX},
+            new LibInfo() {cpu = AnyCPU, os = "OSX", lib = "fmodstudioL.bundle", platform = "mac", setPlatformCPU = true, buildTarget = BuildTarget.StandaloneOSX},
 #if UNITY_2023_1_OR_NEWER
             new LibInfo() {cpu = "ARM64", os = "Windows", lib = "fmodstudioL.dll", platform = "win", setPlatformCPU = true, buildTarget = BuildTarget.StandaloneWindows64},
 #endif

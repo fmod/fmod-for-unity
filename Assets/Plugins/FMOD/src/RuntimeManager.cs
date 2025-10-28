@@ -184,7 +184,7 @@ namespace FMODUnity
                         RuntimeUtils.EnforceLibraryOrder();
 
                         #if UNITY_OPENHARMONY && !UNITY_EDITOR
-                        OpenHarmonyJSObject openHarmonyJSObject = new OpenHarmonyJSObject("ClassFMOD" + FMOD.VERSION.dllSuffix);
+                        OpenHarmonyJSObject openHarmonyJSObject = new OpenHarmonyJSObject("ClassFMOD" + FMOD.VERSION.suffix);
                         openHarmonyJSObject.Call("init");
                         #endif
 

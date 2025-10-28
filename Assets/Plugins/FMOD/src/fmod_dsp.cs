@@ -475,12 +475,91 @@ namespace FMOD
     [StructLayout(LayoutKind.Sequential)]
     public struct DSP_METERING_INFO
     {
-        public int   numsamples;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst=32)]
-        public float[] peaklevel;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst=32)]
-        public float[] rmslevel;
+        public int numsamples;
+        public LEVEL_ARRAY peaklevel;
+        public LEVEL_ARRAY rmslevel;
         public short numchannels;
+
+        #region wrapperinternal
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct LEVEL_ARRAY
+        {
+            // Explicitly define level array elements to avoid allocation
+            private float ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7;
+            private float ch8, ch9, ch10, ch11, ch12, ch13, ch14, ch15;
+            private float ch16, ch17, ch18, ch19, ch20, ch21, ch22, ch23;
+            private float ch24, ch25, ch26, ch27, ch28, ch29, ch30, ch31;
+
+            // Indexer for access to elements
+            public float this[int index]
+            {
+                get
+                {
+                    switch (index)
+                    {
+                        case 0: return ch0;
+                        case 1: return ch1;
+                        case 2: return ch2;
+                        case 3: return ch3;
+                        case 4: return ch4;
+                        case 5: return ch5;
+                        case 6: return ch6;
+                        case 7: return ch7;
+                        case 8: return ch8;
+                        case 9: return ch9;
+                        case 10: return ch10;
+                        case 11: return ch11;
+                        case 12: return ch12;
+                        case 13: return ch13;
+                        case 14: return ch14;
+                        case 15: return ch15;
+                        case 16: return ch16;
+                        case 17: return ch17;
+                        case 18: return ch18;
+                        case 19: return ch19;
+                        case 20: return ch20;
+                        case 21: return ch21;
+                        case 22: return ch22;
+                        case 23: return ch23;
+                        case 24: return ch24;
+                        case 25: return ch25;
+                        case 26: return ch26;
+                        case 27: return ch27;
+                        case 28: return ch28;
+                        case 29: return ch29;
+                        case 30: return ch30;
+                        case 31: return ch31;
+                        default: throw new IndexOutOfRangeException();
+                    }
+                }
+            }
+
+            public readonly int Length => 32;
+
+            // Implicit conversion for unchanged access to entire array
+            public static implicit operator float[](LEVEL_ARRAY levels)
+            {
+                float[] buffer = new float[levels.Length];
+                for (int i = 0; i < levels.Length; i++)
+                {
+                    buffer[i] = levels[i];
+                }
+                return buffer;
+            }
+
+            // Zero allocation copy-to
+            public void CopyTo(float[] buffer)
+            {
+                int len = buffer.Length >= this.Length ? this.Length : buffer.Length;
+                for (int i = 0; i < len; i++)
+                {
+                    buffer[i] = this[i];
+                }
+            }
+        }
+
+        #endregion
     }
 
     /*

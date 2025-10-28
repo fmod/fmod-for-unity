@@ -10,9 +10,9 @@ namespace FMOD
     public partial class VERSION
     {
 #if UNITY_STANDALONE_WIN
-        public const string dll = "fmodstudio" + dllSuffix;
+        public const string dll = "fmodstudio" + suffix;
 #elif UNITY_WSA
-        public const string dll = "fmod" + dllSuffix;
+        public const string dll = "fmod" + suffix;
 #endif
     }
 }
@@ -22,7 +22,7 @@ namespace FMOD.Studio
     public partial class STUDIO_VERSION
     {
 #if UNITY_STANDALONE_WIN || UNITY_WSA
-        public const string dll = "fmodstudio" + dllSuffix;
+        public const string dll = "fmodstudio" + VERSION.suffix;
 #endif
     }
 }
@@ -137,20 +137,7 @@ namespace FMODUnity
         internal override string GetPluginPath(string pluginName)
         {
 #if UNITY_STANDALONE_WIN
-            string architecture = "x86_64";
-            if (IsArm64())
-            {
-                if (!System.Environment.Is64BitProcess)
-                {
-                    throw new System.NotSupportedException("[FMOD] Attempted to load FMOD plugins on a 32 bit ARM platform.");
-                }
-                architecture = "arm64";
-            }
-            else if (!System.Environment.Is64BitProcess)
-            {
-                    architecture = "x86";
-            }
-            return string.Format("{0}/{1}/{2}.dll", GetPluginBasePath(), architecture, pluginName);
+            return string.Format("{0}/{1}/{2}.dll", GetPluginBasePath(), RuntimeUtils.GetPluginArchitectureFolder(), pluginName);
 #else // UNITY_WSA
             return string.Format("{0}.dll", pluginName);
 #endif
@@ -179,10 +166,5 @@ namespace FMODUnity
             new CodecChannelCount { format = CodecType.FADPCM, channels = 0 },
             new CodecChannelCount { format = CodecType.Vorbis, channels = 32 },
         };
-
-        private static bool IsArm64()
-        {
-            return System.Globalization.CultureInfo.InvariantCulture.CompareInfo.IndexOf(SystemInfo.processorType, "ARM", System.Globalization.CompareOptions.IgnoreCase) >= 0;
-        }
     }
 }
