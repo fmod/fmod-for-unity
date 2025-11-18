@@ -266,7 +266,8 @@ namespace FMOD
         DSP_PARAMETER_DATA_TYPE_FFT =                       -4,
         DSP_PARAMETER_DATA_TYPE_3DATTRIBUTES_MULTI =        -5,
         DSP_PARAMETER_DATA_TYPE_ATTENUATION_RANGE =         -6,
-        DSP_PARAMETER_DATA_TYPE_DYNAMIC_RESPONSE =          -7
+        DSP_PARAMETER_DATA_TYPE_DYNAMIC_RESPONSE =          -7,
+        DSP_PARAMETER_DATA_TYPE_FINITE_LENGTH =             -8
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -347,6 +348,12 @@ namespace FMOD
         public int numchannels;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
         public float[] rms;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DSP_PARAMETER_FINITE_LENGTH
+    {
+        public int finite;
     }
 
     [StructLayout(LayoutKind.Sequential)]

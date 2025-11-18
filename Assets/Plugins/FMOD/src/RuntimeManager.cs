@@ -1013,7 +1013,7 @@ retry:
             else
             {
                 Instance.loadingBanksRef++;
-                assetReference.LoadAssetAsync<TextAsset>().Completed += (obj) =>
+                Addressables.LoadAssetAsync<TextAsset>(assetReference).Completed += (obj) =>
                 {
                     if (!obj.IsValid())
                     {
@@ -1031,7 +1031,7 @@ retry:
                         completionCallback();
                     }
 
-                    assetReference.ReleaseAsset();
+                    Addressables.Release(obj);
                 };
 
             }
