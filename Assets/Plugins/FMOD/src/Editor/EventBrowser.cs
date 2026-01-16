@@ -7,6 +7,14 @@ using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using System.IO;
 
+#if UNITY_6000_2_OR_NEWER
+using TreeViewHelper = UnityEditor.IMGUI.Controls.TreeView<int>;
+using TreeViewItem = UnityEditor.IMGUI.Controls.TreeViewItem<int>;
+using TreeViewState = UnityEditor.IMGUI.Controls.TreeViewState<int>;
+#else
+using TreeViewHelper = UnityEditor.IMGUI.Controls.TreeView;
+#endif
+
 namespace FMODUnity
 {
     public class EventBrowser : EditorWindow, ISerializationCallbackReceiver
@@ -99,7 +107,7 @@ namespace FMODUnity
             treeView.Reload();
         }
 
-        private class TreeView : UnityEditor.IMGUI.Controls.TreeView
+        private class TreeView : TreeViewHelper
         {
             private static readonly Texture2D folderOpenIcon = EditorUtils.LoadImage("FolderIconOpen.png");
             private static readonly Texture2D folderClosedIcon = EditorUtils.LoadImage("FolderIconClosed.png");
@@ -1673,7 +1681,11 @@ namespace FMODUnity
                 {
                     UnityEngine.Object data = DragAndDrop.objectReferences[0];
 
+#if UNITY_6000_3_OR_NEWER
+                    GameObject target = EditorUtility.EntityIdToObject(instance) as GameObject;
+#else
                     GameObject target = EditorUtility.InstanceIDToObject(instance) as GameObject;
+#endif
 
                     if (data is EditorEventRef)
                     {

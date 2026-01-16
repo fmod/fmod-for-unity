@@ -980,7 +980,7 @@ retry:
             LoadBank(asset, loadSamples, asset.name);
         }
 
-        private static void LoadBank(TextAsset asset, bool loadSamples, string bankId)
+        private static unsafe void LoadBank(TextAsset asset, bool loadSamples, string bankId)
         {
             if (Instance.loadedBanks.ContainsKey(bankId))
             {
@@ -998,7 +998,12 @@ retry:
 #endif
 
                 LoadedBank loadedBank = new LoadedBank();
-                FMOD.RESULT loadResult = Instance.studioSystem.loadBankMemory(asset.bytes, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out loadedBank.Bank);
+                FMOD.RESULT loadResult = FMOD.RESULT.ERR_BADCOMMAND;
+                using (var nativeArray = asset.GetData<byte>())
+                {
+                    IntPtr pointer = (IntPtr)Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(nativeArray);
+                    loadResult = Instance.studioSystem.loadBankMemory(pointer, nativeArray.Length, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out loadedBank.Bank);
+                }
                 Instance.RegisterLoadedBank(loadedBank, bankId, bankId, loadSamples, loadResult);
             }
         }
