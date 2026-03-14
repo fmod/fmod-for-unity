@@ -274,7 +274,6 @@ namespace FMODUnity
                 // Only want to update if we need to set 3D attributes
                 if (is3D)
                 {
-                    var transform = GetComponent<Transform>();
 #if UNITY_PHYSICS_EXIST
                     if (GetComponent<Rigidbody>())
                     {
