@@ -66,6 +66,9 @@ namespace FMODUnity
         private static byte[] eventSet3DAttributes;
         private static byte[] systemGetBus;
 
+        // Arbitrary value to ensure no collisions with any user windows
+        const int WINDOWID = 0x00FDFD01;
+
 #if UNITY_URP_EXIST
         private GameObject vrDebugOverlay;
         private RectTransform vrDebugRectTransform;
@@ -663,7 +666,7 @@ retry:
                 debugStyle.fontSize = currentPlatform.OverlayFontSize;
                 if (studioSystem.isValid() && isOverlayEnabled)
                 {
-                    windowRect = GUI.Window(GetInstanceID(), windowRect, DrawDebugOverlay, "FMOD Studio Debug", debugStyle);
+                    windowRect = GUI.Window(WINDOWID, windowRect, DrawDebugOverlay, "FMOD Studio Debug", debugStyle);
                 }
             }
             else

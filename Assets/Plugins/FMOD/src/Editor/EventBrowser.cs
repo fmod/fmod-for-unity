@@ -1634,7 +1634,11 @@ namespace FMODUnity
 
                 SceneView.duringSceneGui += SceneUpdate;
 
+#if UNITY_6000_4_OR_NEWER
+                EditorApplication.hierarchyWindowItemByEntityIdOnGUI += HierarchyUpdate;
+#else
                 EditorApplication.hierarchyWindowItemOnGUI += HierarchyUpdate;
+#endif
 
                 if (isStandaloneWindow)
                 {
@@ -1673,7 +1677,11 @@ namespace FMODUnity
         }
 
         // This is an event handler on the hierachy view to handle dragging our objects from the browser
+#if UNITY_6000_4_OR_NEWER
+        private void HierarchyUpdate(EntityId instance, Rect rect)
+#else
         private void HierarchyUpdate(int instance, Rect rect)
+#endif
         {
             if (Event.current.type == EventType.DragPerform && rect.Contains(Event.current.mousePosition))
             {

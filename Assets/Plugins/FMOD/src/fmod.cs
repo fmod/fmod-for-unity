@@ -19,7 +19,7 @@ namespace FMOD
     */
     public partial class VERSION
     {
-        public const int number = 0x00020312;
+        public const int number = 0x00020313;
 
         /*
             Define FMOD_DEBUG or FMOD_LOGGING to select appropriate libraries
