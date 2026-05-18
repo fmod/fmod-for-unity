@@ -572,12 +572,25 @@ retry:
 
         private static AttachedInstance FindOrAddAttachedInstance(FMOD.Studio.EventInstance instance, Transform transform, FMOD.ATTRIBUTES_3D attributes)
         {
-            AttachedInstance attachedInstance = Instance.attachedInstances.Find(x => x.instance.handle == instance.handle);
+            var handle = instance.handle;
+            var instances = Instance.attachedInstances;
+
+            AttachedInstance attachedInstance = null;
+            for (int i = 0; i < instances.Count; i++)
+            {
+                if (instances[i].instance.handle == handle)
+                {
+                    attachedInstance = instances[i];
+                    break;
+                }
+            }
+
             if (attachedInstance == null)
             {
                 attachedInstance = new AttachedInstance();
-                Instance.attachedInstances.Add(attachedInstance);
+                instances.Add(attachedInstance);
             }
+
             attachedInstance.instance = instance;
             attachedInstance.transform = transform;
             attachedInstance.instance.set3DAttributes(attributes);
