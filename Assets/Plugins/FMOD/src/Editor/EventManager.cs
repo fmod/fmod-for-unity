@@ -824,29 +824,13 @@ namespace FMODUnity
             }
 
             bool madeChanges = false;
+
             HashSet<string> bankPaths = new HashSet<string>();
 
             try
             {
                 // Clean out any stale .bank files
-                string[] existingBankFiles =
-                    Directory.GetFiles(bankTargetFolder, "*" + bankTargetExtension, SearchOption.AllDirectories);
-
-                foreach (string bankFilePath in existingBankFiles)
-                {
-                    string bankName = EditorBankRef.CalculateName(bankFilePath, bankTargetFolder);
-
-                    if (!eventCache.EditorBanks.Exists(x => x.Name == bankName))
-                    {
-                        string assetPath = bankFilePath.Replace(Application.dataPath, AssetsFolderName);
-
-                        if (AssetHasLabel(assetPath, FMODLabel))
-                        {
-                            AssetDatabase.MoveAssetToTrash(assetPath);
-                            madeChanges = true;
-                        }
-                    }
-                }
+                DeleteStaleFiles(bankTargetFolder, bankTargetExtension, out madeChanges);
 
                 // Copy over any files that don't match timestamp or size or don't exist
                 AssetDatabase.StartAssetEditing();
@@ -960,24 +944,7 @@ namespace FMODUnity
                 const string BankAssetExtension = ".bytes";
 
                 // Clean out any stale stubs
-                string[] existingBankFiles =
-                    Directory.GetFiles(bankTargetFolder, "*" + BankAssetExtension, SearchOption.AllDirectories);
-
-                foreach (string bankFilePath in existingBankFiles)
-                {
-                    string bankName = EditorBankRef.CalculateName(bankFilePath, bankTargetFolder);
-
-                    if (!eventCache.EditorBanks.Exists(x => x.Name == bankName))
-                    {
-                        string assetPath = bankFilePath.Replace(Application.dataPath, AssetsFolderName);
-
-                        if (AssetHasLabel(assetPath, FMODLabel))
-                        {
-                            AssetDatabase.MoveAssetToTrash(assetPath);
-                            madeChanges = true;
-                        }
-                    }
-                }
+                DeleteStaleFiles(bankTargetFolder, BankAssetExtension, out madeChanges);
 
                 // Create any stubs that don't exist, and ensure any that do exist have the correct data
                 AssetDatabase.StartAssetEditing();
@@ -1421,6 +1388,29 @@ namespace FMODUnity
                 {
                     UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
                     AssetDatabase.SetLabels(obj, new string[] { FMODLabel });
+                }
+            }
+        }
+
+        private static void DeleteStaleFiles(string bankTargetFolder, string bankTargetExtension, out bool madeChanges)
+        {
+            madeChanges = false;
+            string[] existingBankFiles =
+                Directory.GetFiles(bankTargetFolder, "*" + bankTargetExtension, SearchOption.AllDirectories);
+
+            foreach (string bankFilePath in existingBankFiles)
+            {
+                string bankName = EditorBankRef.CalculateName(bankFilePath, bankTargetFolder);
+
+                if (!eventCache.EditorBanks.Exists(x => x.Name == bankName))
+                {
+                    string assetPath = bankFilePath.Replace(Application.dataPath, AssetsFolderName);
+
+                    if (AssetHasLabel(assetPath, FMODLabel))
+                    {
+                        AssetDatabase.MoveAssetToTrash(assetPath);
+                        madeChanges = true;
+                    }
                 }
             }
         }

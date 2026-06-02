@@ -426,9 +426,14 @@ retry:
 
         private int GetChannelCountForFormat(CodecType format)
         {
-            CodecChannelCount channelCount = currentPlatform.CodecChannels.Find(x => x.format == format);
-
-            return channelCount == null ? 0 : Math.Min(channelCount.channels, 256);
+            foreach (CodecChannelCount ccc in currentPlatform.CodecChannels)
+            {
+                if (ccc.format == format)
+                {
+                    return Math.Min(ccc.channels, 256);
+                }
+            }
+            return 0;
         }
 
         private static void SetThreadAffinities(Platform platform)
@@ -575,7 +580,16 @@ retry:
 
         private static AttachedInstance FindOrAddAttachedInstance(FMOD.Studio.EventInstance instance, Transform transform, FMOD.ATTRIBUTES_3D attributes)
         {
-            AttachedInstance attachedInstance = Instance.attachedInstances.Find(x => x.instance.handle == instance.handle);
+            AttachedInstance attachedInstance = null;
+            foreach(AttachedInstance attached in Instance.attachedInstances)
+            {
+                if (attached.instance.handle == instance.handle)
+                {
+                    attachedInstance = attached;
+                    break;
+                }
+            }
+
             if (attachedInstance == null)
             {
                 attachedInstance = new AttachedInstance();

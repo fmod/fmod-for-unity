@@ -13,7 +13,7 @@ namespace FMODUnity
     [AddComponentMenu("FMOD Studio/FMOD Studio Parameter Trigger")]
     public class StudioParameterTrigger: EventHandler
     {
-        public EmitterRef[] Emitters;
+        public EmitterRef[] Emitters = new EmitterRef[0];
         public EmitterGameEvent TriggerEvent;
 
         private void Awake()
@@ -54,7 +54,7 @@ namespace FMODUnity
                 {
                     for (int j = 0; j < Emitters[i].Params.Length; j++)
                     {
-                        emitterRef.Target.EventInstance.setParameterByID(Emitters[i].Params[j].ID, Emitters[i].Params[j].Value);
+                        emitterRef.Target.SetParameter(Emitters[i].Params[j].ID, Emitters[i].Params[j].Value);
                     }
                 }
             }

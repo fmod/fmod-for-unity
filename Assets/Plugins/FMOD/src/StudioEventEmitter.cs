@@ -93,6 +93,19 @@ namespace FMODUnity
             {
                 activeEmitters.Add(emitter);
             }
+            FMOD.Studio.PARAMETER_DESCRIPTION paramDesc;
+
+            emitter.eventDescription.getParameterDescriptionCount(out int paramCount);
+            for (int i = 0; i < paramCount; i++)
+            {
+                emitter.eventDescription.getParameterDescriptionByIndex(i, out paramDesc);
+
+                ParamRef cachedParam = new ParamRef();
+                cachedParam.ID = paramDesc.id;
+                cachedParam.Name = paramDesc.name;
+                cachedParam.Value = float.MaxValue; // float.MaxValue indicates that the value has never been set.
+                emitter.cachedParams.Add(cachedParam);
+            }
         }
 
         private static void DeregisterActiveEmitter(StudioEventEmitter emitter)
@@ -305,9 +318,15 @@ namespace FMODUnity
                 instance.setParameterByID(param.ID, param.Value);
             }
 
-            foreach (var cachedParam in cachedParams)
+            if (Settings.Instance.StopEventsOutsideMaxDistance)
             {
-                instance.setParameterByID(cachedParam.ID, cachedParam.Value);
+                foreach (var cachedParam in cachedParams)
+                {
+                    if (cachedParam.Value != float.MaxValue)
+                    {
+                        instance.setParameterByID(cachedParam.ID, cachedParam.Value);
+                    }
+                }
             }
 
             if (is3D && OverrideAttenuation)
@@ -351,21 +370,14 @@ namespace FMODUnity
         {
             if (Settings.Instance.StopEventsOutsideMaxDistance && IsActive)
             {
-                string findName = name;
-                ParamRef cachedParam = cachedParams.Find(x => x.Name == findName);
-
-                if (cachedParam == null)
+                foreach(ParamRef paramRef in cachedParams)
                 {
-                    FMOD.Studio.PARAMETER_DESCRIPTION paramDesc;
-                    eventDescription.getParameterDescriptionByName(name, out paramDesc);
-
-                    cachedParam = new ParamRef();
-                    cachedParam.ID = paramDesc.id;
-                    cachedParam.Name = paramDesc.name;
-                    cachedParams.Add(cachedParam);
+                    if (paramRef.Name.Equals(name))
+                    {
+                        paramRef.Value = value;
+                        break;
+                    }
                 }
-
-                cachedParam.Value = value;
             }
 
             if (instance.isValid())
@@ -378,21 +390,14 @@ namespace FMODUnity
         {
             if (Settings.Instance.StopEventsOutsideMaxDistance && IsActive)
             {
-                FMOD.Studio.PARAMETER_ID findId = id;
-                ParamRef cachedParam = cachedParams.Find(x => x.ID.Equals(findId));
-
-                if (cachedParam == null)
+                foreach (ParamRef paramRef in cachedParams)
                 {
-                    FMOD.Studio.PARAMETER_DESCRIPTION paramDesc;
-                    eventDescription.getParameterDescriptionByID(id, out paramDesc);
-
-                    cachedParam = new ParamRef();
-                    cachedParam.ID = paramDesc.id;
-                    cachedParam.Name = paramDesc.name;
-                    cachedParams.Add(cachedParam);
+                    if (paramRef.ID.Equals(id))
+                    {
+                        paramRef.Value = value;
+                        break;
+                    }
                 }
-
-                cachedParam.Value = value;
             }
 
             if (instance.isValid())

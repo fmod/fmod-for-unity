@@ -69,13 +69,19 @@ namespace FMODUnity
                 string projectPath = settings.SourceProjectPath;
                 string projectFolder = Path.GetDirectoryName(projectPath);
                 string buildFolder = RuntimeUtils.GetCommonPlatformPath(Path.Combine(projectFolder, BuildFolder));
-                if (!Directory.Exists(buildFolder) ||
-                    Directory.GetDirectories(buildFolder).Length == 0 ||
-                    Directory.GetFiles(Directory.GetDirectories(buildFolder)[0], "*.bank", SearchOption.AllDirectories).Length == 0
-                    )
+                if (!Directory.Exists(buildFolder) || !Directory.EnumerateDirectories(buildFolder).Any())
                 {
                     valid = false;
                     reason = string.Format(L10n.Tr("The FMOD Studio project '{0}' does not contain any built banks. Please build your project in FMOD Studio."), settings.SourceProjectPath);
+                    return;
+                }
+
+                string defaultBankFolder = RuntimeUtils.GetCommonPlatformPath(Path.Combine(buildFolder, EditorSettings.Instance.CurrentEditorPlatform.BuildDirectory));
+
+                if (!Directory.Exists(defaultBankFolder))
+                {
+                    valid = false;
+                    reason = string.Format(L10n.Tr("Platform build directory '{0}' does not exist. Please build your project in FMOD Studio."), defaultBankFolder);
                     return;
                 }
             }
