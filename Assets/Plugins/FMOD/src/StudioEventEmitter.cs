@@ -287,20 +287,17 @@ namespace FMODUnity
                 // Only want to update if we need to set 3D attributes
                 if (is3D)
                 {
-                    var transform = GetComponent<Transform>();
 #if UNITY_PHYSICS_EXIST
-                    if (GetComponent<Rigidbody>())
+                    if (TryGetComponent(out Rigidbody rigidBody))
                     {
-                        Rigidbody rigidBody = GetComponent<Rigidbody>();
                         instance.set3DAttributes(RuntimeUtils.To3DAttributes(gameObject, rigidBody));
                         RuntimeManager.AttachInstanceToGameObject(instance, gameObject, rigidBody);
                     }
                     else
 #endif
 #if UNITY_PHYSICS2D_EXIST
-                    if (GetComponent<Rigidbody2D>())
+                    if (TryGetComponent(out Rigidbody2D rigidBody2D))
                     {
-                        var rigidBody2D = GetComponent<Rigidbody2D>();
                         instance.set3DAttributes(RuntimeUtils.To3DAttributes(gameObject, rigidBody2D));
                         RuntimeManager.AttachInstanceToGameObject(instance, gameObject, rigidBody2D);
                     }
