@@ -78,7 +78,7 @@ namespace FMODUnity
                 case 15:
                     return Slot15;
                 default:
-                    throw new ArgumentException(string.Format("Invalid slot index: {0}", index));
+                    throw new ArgumentException(string.Format("Invalid slot index: {0}", index.ToString()));
             }
         }
     }

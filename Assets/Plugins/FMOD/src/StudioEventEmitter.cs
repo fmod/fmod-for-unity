@@ -53,6 +53,13 @@ namespace FMODUnity
 
         private const string SnapshotString = "snapshot";
 
+        private string objectName = null;
+
+        void Awake()
+        {
+            objectName = this.name;
+        }
+
         public FMOD.Studio.EventDescription EventDescription { get { return eventDescription; } }
 
         public FMOD.Studio.EventInstance EventInstance { get { return instance; } }
@@ -146,14 +153,14 @@ namespace FMODUnity
 #if UNITY_PHYSICS_EXIST
             if (NonRigidbodyVelocity && GetComponent<Rigidbody>())
             {
-                Debug.LogWarning(string.Format("[FMOD] Non-Rigidbody Velocity is enabled on Emitter attached to GameObject \"{0}\", which also has a Rigidbody component attached - this will be disabled in favor of velocity from Rigidbody component.", this.name));
+                Debug.LogWarning(string.Format("[FMOD] Non-Rigidbody Velocity is enabled on Emitter attached to GameObject \"{0}\", which also has a Rigidbody component attached - this will be disabled in favor of velocity from Rigidbody component.", objectName));
                 NonRigidbodyVelocity = false;
             }
 #endif
 #if UNITY_PHYSICS2D_EXIST
             if (NonRigidbodyVelocity && GetComponent<Rigidbody2D>())
             {
-                Debug.LogWarning(string.Format("[FMOD] Non-Rigidbody Velocity is enabled on Emitter attached to GameObject \"{0}\", which also has a Rigidbody2D component attached - this will be disabled in favor of velocity from Rigidbody2D component.", this.name));
+                Debug.LogWarning(string.Format("[FMOD] Non-Rigidbody Velocity is enabled on Emitter attached to GameObject \"{0}\", which also has a Rigidbody2D component attached - this will be disabled in favor of velocity from Rigidbody2D component.", objectName));
                 NonRigidbodyVelocity = false;
             }
 #endif
@@ -392,7 +399,7 @@ namespace FMODUnity
             {
                 foreach (ParamRef paramRef in cachedParams)
                 {
-                    if (paramRef.ID.Equals(id))
+                    if (paramRef.ID.data1 == id.data1 && paramRef.ID.data2 == id.data2)
                     {
                         paramRef.Value = value;
                         break;

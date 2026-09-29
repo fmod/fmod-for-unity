@@ -69,6 +69,8 @@ namespace FMODUnity
         // Arbitrary value to ensure no collisions with any user windows
         const int WINDOWID = 0x00FDFD01;
 
+        private StringBuilder debugDisplayString = new StringBuilder();
+
 #if UNITY_URP_EXIST
         private GameObject vrDebugOverlay;
         private RectTransform vrDebugRectTransform;
@@ -143,7 +145,7 @@ namespace FMODUnity
             }
 
             RuntimeUtils.DebugLogError(string.Format("[FMOD] {0}({1}) returned {2} for {3} (0x{4}).",
-                (string)callbackInfo.functionname, (string)callbackInfo.functionparams, callbackInfo.result, callbackInfo.instancetype, callbackInfo.instance.ToString("X")));
+                (string)callbackInfo.functionname, (string)callbackInfo.functionparams, callbackInfo.result.ToString(), callbackInfo.instancetype.ToString(), callbackInfo.instance.ToString("X")));
             return FMOD.RESULT.OK;
         }
 
@@ -304,7 +306,7 @@ namespace FMODUnity
             advancedSettings.maxVorbisCodecs = GetChannelCountForFormat(CodecType.Vorbis);
             advancedSettings.maxXMACodecs = GetChannelCountForFormat(CodecType.XMA);
 
-            SetThreadAffinities(currentPlatform);
+            SetThreadAttributes(currentPlatform);
 
             currentPlatform.PreSystemCreate(CheckInitResult);
 
@@ -386,7 +388,7 @@ retry:
             {
                 initResult = result; // Save this to throw at the end (we'll attempt NO SOUND to shield ourselves from unexpected device failures)
                 outputType = FMOD.OUTPUTTYPE.NOSOUND;
-                RuntimeUtils.DebugLogErrorFormat("[FMOD] Studio::System::initialize returned {0}, defaulting to no-sound mode.", result.ToString());
+                RuntimeUtils.DebugLogError(string.Format("[FMOD] Studio::System::initialize returned {0}, defaulting to no-sound mode.", result.ToString()));
 
                 goto retry;
             }
@@ -436,8 +438,21 @@ retry:
             return 0;
         }
 
-        private static void SetThreadAffinities(Platform platform)
+        private static void SetThreadAttributes(Platform platform)
         {
+            FMOD.THREAD_STACK_SIZE platformStackSize = platform.GetStackSize();
+            if (platformStackSize != 0)
+            {
+                for (int i = 0; i < (int)FMOD.THREAD_TYPE.MAX; i++)
+                {
+                    FMOD.Thread.SetAttributes(
+                        (FMOD.THREAD_TYPE)i,
+                        FMOD.THREAD_AFFINITY.GROUP_DEFAULT,
+                        stacksize: platformStackSize
+                    );
+                };
+            }
+
             foreach (ThreadAffinityGroup group in platform.ThreadAffinities)
             {
                 foreach (ThreadType thread in group.threads)
@@ -445,7 +460,7 @@ retry:
                     FMOD.THREAD_TYPE fmodThread = RuntimeUtils.ToFMODThreadType(thread);
                     FMOD.THREAD_AFFINITY fmodAffinity = RuntimeUtils.ToFMODThreadAffinity(group.affinity);
 
-                    FMOD.Thread.SetAttributes(fmodThread, fmodAffinity);
+                    FMOD.Thread.SetAttributes(fmodThread, fmodAffinity, stacksize: platformStackSize);
                 }
             }
         }
@@ -720,20 +735,30 @@ retry:
                         mixerHead.setMeteringEnabled(false, true);
                     }
 
-                    StringBuilder debug = new StringBuilder();
-
                     FMOD.Studio.CPU_USAGE cpuUsage;
                     FMOD.CPU_USAGE cpuUsage_core;
                     studioSystem.getCPUUsage(out cpuUsage, out cpuUsage_core);
-                    debug.AppendFormat("CPU: dsp = {0:F1}%, studio = {1:F1}%\n", cpuUsage_core.dsp, cpuUsage.update);
+                    debugDisplayString.Append("CPU: dsp = ");
+                    debugDisplayString.Append(cpuUsage_core.dsp.ToString("F1"));
+                    debugDisplayString.Append("%, studio = ");
+                    debugDisplayString.Append(cpuUsage.update.ToString("F1"));
+                    debugDisplayString.Append("%\n");
 
                     int currentAlloc, maxAlloc;
                     FMOD.Memory.GetStats(out currentAlloc, out maxAlloc);
-                    debug.AppendFormat("MEMORY: cur = {0}MB, max = {1}MB\n", currentAlloc >> 20, maxAlloc >> 20);
+                    debugDisplayString.Append("MEMORY: cur = ");
+                    debugDisplayString.Append(currentAlloc >> 20);
+                    debugDisplayString.Append("MB, max = ");
+                    debugDisplayString.Append(maxAlloc >> 20);
+                    debugDisplayString.Append("MB\n");
 
                     int realchannels, channels;
                     coreSystem.getChannelsPlaying(out channels, out realchannels);
-                    debug.AppendFormat("CHANNELS: real = {0}, total = {1}\n", realchannels, channels);
+                    debugDisplayString.Append("CHANNELS: real = ");
+                    debugDisplayString.Append(realchannels);
+                    debugDisplayString.Append(", total = ");
+                    debugDisplayString.Append(channels);
+                    debugDisplayString.Append('\n');
 
                     FMOD.DSP_METERING_INFO outputMetering;
                     mixerHead.getMeteringInfo(IntPtr.Zero, out outputMetering);
@@ -747,8 +772,12 @@ retry:
                     float db = rms > 0 ? 20.0f * Mathf.Log10(rms * Mathf.Sqrt(2.0f)) : -80.0f;
                     if (db > 10.0f) db = 10.0f;
 
-                    debug.AppendFormat("VOLUME: RMS = {0:f2}db\n", db);
-                    lastDebugText = debug.ToString();
+                    debugDisplayString.Append("VOLUME: RMS = ");
+                    debugDisplayString.Append(db.ToString("F2"));
+                    debugDisplayString.Append("db\n");
+
+                    lastDebugText = debugDisplayString.ToString();
+                    debugDisplayString.Clear();
                     lastDebugUpdate = Time.unscaledTime;
                 }
             }
@@ -876,7 +905,7 @@ retry:
             }
             else if (loadResult == FMOD.RESULT.ERR_EVENT_ALREADY_LOADED)
             {
-                RuntimeUtils.DebugLogWarningFormat("[FMOD] Unable to load {0} - bank already loaded. This may occur when attempting to load another localized bank before the first is unloaded, or if a bank has been loaded via the API.", bankName);
+                RuntimeUtils.DebugLogWarning(string.Format("[FMOD] Unable to load {0} - bank already loaded. This may occur when attempting to load another localized bank before the first is unloaded, or if a bank has been loaded via the API.", bankName));
             }
             else
             {
@@ -916,21 +945,22 @@ retry:
         {
             byte[] loadWebResult;
             FMOD.RESULT loadResult;
-
-            UnityEngine.Networking.UnityWebRequest www = UnityEngine.Networking.UnityWebRequest.Get(bankPath);
-            yield return www.SendWebRequest();
-            loadWebResult = www.downloadHandler.data;
-
-            LoadedBank loadedBank = new LoadedBank();
-            loadResult = Instance.studioSystem.loadBankMemory(loadWebResult, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out loadedBank.Bank);
-            if (loadResult != FMOD.RESULT.OK)
+            using (var www = UnityEngine.Networking.UnityWebRequest.Get(bankPath))
             {
-                RuntimeUtils.DebugLogWarningFormat("[FMOD] loadFromWeb.  Path = {0}, result = {1}.", bankPath, loadResult);
-            }
-            RegisterLoadedBank(loadedBank, bankPath, bankName, loadSamples, loadResult);
-            loadingBanksRef--;
+                yield return www.SendWebRequest();
+                loadWebResult = www.downloadHandler.data;
 
-            RuntimeUtils.DebugLogFormat("[FMOD] Finished loading {0}", bankPath);
+                LoadedBank loadedBank = new LoadedBank();
+                loadResult = Instance.studioSystem.loadBankMemory(loadWebResult, FMOD.Studio.LOAD_BANK_FLAGS.NORMAL, out loadedBank.Bank);
+                if (loadResult != FMOD.RESULT.OK)
+                {
+                    RuntimeUtils.DebugLogWarningFormat("[FMOD] loadFromWeb.  Path = {0}, result = {1}.", bankPath, loadResult);
+                }
+                RegisterLoadedBank(loadedBank, bankPath, bankName, loadSamples, loadResult);
+                loadingBanksRef--;
+
+                RuntimeUtils.DebugLogFormat("[FMOD] Finished loading {0}", bankPath);
+            }
         }
 #endif // UNITY_ANDROID || UNITY_WEBGL
 

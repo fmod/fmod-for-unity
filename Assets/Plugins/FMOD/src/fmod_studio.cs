@@ -153,6 +153,7 @@ namespace FMOD.Studio
         LABELED       = 0x00000010,
     }
 
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct PARAMETER_ID
     {

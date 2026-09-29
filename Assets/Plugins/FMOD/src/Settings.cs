@@ -689,8 +689,8 @@ namespace FMODUnity
                         platformToDestroy = newPlatform;
                     }
 
-                    RuntimeUtils.DebugLogWarningFormat("FMOD: Cleaning up duplicate platform: ID  = {0}, name = '{1}', type = {2}",
-                        platformToDestroy.Identifier, platformToDestroy.DisplayName, platformToDestroy.GetType().Name);
+                    RuntimeUtils.DebugLogWarning(string.Format("FMOD: Cleaning up duplicate platform: ID  = {0}, name = '{1}', type = {2}",
+                        platformToDestroy.Identifier, platformToDestroy.DisplayName, platformToDestroy.GetType().Name));
 
                     DestroyImmediate(platformToDestroy, true);
                 }
@@ -842,11 +842,13 @@ namespace FMODUnity
             Count,
         }
 
+        [Serializable]
         public class PlatformSettingBase
         {
             public Platform Platform;
         }
 
+        [Serializable]
         public class PlatformSetting<T> : PlatformSettingBase
         {
             public T Value;

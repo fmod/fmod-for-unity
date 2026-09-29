@@ -11,6 +11,7 @@ namespace FMODUnity
         public List<EditorBankRef> EditorBanks;
         [SerializeField]
         public List<EditorEventRef> EditorEvents;
+        [NonSerialized]
         public Dictionary<string, int> EditorEventsDict;
         [SerializeField]
         public List<EditorParamRef> EditorParameters;

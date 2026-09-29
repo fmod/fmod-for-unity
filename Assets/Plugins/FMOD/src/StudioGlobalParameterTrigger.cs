@@ -39,7 +39,7 @@ namespace FMODUnity
                     result = RuntimeManager.StudioSystem.getParameterDescriptionByName(Parameter, out parameterDescription);
                     if (result != FMOD.RESULT.OK)
                     {
-                        RuntimeUtils.DebugLogError(string.Format(("[FMOD] StudioGlobalParameterTrigger failed to lookup parameter {0} : result = {1}"), Parameter, result));
+                        RuntimeUtils.DebugLogError(string.Format(("[FMOD] StudioGlobalParameterTrigger failed to lookup parameter {0} : result = {1}"), Parameter, result.ToString()));
                         return;
                     }
                 }
@@ -47,7 +47,7 @@ namespace FMODUnity
                 result = RuntimeManager.StudioSystem.setParameterByID(parameterDescription.id, Value);
                 if (result != FMOD.RESULT.OK)
                 {
-                    RuntimeUtils.DebugLogError(string.Format(("[FMOD] StudioGlobalParameterTrigger failed to set parameter {0} : result = {1}"), Parameter, result));
+                    RuntimeUtils.DebugLogError(string.Format(("[FMOD] StudioGlobalParameterTrigger failed to set parameter {0} : result = {1}"), Parameter, result.ToString()));
                     return;
                 }
             }

@@ -130,5 +130,14 @@ namespace FMODUnity
             new CodecChannelCount { format = CodecType.FADPCM, channels = 0 },
             new CodecChannelCount { format = CodecType.Vorbis, channels = 256 },
         };
+
+        internal override FMOD.THREAD_STACK_SIZE GetStackSize()
+        {
+#if UNITY_EDITOR_LINUX
+            return PlatformLinux.staticGetStackSize();
+#else
+            return FMOD.THREAD_STACK_SIZE.DEFAULT;
+#endif
+        }
     }
 }
